@@ -235,3 +235,4 @@ export function githubDetail(
     ? activityDetail(activity, stats, pulse.login, onBack)
     : listDetail(openSection, pulse, onBack);
 }
+

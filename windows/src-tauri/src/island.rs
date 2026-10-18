@@ -475,3 +475,4 @@ pub fn set_ignore_cursor(app: &AppHandle, ignore: bool) {
         let _ = win.set_ignore_cursor_events(ignore);
     }
 }
+

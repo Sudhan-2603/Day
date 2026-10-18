@@ -616,3 +616,4 @@ function drawMochi(ctx, W, opts) {
   if (o && o.front) o.front(ctx, H, path);
   ctx.restore();
 }
+

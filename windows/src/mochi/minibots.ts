@@ -72,7 +72,10 @@ export function syncMiniBotStates(tasks: AgentTask[]) {
 
 export function tickMiniBots(dt: number) {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const customColor = State.settings.avatarColor || "#FFFFFF";
+  const bodyRGB = hexToRGB(customColor);
   for (const mb of live.values()) {
+    mb.engine.bodyColor = bodyRGB;
     const ctx = mb.canvas.getContext("2d");
     if (!ctx) continue;
     mb.engine.setDancing(mb.dancing?.() ?? false);
@@ -87,3 +90,4 @@ export function tickMiniBots(dt: number) {
 }
 
 export const miniBotCount = () => live.size;
+

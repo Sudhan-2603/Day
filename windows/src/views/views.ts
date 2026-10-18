@@ -862,3 +862,4 @@ export function buildViews(
   map.set("result", buildPlaceholder(tl("Result"), ""));
   return map;
 }
+

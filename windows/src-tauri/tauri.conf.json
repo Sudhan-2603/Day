@@ -2,10 +2,9 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Day",
   "version": "0.3.0",
-  "identifier": "fr.louisraille.coucou",
+  "identifier": "fr.louisraille.Day",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run build",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -13,7 +12,7 @@
     "withGlobalTauri": false,
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost",
-      "devCsp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost ws://localhost:1420 http://localhost:1420"
+      "devCsp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost"
     },
     "windows": [
       {
@@ -48,7 +47,7 @@
       "icons/128x128@2x.png",
       "icons/icon.ico"
     ],
-    "resources": { "../target/release/coucou-hook.exe": "coucou-hook.exe" },
+    "resources": { "../target/release/Day-hook.exe": "Day-hook.exe" },
     "copyright": "© Louis Raille",
     "category": "DeveloperTool",
     "shortDescription": "Mochi lives at the top of your screen",
@@ -62,3 +61,4 @@
     }
   }
 }
+

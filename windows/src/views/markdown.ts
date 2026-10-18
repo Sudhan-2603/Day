@@ -264,3 +264,4 @@ function render(block: Block): HTMLElement {
 export function renderMarkdown(into: HTMLElement, markdown: string) {
   into.replaceChildren(...parseMarkdown(markdown).map(render));
 }
+

@@ -797,3 +797,4 @@ mod tests {
         assert_eq!(graphql_error_count(&json!({"errors": [{}, {}]})), 2);
     }
 }
+

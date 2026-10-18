@@ -1,13 +1,13 @@
 [package]
-name = "coucou"
-description = "Coucou for Windows and Linux — Mochi lives at the top of your screen"
+name = "Day"
+description = "Day for Windows and Linux — Mochi lives at the top of your screen"
 authors = ["Louis Raille"]
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [lib]
-name = "coucou_lib"
+name = "Day_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -57,3 +57,4 @@ gtk = "0.18"
 dbus = "0.9.12"
 # EWMH on X11 for "Open terminal", already in the tree (global-hotkey).
 x11rb = { version = "0.13", default-features = false }
+

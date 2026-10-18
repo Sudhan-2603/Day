@@ -1,4 +1,4 @@
-// Live diff — port of DiffEngine.swift (NotchBuddy/Sources/CoucouKit).
+// Live diff — port of DiffEngine.swift (NotchBuddy/Sources/DayKit).
 //
 // Line diff (LCS) with 3-line context hunks, used for the Edit / MultiEdit /
 // Write tool calls the hooks see. Same size guards as macOS: beyond 200 KB or
@@ -324,3 +324,4 @@ export function lastTextStep(steps: readonly string[]): string | undefined {
   }
   return undefined;
 }
+

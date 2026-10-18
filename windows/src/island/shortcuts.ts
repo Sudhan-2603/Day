@@ -211,3 +211,4 @@ export function registerShortcutHandlers(host: ShortcutHost, resume: () => void)
     true,
   );
 }
+

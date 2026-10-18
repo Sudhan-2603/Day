@@ -241,3 +241,4 @@ async function copyImage(canvas: HTMLCanvasElement): Promise<boolean> {
     void Bridge.focusWindow(false);
   }
 }
+

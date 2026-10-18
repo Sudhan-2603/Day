@@ -600,3 +600,4 @@ function drawDoc(ctx: CanvasRenderingContext2D, cx: number, cy: number, wsc: num
   rr(ctx, x + w * 0.18, y + h * 0.58, w * 0.64, h * 0.16, 2);
   ctx.fill();
 }
+

@@ -265,3 +265,4 @@ mod tests {
         assert_eq!(refine("PreToolUse", &obj(json!({ "status": "error" }))), "PreToolUse");
     }
 }
+

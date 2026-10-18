@@ -1,5 +1,5 @@
 {
-  "name": "coucou-windows",
+  "name": "Day-windows",
   "private": true,
   "version": "0.3.0",
   "type": "module",
@@ -10,8 +10,8 @@
     "test": "node --import ./tests/setup.mjs --test \"tests/**/*.test.mjs\"",
     "icons": "node scripts/gen-icons.mjs",
     "tauri": "tauri",
-    "predev": "C:\\Users\\sudhan\\.cargo\\bin\\cargo.exe build --release -p coucou-hook",
-    "prebuild": "C:\\Users\\sudhan\\.cargo\\bin\\cargo.exe build --release -p coucou-hook",
+    "predev": "C:\\Users\\sudhan\\.cargo\\bin\\cargo.exe build --release -p Day-hook",
+    "prebuild": "C:\\Users\\sudhan\\.cargo\\bin\\cargo.exe build --release -p Day-hook",
     "pack": "tauri build && node scripts/pack.mjs"
   },
   "devDependencies": {
@@ -23,3 +23,4 @@
     "@tauri-apps/api": "^2"
   }
 }
+

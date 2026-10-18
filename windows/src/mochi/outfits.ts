@@ -1,6 +1,6 @@
 // Mochi's outfits, drawn in code — port of design/outfits/mochi-outfits.js (the
 // Canvas reference the Mac version was built from) and of the Mac's
-// NotchBuddy/Sources/CoucouKit/MochiOutfitDrawing.swift, whose fixes win where
+// NotchBuddy/Sources/DayKit/MochiOutfitDrawing.swift, whose fixes win where
 // the two differ (front arcs found by silhouette, simplified drawing below
 // R = 16, the enter/leave transitions, bunny ears).
 //
@@ -1156,3 +1156,4 @@ export function drawWardrobeIcon(ctx: Ctx, size: number, selection: OutfitSelect
   ctx.fillText(autoLabel, 0, 0.2);
   ctx.restore();
 }
+

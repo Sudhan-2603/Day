@@ -104,3 +104,4 @@ export function urlExposure(raw: string): Exposure {
   if (isLoopbackHost(url.hostname)) return "local";
   return url.protocol === "https:" ? "remote" : "remote-http";
 }
+

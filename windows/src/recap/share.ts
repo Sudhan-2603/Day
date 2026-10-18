@@ -30,7 +30,7 @@ const T = {
   get longestSession() { return t("Longest session"); },
   get approved() { return t("Approved"); },
   get denied() { return t("Denied"); },
-  footer: "Day · github.com/Louis-CFM/coucou",
+  footer: "Day · github.com/Louis-CFM/Day",
 };
 
 /**
@@ -175,7 +175,7 @@ export function renderShareImage(s: WeeklySummary, hideProjects: boolean): HTMLC
   const MOCHI = 220;
   const MOCHI_DRAW = 320;
   const blockH =
-    MOCHI + 20 + 62 + 6 + 36 + 14 + 29 + 80 + // Mochi, Coucou, title, range
+    MOCHI + 20 + 62 + 6 + 36 + 14 + 29 + 80 + // Mochi, Day, title, range
     110 + 6 + 26 + // time + caption
     56 + 94 + // stat row
     (hasLines ? 24 + 34 : 0) +
@@ -292,3 +292,4 @@ export function toPngDataUrl(canvas: HTMLCanvasElement): string {
 export function toPngBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 }
+

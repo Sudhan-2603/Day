@@ -56,3 +56,4 @@ function refreshWhenShown() {
   if (now && !shown) void Bridge.spotifyRefresh();
   shown = now;
 }
+

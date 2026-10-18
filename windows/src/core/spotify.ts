@@ -122,3 +122,4 @@ export function islandDances(o: {
 export function desktopDances(music: boolean, state: BotStateName): boolean {
   return music && DANCE_STATES.has(state);
 }
+

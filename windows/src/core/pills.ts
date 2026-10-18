@@ -245,3 +245,4 @@ export function orderPills<T extends { id: string }>(tasks: T[], mainPill: strin
     .sort((a, b) => rank(a.t) - rank(b.t) || a.i - b.i)
     .map(({ t }) => t);
 }
+

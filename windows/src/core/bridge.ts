@@ -17,7 +17,7 @@ async function call<T>(cmd: string, args?: Record<string, unknown>): Promise<T |
   try {
     return await invoke<T>(cmd, args);
   } catch (err) {
-    console.error(`[coucou] ${cmd} failed`, err);
+    console.error(`[Day] ${cmd} failed`, err);
     return null;
   }
 }
@@ -36,7 +36,7 @@ export const Bridge = {
   boot: () => {
     if (!IS_TAURI) {
       try {
-        const raw = localStorage.getItem("coucou:settings");
+        const raw = localStorage.getItem("Day:settings");
         if (raw) return Promise.resolve({ settings: JSON.parse(raw) } as BootInfo);
       } catch {}
     }
@@ -48,8 +48,8 @@ export const Bridge = {
   saveSettings: (settings: Settings) => {
     if (!IS_TAURI) {
       try {
-        localStorage.setItem("coucou:settings", JSON.stringify(settings));
-        window.dispatchEvent(new CustomEvent("coucou:settings-changed", { detail: settings }));
+        localStorage.setItem("Day:settings", JSON.stringify(settings));
+        window.dispatchEvent(new CustomEvent("Day:settings-changed", { detail: settings }));
       } catch {}
     }
     return call<void>("save_settings", { settings });
@@ -101,18 +101,18 @@ export const Bridge = {
 
   openSettingsWindow: () => {
     if (!IS_TAURI) {
-      window.open("/settings.html", "CoucouSettings", "width=860,height=700");
+      window.open("/settings.html", "DaySettings", "width=860,height=700");
       return Promise.resolve(null);
     }
     return call<void>("open_settings_window");
   },
 
-  /** Writes to %LOCALAPPDATA%\Coucou\coucou.log, next to the Rust lines. */
+  /** Writes to %LOCALAPPDATA%\Day\Day.log, next to the Rust lines. */
   log: (message: string) => call<void>("log_line", { message }),
 
   // ── Claude Code hooks ─────────────────────────────────────────────────────
   hooksStatus: () => call<HookStatus>("hooks_status"),
-  /** Pill ID → whether that agent's hooks reach Coucou (read-only, Mac #183). */
+  /** Pill ID → whether that agent's hooks reach Day (read-only, Mac #183). */
   agentHooksStatus: () => call<Record<string, boolean>>("agent_hooks_status"),
   /** Diff to show before anything is written. `install: false` previews removal. */
   hooksPreview: (install: boolean) => callOrThrow<HookPreview>("hooks_preview", { install }),
@@ -277,7 +277,7 @@ export async function emitToWindow(label: string, event: string, payload?: unkno
   try {
     await emitTo(label, event, payload);
   } catch (err) {
-    console.error(`[coucou] emit ${event} failed`, err);
+    console.error(`[Day] emit ${event} failed`, err);
   }
 }
 
@@ -313,7 +313,7 @@ export interface DroppedFile {
 
 export interface HookStatus {
   installed: boolean;
-  /** Coucou's status line relay (plan usage) is the status line in settings.json. */
+  /** Day's status line relay (plan usage) is the status line in settings.json. */
   planRelayInstalled: boolean;
   settingsPath: string;
   hookPath: string;
@@ -326,7 +326,7 @@ export interface AgentHookStatus {
   id: string;
   name: string;
   installed: boolean;
-  /** The file (or files, one per line) Coucou writes. */
+  /** The file (or files, one per line) Day writes. */
   path: string;
   hookReady: boolean;
   /** The island can allow or deny this agent's permission requests. */
@@ -353,7 +353,7 @@ export interface HookPreview {
 
 /** Same as `call`, but surfaces the error so the UI can show what went wrong. */
 async function callOrThrow<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (!IS_TAURI) throw new Error("not running inside Coucou");
+  if (!IS_TAURI) throw new Error("not running inside Day");
   return invoke<T>(cmd, args);
 }
 
@@ -417,7 +417,7 @@ export async function onDragDrop(handler: (e: DragDropPayload) => void) {
       handler({ type: "drop", paths: [] });
       return;
     }
-    webview.postMessageWithAdditionalObjects("coucou-file-drop", files);
+    webview.postMessageWithAdditionalObjects("Day-file-drop", files);
   };
 
   window.addEventListener("dragenter", onEnter);
@@ -437,17 +437,18 @@ export async function onDragDrop(handler: (e: DragDropPayload) => void) {
 export async function onEvent<T>(name: string, handler: (payload: T) => void) {
   if (!IS_TAURI) {
     const fn = (e: Event) => handler((e as CustomEvent<T>).detail);
-    window.addEventListener(`coucou:${name}`, fn);
+    window.addEventListener(`Day:${name}`, fn);
     const storageFn = (e: StorageEvent) => {
-      if (e.key === "coucou:settings" && name === "settings-changed" && e.newValue) {
+      if (e.key === "Day:settings" && name === "settings-changed" && e.newValue) {
         try { handler(JSON.parse(e.newValue)); } catch {}
       }
     };
     window.addEventListener("storage", storageFn);
     return () => {
-      window.removeEventListener(`coucou:${name}`, fn);
+      window.removeEventListener(`Day:${name}`, fn);
       window.removeEventListener("storage", storageFn);
     };
   }
   return listen<T>(name, (e) => handler(e.payload));
 }
+

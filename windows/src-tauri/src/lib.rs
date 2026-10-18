@@ -1,4 +1,4 @@
-// Coucou for Windows — app wiring and the commands the island calls.
+// Day for Windows — app wiring and the commands the island calls.
 
 mod agent_hooks;
 mod agents;
@@ -103,7 +103,7 @@ fn save_settings(app: AppHandle, shared: State<Shared>, settings: Settings) {
         let manager = app.autolaunch();
         let result = if settings.autostart { manager.enable() } else { manager.disable() };
         if let Err(err) = result {
-            eprintln!("[coucou] autostart: {err}");
+            eprintln!("[Day] autostart: {err}");
         }
     }
     if screen_changed {
@@ -309,7 +309,7 @@ fn hooks_status() -> HookStatus {
     hooks::status()
 }
 
-/// Pill ID → whether that agent's hooks reach Coucou. Read-only.
+/// Pill ID → whether that agent's hooks reach Day. Read-only.
 #[tauri::command]
 fn agent_hooks_status() -> std::collections::HashMap<String, bool> {
     agent_hooks::status()
@@ -578,14 +578,7 @@ fn shortcuts_suspend(app: AppHandle, shared: State<Shared>, suspended: bool) {
 /// error anywhere.
 pub(crate) const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --autoplay-policy=no-user-gesture-required";
 
-/// In a dev build the pages are served by Vite, so the second window needs the
-/// absolute dev URL; a bundled build resolves it inside the app bundle.
 fn settings_page_url(app: &AppHandle) -> WebviewUrl {
-    #[cfg(dev)]
-    if let Some(mut base) = app.config().build.dev_url.clone() {
-        base.set_path("/settings.html");
-        return WebviewUrl::External(base);
-    }
     let _ = app;
     WebviewUrl::App("settings.html".into())
 }
@@ -643,7 +636,7 @@ pub fn run() {
 
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-            // `coucou --shortcut <action>`: what a desktop's own keyboard
+            // `Day --shortcut <action>`: what a desktop's own keyboard
             // settings run where we can't listen for keys ourselves (Wayland).
             match shortcuts::from_args(&argv) {
                 Some(action) => shortcuts::dispatch(app, action),
@@ -771,7 +764,7 @@ pub fn run() {
             gate.set_active(true);
             island::spawn_cursor_poll(handle.clone(), gate.clone());
 
-            log::line(format!("--- Coucou {} started ---", env!("CARGO_PKG_VERSION")));
+            log::line(format!("--- Day {} started ---", env!("CARGO_PKG_VERSION")));
             hooks::ensure_hook_exe(&handle);
             pipe::start(handle.clone());
             integrations::start(handle.clone());
@@ -780,7 +773,7 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running Coucou");
+        .expect("error while running Day");
 }
 
 #[cfg(test)]
@@ -789,7 +782,7 @@ mod tests {
 
     #[test]
     fn only_an_existing_file_by_its_full_path_reaches_the_editor() {
-        let dir = std::env::temp_dir().join(format!("coucou-diff-file-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("Day-diff-file-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let file = dir.join("edited.ts");
         std::fs::write(&file, "x").unwrap();
@@ -805,3 +798,4 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
+

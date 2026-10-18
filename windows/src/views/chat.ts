@@ -350,3 +350,4 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
     },
   };
 }
+

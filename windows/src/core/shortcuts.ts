@@ -296,7 +296,7 @@ export function duplicates(entries: Iterable<[string, string]>): Set<string> {
   return dups;
 }
 
-/** The (id, keys) pairs Coucou would register with `stored`. */
+/** The (id, keys) pairs Day would register with `stored`. */
 export function activeKeys(stored: Bindings | undefined): [string, string][] {
   return SHORTCUTS.filter((d) => d.ported)
     .map((d) => [d.id, effective(d, stored)] as const)
@@ -408,3 +408,4 @@ export function islandKeyAction(
   if (e.key === "," || e.code === "Comma") return { kind: "settings" };
   return null;
 }
+

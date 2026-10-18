@@ -141,3 +141,4 @@ function agentBlock(initial: AgentHookStatus): HTMLElement {
   draw();
   return block;
 }
+

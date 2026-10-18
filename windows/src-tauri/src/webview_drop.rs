@@ -68,3 +68,4 @@ pub fn install(app: &AppHandle) {
         crate::log::line(format!("file drop: {err}"));
     }
 }
+

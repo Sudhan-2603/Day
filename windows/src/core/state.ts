@@ -107,6 +107,8 @@ export interface Settings {
   backgroundOpacity?: number;
   /** Hovering the island opens it all the way (off: hovering only peeks). */
   openOnHover: boolean;
+  /** If true, the island stays enabled from System ON and only stops on System OFF (always visible). */
+  alwaysIsland: boolean;
   absenceInterval: number;
   /** Declared pills next to the main one (at most 4), in the order they were added. */
   activeIntegrations: string[];
@@ -120,7 +122,7 @@ export interface Settings {
   model: string;
   /** Show the Claude plan pill (5 h and weekly limits) in the island's header. */
   showPlanInNotch: boolean;
-  /** Coucou's status line relay is installed in Claude Code's settings. */
+  /** Day's status line relay is installed in Claude Code's settings. */
   planRelayInstalled: boolean;
   /** Show the Codex plan pill in the island's header. */
   showCodexPlanInNotch: boolean;
@@ -147,7 +149,7 @@ export interface Settings {
    */
   pillColors: Record<string, string>;
   /**
-   * Interface language: "" follows the system (when Coucou has its language,
+   * Interface language: "" follows the system (when Day has its language,
    * else English), or one of src/i18n's ten codes ("fr", "pt-BR", "zh-Hans"…).
    */
   language: string;
@@ -160,6 +162,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
+  alwaysIsland: false,
   soundVolume: 0.12,
   autoCloseInterval: 15,
   backgroundBlur: true,
@@ -509,3 +512,4 @@ class AppState {
 }
 
 export const State = new AppState();
+

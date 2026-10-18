@@ -3,6 +3,38 @@
 version = 4
 
 [[package]]
+name = "Day"
+version = "0.3.0"
+dependencies = [
+ "dbus",
+ "gtk",
+ "keyring",
+ "libc",
+ "reqwest 0.12.28",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-autostart",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-single-instance",
+ "tokio",
+ "webview2-com",
+ "windows 0.61.3",
+ "windows-core 0.62.2",
+ "x11rb",
+]
+
+[[package]]
+name = "Day-hook"
+version = "0.3.0"
+dependencies = [
+ "libc",
+ "serde_json",
+ "windows 0.61.3",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -606,38 +638,6 @@ dependencies = [
  "bitflags 2.13.2",
  "core-foundation",
  "libc",
-]
-
-[[package]]
-name = "coucou"
-version = "0.3.0"
-dependencies = [
- "dbus",
- "gtk",
- "keyring",
- "libc",
- "reqwest 0.12.28",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-autostart",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-single-instance",
- "tokio",
- "webview2-com",
- "windows 0.61.3",
- "windows-core 0.62.2",
- "x11rb",
-]
-
-[[package]]
-name = "coucou-hook"
-version = "0.3.0"
-dependencies = [
- "libc",
- "serde_json",
- "windows 0.61.3",
 ]
 
 [[package]]

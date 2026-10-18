@@ -65,3 +65,4 @@ mod tests {
         assert_eq!(first_name_from(&format!("Louis {}", "a".repeat(40))), None);
     }
 }
+

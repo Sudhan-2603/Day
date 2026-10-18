@@ -459,3 +459,88 @@ select option {
 html[dir="rtl"] :is(.diff, .path, .keycap, input[type="password"], input[type="text"]) {
   direction: ltr;
 }
+
+/* ── Wardrobe Assets / Outfits horizontal scroll carousel ── */
+
+.wardrobe-assets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.wardrobe-assets-scroll {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 4px 10px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wardrobe-assets-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.wardrobe-assets-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.wardrobe-assets-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+
+.wardrobe-assets-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.wardrobe-asset-card {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  min-width: 72px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  color: var(--dim);
+  font-family: inherit;
+}
+
+.wardrobe-asset-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  color: var(--ink);
+}
+
+.wardrobe-asset-card.active {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.4), inset 0 0 8px rgba(56, 189, 248, 0.15);
+  color: #ffffff;
+}
+
+.wardrobe-asset-card canvas {
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+}
+
+.wardrobe-asset-name {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+

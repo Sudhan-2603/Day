@@ -3,9 +3,9 @@
 
 use keyring::Entry;
 
-const SERVICE: &str = "fr.louisraille.coucou";
+const SERVICE: &str = "fr.louisraille.Day";
 
-/// Every key Coucou may store. Anything outside this list is refused.
+/// Every key Day may store. Anything outside this list is refused.
 pub const KNOWN_KEYS: &[&str] = &[
     "anthropic-api-key",
     "openai-api-key",
@@ -53,3 +53,4 @@ pub fn clear(key: &str) -> Result<(), String> {
 pub fn present(key: &str) -> bool {
     get(key).is_some()
 }
+

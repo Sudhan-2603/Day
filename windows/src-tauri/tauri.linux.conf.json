@@ -7,8 +7,8 @@
       "rpm"
     ],
     "resources": {
-      "../target/release/coucou-hook.exe": null,
-      "../target/release/coucou-hook": "coucou-hook"
+      "../target/release/Day-hook.exe": null,
+      "../target/release/Day-hook": "Day-hook"
     },
     "linux": {
       "appimage": {
@@ -30,7 +30,7 @@
     "windows": [
       {
         "label": "island",
-        "title": "Coucou",
+        "title": "Day",
         "url": "index.html",
         "width": 240,
         "height": 6,
@@ -54,3 +54,4 @@
     ]
   }
 }
+

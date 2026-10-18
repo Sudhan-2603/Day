@@ -328,18 +328,19 @@ export class Island {
   private wireFsm() {
     this.fsm.homeToPetitDelay = State.settings.autoCloseInterval;
     this.fsm.openOnHover = State.settings.openOnHover;
+    this.fsm.alwaysIsland = Boolean(State.settings.alwaysIsland);
     this.fsm.onTransition = (from, to) => {
       // The greeting is over, however it ended: back to his desktop spot.
-      if (from === "coucou" && to !== "coucou") this.desktop.launch();
+      if (from === "Day" && to !== "Day") this.desktop.launch();
       switch (to) {
         case "hidden":
           this.setMode("hidden");
           break;
         case "petit":
-          if (from === "coucou") this.greeting.interrupt();
+          if (from === "Day") this.greeting.interrupt();
           else if (from === "hidden" && !this.silentReveal) Sound.play("peek");
           this.setMode("compact");
-          if (from === "coucou") State.view = State.defaultView();
+          if (from === "Day") State.view = State.defaultView();
           if (!this.wasInIsland) this.fsm.mouseLeft();
           break;
         case "home":
@@ -349,7 +350,7 @@ export class Island {
           // say so on the next open, without polling while the island is shut.
           void refreshHookPills();
           break;
-        case "coucou":
+        case "Day":
           this.expand("greeting");
           this.greeting.start();
           break;
@@ -871,7 +872,7 @@ export class Island {
     const wasIn = this.wasInIsland;
     this.wasInIsland = inIsland;
     if (inIsland && !wasIn) {
-      if (this.fsm.state === "coucou") this.greeting.hover();
+      if (this.fsm.state === "Day") this.greeting.hover();
       this.fsm.mouseEntered();
     }
     if (!inIsland && wasIn) {
@@ -1080,13 +1081,14 @@ export class Island {
     if (!ctx) return;
 
     const focus = State.focusTask;
-    // While a plan card is open Mochi wears the plan's colour, like its pill.
+    // Avatar color customizes Mochi bot & mini-bot color:
+    const avatar = State.settings.avatarColor;
     this.engine.bodyColor = planCardOpen()
       ? hexToRGB(openPlanColor())
-      : focus?.isIntegration
-        ? hexToRGB(focus.color)
-        : State.settings.avatarColor
-          ? hexToRGB(State.settings.avatarColor)
+      : avatar
+        ? hexToRGB(avatar)
+        : focus?.isIntegration
+          ? hexToRGB(focus.color)
           : null;
     this.engine.particleOverhang = BOT_OVERHANG;
     this.engine.lookX = this.lookX();
@@ -1213,6 +1215,10 @@ export class Island {
     Sound.setVolume(State.settings.soundVolume);
     this.fsm.homeToPetitDelay = State.settings.autoCloseInterval;
     this.fsm.openOnHover = State.settings.openOnHover;
+    this.fsm.alwaysIsland = Boolean(State.settings.alwaysIsland);
+    if (State.settings.alwaysIsland && this.fsm.state === "hidden") {
+      this.fsm.reveal();
+    }
     const blur = State.settings.backgroundBlur !== false;
     const opacity = State.settings.backgroundOpacity ?? 0.85;
     this.islandEl.style.setProperty("--island-blur", blur ? "24px" : "0px");
@@ -1234,3 +1240,4 @@ export class Island {
     return chatPromptHeight(State.chatHistory.length);
   }
 }
+

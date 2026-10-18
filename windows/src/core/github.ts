@@ -310,3 +310,4 @@ export function gitHubAlert(events: GitHubEvent[]): GitHubAlert | null {
   }
   return alert;
 }
+

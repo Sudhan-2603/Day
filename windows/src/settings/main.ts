@@ -10,7 +10,11 @@ import {
   recordPress, type Binding,
 } from "../core/shortcuts";
 import { DEFAULT_SETTINGS, type Settings } from "../core/state";
-import { SOUND_NAMES } from "../core/sound";
+import { Sound, SOUND_NAMES } from "../core/sound";
+import {
+  OUTFIT_KEYS, OUTFIT_SELECTIONS, parseOutfit, seasonalOutfit, type OutfitSelection,
+} from "../mochi/wardrobe";
+import { drawWardrobeIcon } from "../mochi/outfits";
 import {
   MAX_DECLARED, PILL_CATEGORIES, availablePills, chooseMainPill, isComingSoon, mainPillChoices,
   sanitizeDeclared, toggleDeclared, type PillDefinition,
@@ -197,7 +201,7 @@ function claudeSection(status: HookStatus): HTMLElement {
     if (!status.hookReady) {
       body.append(h("div", {
         class: "notice warn",
-        text: t("coucou-hook.exe is not in place yet. Restart Day; if it still fails, build it with `cargo build -p coucou-hook`."),
+        text: t("Day-hook.exe is not in place yet. Restart Day; if it still fails, build it with `cargo build -p Day-hook`."),
       }));
     }
 
@@ -300,7 +304,7 @@ function planSection(status: HookStatus): HTMLElement {
             onclick: () => void reviewChange(body, STATUS_LINE_CHANGE, true, redraw, () => void rebuild()),
           }),
       ),
-      // Codex: nothing to install, Coucou asks the Codex CLI when the pill shows.
+      // Codex: nothing to install, Day asks the Codex CLI when the pill shows.
       h("div", { class: "hint", text: PLAN_SETTINGS_TEXT.codex }),
       h("div", { class: "row" },
         h("label", { text: PLAN_SETTINGS_TEXT.showCodex }),
@@ -958,6 +962,24 @@ function generalSection(): HTMLElement {
     void save();
   });
 
+  const autostartSwitch = toggle(settings.autostart, (v) => {
+    settings.autostart = v;
+    if (!v && settings.alwaysIsland) {
+      settings.alwaysIsland = false;
+      alwaysIslandSwitch.classList.remove("on");
+    }
+    void save();
+  });
+
+  const alwaysIslandSwitch = toggle(Boolean(settings.alwaysIsland), (v) => {
+    settings.alwaysIsland = v;
+    if (v && !settings.autostart) {
+      settings.autostart = true;
+      autostartSwitch.classList.add("on");
+    }
+    void save();
+  });
+
   return h(
     "section",
     {},
@@ -969,6 +991,11 @@ function generalSection(): HTMLElement {
     ),
     h("div", { class: "row" }, soundsFolder, reloadSounds, customCount),
     h("div", { class: "hint", text: t("Drop a file named like one of Mochi's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.") }),
+    h("div", { class: "row" },
+      h("label", { text: t("Always Island") }),
+      alwaysIslandSwitch,
+    ),
+    h("div", { class: "hint", text: t("Island stays enabled when System is ON and remains visible continuously; it stops only when System is OFF.") }),
     h("div", { class: "row" },
       h("label", { text: t("Open on hover") }),
       toggle(settings.openOnHover, (v) => { settings.openOnHover = v; void save(); }),
@@ -995,10 +1022,11 @@ function generalSection(): HTMLElement {
     ),
     h("div", { class: "row" },
       h("label", { text: t("Launch at startup") }),
-      toggle(settings.autostart, (v) => { settings.autostart = v; void save(); }),
+      autostartSwitch,
     ),
     ...recapRows(),
     avatarColorRow(),
+    wardrobeAssetsRow(),
     languageRow(),
   );
 }
@@ -1044,8 +1072,71 @@ function avatarColorRow(): HTMLElement {
 }
 
 /**
+ * Settings → General → Assets & Outfits (Caps, Hats, and more).
+ * Horizontally scrollable carousel where clicking any asset dresses Mochi.
+ */
+function wardrobeAssetsRow(): HTMLElement {
+  const container = h("div", { class: "wardrobe-assets-container" });
+  const header = h("div", { class: "row", style: "justify-content:space-between;align-items:center;" },
+    h("label", { text: t("Assets & Outfits") }),
+    h("span", { class: "hint", text: t("Caps, hats & accessories") }),
+  );
+  container.append(header);
+
+  const scrollArea = h("div", { class: "wardrobe-assets-scroll" });
+  container.append(scrollArea);
+
+  const season = seasonalOutfit(new Date());
+  const cards: { btn: HTMLElement; sel: OutfitSelection }[] = [];
+
+  const updateSelected = () => {
+    const current = parseOutfit(settings.mochiOutfit);
+    cards.forEach(({ btn, sel }) => {
+      btn.classList.toggle("active", sel === current);
+    });
+  };
+
+  const ICON_SIZE = 32;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+
+  for (const sel of OUTFIT_SELECTIONS) {
+    const canvas = h("canvas", {
+      width: String(Math.round(ICON_SIZE * dpr)),
+      height: String(Math.round(ICON_SIZE * dpr)),
+    }) as HTMLCanvasElement;
+
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawWardrobeIcon(ctx, ICON_SIZE, sel, season, "AUTO");
+    }
+
+    const labelName = t(OUTFIT_KEYS[sel]);
+    const nameEl = h("span", { class: "wardrobe-asset-name", text: labelName });
+
+    const btn = h("button", {
+      type: "button",
+      class: "wardrobe-asset-card",
+      title: labelName,
+      onclick: () => {
+        settings.mochiOutfit = sel;
+        void save();
+        updateSelected();
+        Sound.play("pop");
+      },
+    }, canvas, nameEl);
+
+    cards.push({ btn, sel });
+    scrollArea.append(btn);
+  }
+
+  updateSelected();
+  return container;
+}
+
+/**
  * Settings → General → Language, as on the Mac: "System" follows the
- * system's language when Coucou has it (else English), or one of the ten.
+ * system's language when Day has it (else English), or one of the ten.
  * Both windows and the tray switch in place, without a restart.
  */
 function languageRow(): HTMLElement {
@@ -1453,3 +1544,4 @@ async function render() {
 }
 
 void main();
+

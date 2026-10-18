@@ -156,7 +156,7 @@ export function t(key: string, vars?: Vars): string {
   else if (found) text = pickPlural(found, current, Number(vars?.count ?? 0)) ?? key;
   else text = key;
   const res = interpolate(text, vars);
-  return res.replace(/\bCoucou\b/g, "Day").replace(/\bVS Code\b/g, "Day");
+  return res.replace(/\bDay\b/g, "Day").replace(/\bVS Code\b/g, "Day");
 }
 
 /**
@@ -267,3 +267,4 @@ export function isComplete(key: string): boolean {
   const entry = TABLE[key];
   return !!entry && LANGUAGE_CODES.every((l) => l === "en" || entry[l] !== undefined);
 }
+

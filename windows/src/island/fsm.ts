@@ -1,7 +1,7 @@
 // Island open/close FSM — port of IslandStateMachine.swift.
 // No DOM, no Tauri: it only reports transitions.
 
-export type FsmState = "hidden" | "petit" | "home" | "coucou";
+export type FsmState = "hidden" | "petit" | "home" | "Day";
 
 export class IslandStateMachine {
   state: FsmState = "hidden";
@@ -23,9 +23,9 @@ export class IslandStateMachine {
   }
   /** petit → hidden delay, seconds. */
   petitToHiddenDelay = 60;
-  /** coucou → petit once the greeting animation ends (no hover). */
+  /** Day → petit once the greeting animation ends (no hover). */
   greetAutoCollapseDelay = 0.6;
-  /** coucou → petit while the mouse hovers the greeting. */
+  /** Day → petit while the mouse hovers the greeting. */
   greetHoverCollapseDelay = 10;
   /** An alert waiting for an answer stays open, even when the mouse leaves. */
   pinned = false;
@@ -34,6 +34,27 @@ export class IslandStateMachine {
    * General → Open on hover, off by default), as IslandStateMachine.openOnHover.
    */
   openOnHover = false;
+  /**
+   * Always Island: island stays enabled and visible continuously when the system
+   * is on, stopping only when the system is off.
+   */
+  get alwaysIsland(): boolean {
+    return this._alwaysIsland;
+  }
+  set alwaysIsland(enabled: boolean) {
+    if (this._alwaysIsland === enabled) return;
+    this._alwaysIsland = enabled;
+    if (enabled) {
+      this.clear("petitHide");
+      if (this.state === "hidden") {
+        this.transition("petit");
+      }
+    } else {
+      if (this.state === "petit") {
+        this.schedulePetitHide();
+      }
+    }
+  }
   /** Grace period after the pointer leaves a hover-opened island, seconds. */
   hoverCloseDelay = 0.6;
   /** Open because of a hover, until the user clicks inside it. */
@@ -48,6 +69,7 @@ export class IslandStateMachine {
    */
   homeCollapseDueAt: number | null = null;
 
+  private _alwaysIsland = false;
   private homeDelay = 15;
   private byHover = false;
   private petitHide: number | null = null;
@@ -58,7 +80,7 @@ export class IslandStateMachine {
 
   launch() {
     this.cancelTimers();
-    this.transition("coucou");
+    this.transition("Day");
   }
 
   mouseEntered() {
@@ -79,7 +101,7 @@ export class IslandStateMachine {
       case "home":
         this.clear("homeCollapse");
         break;
-      case "coucou":
+      case "Day":
         this.scheduleGreetCollapse(this.greetHoverCollapseDelay);
         break;
     }
@@ -95,7 +117,7 @@ export class IslandStateMachine {
       case "home":
         this.scheduleHomeCollapse();
         break;
-      case "coucou":
+      case "Day":
         this.clear("greetCollapse");
         this.transition("petit");
         break;
@@ -111,7 +133,7 @@ export class IslandStateMachine {
 
   /** Greeting animation finished (T.end). Doesn't override a running hover timer. */
   greetComplete() {
-    if (this.state !== "coucou") return;
+    if (this.state !== "Day") return;
     if (this.greetCollapse == null) this.scheduleGreetCollapse(this.greetAutoCollapseDelay);
   }
 
@@ -159,11 +181,11 @@ export class IslandStateMachine {
   private schedulePetitHide() {
     this.clear("petitHide");
     // A card folded away while it waits for an answer keeps the compact island
-    // on screen, so it can be reopened (isHeldOpen on macOS).
-    if (this.pinned) return;
+    // on screen, so it can be reopened (isHeldOpen on macOS). Always Island keeps it visible.
+    if (this._alwaysIsland || this.pinned) return;
     this.petitHide = window.setTimeout(() => {
       this.petitHide = null;
-      if (this.state === "petit" && !this.pinned) this.transition("hidden");
+      if (this.state === "petit" && !this.pinned && !this._alwaysIsland) this.transition("hidden");
     }, this.petitToHiddenDelay * 1000);
   }
 
@@ -187,7 +209,7 @@ export class IslandStateMachine {
     this.clear("greetCollapse");
     this.greetCollapse = window.setTimeout(() => {
       this.greetCollapse = null;
-      if (this.state === "coucou") this.transition("petit");
+      if (this.state === "Day") this.transition("petit");
     }, delay * 1000);
   }
 
@@ -211,3 +233,4 @@ export class IslandStateMachine {
     this.onTransition?.(from, next);
   }
 }
+

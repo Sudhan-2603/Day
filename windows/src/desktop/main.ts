@@ -358,3 +358,4 @@ class DesktopMochi {
 
 const canvas = document.getElementById("mochi");
 if (canvas instanceof HTMLCanvasElement) void new DesktopMochi(canvas).start();
+

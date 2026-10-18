@@ -179,3 +179,4 @@ export class DesktopLink {
     void emitToWindow(WINDOW, DESKTOP_EVENTS.state, snapshot);
   }
 }
+

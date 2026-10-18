@@ -251,3 +251,4 @@ export function washRGBA(wash: Wash): string {
       return "rgba(0,0,0,0)";
   }
 }
+
