@@ -2,6 +2,7 @@
 *.exe
 !Day.exe
 !Day-hook.exe
+!Day-Setup.exe
 NotchBuddy/build/
 NotchBuddy/NotchBuddy.xcodeproj/project.xcworkspace/xcuserdata/
 NotchBuddy/NotchBuddy.xcodeproj/xcuserdata/
