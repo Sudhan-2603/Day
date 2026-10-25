@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Step 3 check: CoucouKit (Mochi, pills, diff, models) drawn on the iPhone
+/// Step 3 check: DayKit (Day, pills, diff, models) drawn on the iPhone
 /// with the Mac's own code.
 struct KitPreviewView: View {
     private let poses: [(BotState, EyeShape?, String)] = [
@@ -16,16 +16,16 @@ struct KitPreviewView: View {
 
     private let sampleDiff = DiffEngine.fromEdit(
         old: "func greet() {\n    print(\"Hello\")\n}\n",
-        new: "func greet(name: String) {\n    print(\"Coucou \\(name)\")\n}\n",
-        path: "/coucou/Greeting.swift")
+        new: "func greet(name: String) {\n    print(\"Day \\(name)\")\n}\n",
+        path: "/day/Greeting.swift")
 
     var body: some View {
         List {
-            Section("Mochi — fixed poses") {
+            Section("Day — fixed poses") {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 72))], spacing: 12) {
                     ForEach(Array(poses.enumerated()), id: \.offset) { index, pose in
                         VStack(spacing: 4) {
-                            MochiStill(state: pose.0, eye: pose.1)
+                            DayStill(state: pose.0, eye: pose.1)
                                 .padding(6)
                                 .frame(width: 64, height: 64)
                                 .background(tileColor(index), in: RoundedRectangle(cornerRadius: 14))
@@ -40,10 +40,10 @@ struct KitPreviewView: View {
                 Section(category.title) {
                     ForEach(PillCatalog.all.filter { $0.category == category }, id: \.id) { pill in
                         HStack(spacing: 12) {
-                            MochiStill()
+                            DayStill()
                                 .padding(3)
                                 .frame(width: 30, height: 30)
-                                .background(Color.mochiTile(hex: pill.color), in: RoundedRectangle(cornerRadius: 8))
+                                .background(Color.dayTile(hex: pill.color), in: RoundedRectangle(cornerRadius: 8))
                             VStack(alignment: .leading) {
                                 Text(pill.name)
                                 Text(pill.id).font(.caption2.monospaced()).foregroundStyle(.secondary)
@@ -67,7 +67,7 @@ struct KitPreviewView: View {
                 }
             }
         }
-        .navigationTitle("CoucouKit")
+        .navigationTitle("DayKit")
     }
 
     private func tileColor(_ index: Int) -> Color {

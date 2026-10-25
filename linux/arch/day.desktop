@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Day
+Comment=Day lives at the top of your screen and keeps an eye on your Claude Code sessions
+Exec=day
+Icon=day
+Terminal=false
+Categories=Development;Utility;
+StartupNotify=false

@@ -5,7 +5,7 @@ import SwiftUI
 struct BotCanvasView: View {
     @ObservedObject var state: AppState
     var particleOverhang: CGFloat = 0
-    /// When set, overrides island-based eye-tracking (used by desktop Mochi).
+    /// When set, overrides island-based eye-tracking (used by desktop Day).
     /// CGPoint in the same coord space as state.mousePosition (DesktopSpace, y-down).
     var lookOriginOverride: CGPoint? = nil
 
@@ -75,7 +75,7 @@ struct BotCanvasView: View {
                 engine.update(dt: dt)
                 var ctx = context
                 engine.applyDance(&ctx, size: size)
-                // Rigid-roll: when Mochi wears an outfit (presence > 0.05) and is rolling,
+                // Rigid-roll: when Day wears an outfit (presence > 0.05) and is rolling,
                 // rotate the entire body+accessories context around the body center so the
                 // whole character genuinely turns. Particles/badge (drawHandsAndExtras) are
                 // drawn outside the rotated context and do not spin.
@@ -229,7 +229,7 @@ struct MiniBotCanvasView: View {
             engine.setState(newState)
         }
         // The colour is set once, when the engine is made: a colour picked in
-        // Settings has to reach a mini Mochi that is already on screen.
+        // Settings has to reach a mini Day that is already on screen.
         .onChange(of: task.color) { _, newColor in
             engine.bodyColor = cgColorFromHex(newColor)
         }

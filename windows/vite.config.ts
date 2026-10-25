@@ -63,7 +63,7 @@ export default defineConfig({
       input: {
         island: resolve(__dirname, "index.html"),
         settings: resolve(__dirname, "settings.html"),
-        mochi: resolve(__dirname, "mochi.html"),
+        day: resolve(__dirname, "day.html"),
       },
     },
   },

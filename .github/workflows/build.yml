@@ -27,8 +27,8 @@ jobs:
       - name: Test display choice
         run: bash scripts/test-display-choice.sh
 
-      - name: Desktop Mochi and gaze tests
-        run: bash scripts/test-desktop-mochi.sh
+      - name: Desktop Day and gaze tests
+        run: bash scripts/test-desktop-day.sh
 
       - name: Test auto-close timing
         run: bash scripts/test-auto-close.sh
@@ -86,7 +86,7 @@ jobs:
         run: |
           xcodebuild \
             -project NotchBuddy/NotchBuddy.xcodeproj \
-            -scheme CoucouAppStore \
+            -scheme DayAppStore \
             -configuration Debug \
             build \
             CODE_SIGNING_ALLOWED=NO \
@@ -116,7 +116,7 @@ jobs:
         run: |
           xcodebuild \
             -project NotchBuddy/NotchBuddy.xcodeproj \
-            -scheme CoucouPhone \
+            -scheme DayPhone \
             -destination 'generic/platform=iOS' \
             build \
             CODE_SIGNING_ALLOWED=NO

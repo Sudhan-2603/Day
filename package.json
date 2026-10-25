@@ -1,0 +1,11 @@
+{
+  "name": "Day",
+  "version": "0.3.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix windows run build",
+    "dev": "npm --prefix windows run dev",
+    "test": "npm --prefix windows run test",
+    "start": "powershell -NoProfile -Command \"Start-Process .\\Day.exe\""
+  }
+}

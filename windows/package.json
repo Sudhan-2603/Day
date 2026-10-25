@@ -1,5 +1,5 @@
 {
-  "name": "Day-windows",
+  "name": "Day",
   "private": true,
   "version": "0.3.0",
   "type": "module",
@@ -23,4 +23,3 @@
     "@tauri-apps/api": "^2"
   }
 }
-

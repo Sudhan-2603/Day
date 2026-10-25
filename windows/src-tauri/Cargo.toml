@@ -1,6 +1,6 @@
 [package]
 name = "Day"
-description = "Day for Windows and Linux — Mochi lives at the top of your screen"
+description = "Day for Windows and Linux — Day lives at the top of your screen"
 authors = ["Louis Raille"]
 version.workspace = true
 edition.workspace = true

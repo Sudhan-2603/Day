@@ -239,7 +239,7 @@ final class IslandWindowController: NSWindowController {
                 self.setMode(.hidden)
 
             case .petit:
-                if from == .coucou {
+                if from == .day {
                     // Fire interrupt first so canvas collapse starts before mode change
                     NotificationCenter.default.post(name: .greetingInterrupt, object: nil)
                 } else if from == .hidden {
@@ -252,7 +252,7 @@ final class IslandWindowController: NSWindowController {
                 // setMode BEFORE changing view: onChange(of: state.view) guards on .expanded,
                 // so setting view while already compact won't trigger a spurious open animation.
                 self.setMode(.compact)
-                if from == .coucou { self.state.view = self.defaultView() }
+                if from == .day { self.state.view = self.defaultView() }
                 // Start 60s hide timer if mouse is not currently over the island
                 if !self.wasInIsland { self.fsm.mouseLeft() }
 
@@ -263,7 +263,7 @@ final class IslandWindowController: NSWindowController {
                     self.fsm.mouseLeft()
                 }
 
-            case .coucou:
+            case .day:
                 self.expand(to: .greeting)
             }
         }
@@ -279,7 +279,7 @@ final class IslandWindowController: NSWindowController {
     }
 
     // MARK: - Polling loop
-    // 60 Hz while the island is on screen, Mochi is on the desktop, a drag is under way or the
+    // 60 Hz while the island is on screen, Day is on the desktop, a drag is under way or the
     // pointer is near the island; 8 Hz (with timer tolerance) while it is hidden and the pointer
     // is elsewhere, so a hidden island costs next to nothing (CLAUDE.md: 0 % CPU when hidden).
 
@@ -302,7 +302,7 @@ final class IslandWindowController: NSWindowController {
     /// Picks the polling rate for the next ticks (see startPolling).
     private func adjustPollRate(mouse: NSPoint, panelFrame: NSRect) {
         let nearIsland = panelFrame.insetBy(dx: -120, dy: -120).contains(mouse)
-        let busy = state.mode != .hidden || state.mochiOnDesktop || inAttachDrag || attachDragStart != nil
+        let busy = state.mode != .hidden || state.dayOnDesktop || inAttachDrag || attachDragStart != nil
             || fsm.state != .hidden || nearIsland
         let wanted = busy ? Self.fastPoll : Self.idlePoll
         if wanted != pollInterval { startPolling(interval: wanted) }
@@ -352,8 +352,8 @@ final class IslandWindowController: NSWindowController {
         wasInIsland = inIsland
         if inIsland && !previouslyInIsland {
             guard !inAttachDrag else { return }
-            // If in coucou: tell greeting to stay open (tc → infinity)
-            if fsm.state == .coucou {
+            // If in day: tell greeting to stay open (tc → infinity)
+            if fsm.state == .day {
                 NotificationCenter.default.post(name: .greetingHover, object: nil)
             }
             fsm.mouseEntered()
@@ -377,7 +377,7 @@ final class IslandWindowController: NSWindowController {
             }
         }
 
-        // Ghost Mochi follows cursor + window highlight during drag (60 Hz, no throttle)
+        // Ghost Day follows cursor + window highlight during drag (60 Hz, no throttle)
         if inAttachDrag {
             updateDragGhost()
             updateWindowHighlight()
@@ -461,7 +461,7 @@ final class IslandWindowController: NSWindowController {
         guard fsm.isHeldOpen?() != true || keepsApprovalPending else { return }
         if !keepsApprovalPending { state.isPinned = false }
         finishedPinTimer?.cancel()
-        // Keep the FSM in step with what is on screen (home/coucou → petit now).
+        // Keep the FSM in step with what is on screen (home/day → petit now).
         fsm.collapse()
         setMode(.compact)
         window?.resignKey()
@@ -527,7 +527,7 @@ final class IslandWindowController: NSWindowController {
                 object: state.soundEnabled ? BotEmote.happy : BotEmote.annoyed)
 
         case .desktopToggle:
-            DesktopMochiController.shared.flyOutOrHome()
+            DesktopDayController.shared.flyOutOrHome()
 
         case .wardrobeToggle:
             if state.mode == .expanded && state.view == .wardrobe {
@@ -707,7 +707,7 @@ final class IslandWindowController: NSWindowController {
             self?.collapse()
         }
 
-        // Wardrobe open/close from desktop Mochi right-click (does NOT post .hookExpand)
+        // Wardrobe open/close from desktop Day right-click (does NOT post .hookExpand)
         NotificationCenter.default.addObserver(forName: .openWardrobeFromDesktop, object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
             if self.state.mode == .expanded && self.state.view == .wardrobe {
@@ -738,8 +738,8 @@ final class IslandWindowController: NSWindowController {
                 self.botHovering = false
                 // Drag only starts when clicking directly on the bot head
                 guard self.isBotHit(event.locationInWindow) else { return }
-                // Notch Mochi is invisible when on desktop — no drag, no slap
-                guard !self.state.mochiOnDesktop else { return }
+                // Notch Day is invisible when on desktop — no drag, no slap
+                guard !self.state.dayOnDesktop else { return }
                 self.attachDragStart = NSEvent.mouseLocation
                 // Post slap only when expanded
                 guard self.state.mode == .expanded else { return }
@@ -781,14 +781,14 @@ final class IslandWindowController: NSWindowController {
                     NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.happy)
                     self.expand(to: .prompt)
                 } else if !inNotchZone {
-                    // Drop outside notch zone → install Mochi on the desktop.
+                    // Drop outside notch zone → install Day on the desktop.
                     // Prevent hideDragGhost from closing the ghost panel so we can promote it.
                     let ghost = self.dragGhostPanel
                     self.dragGhostPanel = nil   // nil first so hideDragGhost skips close
                     self.hideDragGhost()        // resets isDraggingBot, closes highlight panel
-                    DesktopMochiController.shared.install(ghostPanel: ghost, at: mouse)
+                    DesktopDayController.shared.install(ghostPanel: ghost, at: mouse)
                 } else {
-                    // Drop back in notch zone → Mochi returns to notch
+                    // Drop back in notch zone → Day returns to notch
                     self.hideDragGhost()
                 }
                 #else
@@ -797,7 +797,7 @@ final class IslandWindowController: NSWindowController {
                     let ghost = self.dragGhostPanel
                     self.dragGhostPanel = nil
                     self.hideDragGhost()
-                    DesktopMochiController.shared.install(ghostPanel: ghost, at: mouse)
+                    DesktopDayController.shared.install(ghostPanel: ghost, at: mouse)
                 } else {
                     self.hideDragGhost()
                 }
@@ -834,7 +834,7 @@ final class IslandWindowController: NSWindowController {
             guard let self else { return event }
             MainActor.assumeIsolated {
                 guard self.wasInIsland, self.isBotHit(event.locationInWindow) else { return }
-                guard !self.state.mochiOnDesktop else { return }
+                guard !self.state.dayOnDesktop else { return }
                 if self.state.mode == .expanded && self.state.view == .wardrobe {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         self.state.view = .overview
@@ -860,7 +860,7 @@ final class IslandWindowController: NSWindowController {
         }
     }
 
-    // MARK: - Drag ghost window (Mochi follows cursor during drag)
+    // MARK: - Drag ghost window (Day follows cursor during drag)
 
     private func showDragGhost() {
         guard dragGhostPanel == nil else { return }
@@ -1145,7 +1145,7 @@ final class IslandWindowController: NSWindowController {
     /// Top of the menu-bar screen in AppKit coordinates: origin of `DesktopSpace`.
     static var desktopTop: CGFloat { NSScreen.screens.first?.frame.maxY ?? 0 }
 
-    /// Screen the island currently sits on (Settings window, desktop Mochi flights).
+    /// Screen the island currently sits on (Settings window, desktop Day flights).
     private(set) static var currentScreen: NSScreen?
 
     static func islandScreen() -> NSScreen {

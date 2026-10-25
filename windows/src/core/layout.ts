@@ -96,7 +96,7 @@ export const VIEW_LAYOUTS: Record<IslandViewName, ViewLayout> = {
 };
 
 // The upload views above are only the fallback geometry. Once a file is actually
-// dropped the whole sequence — Mochi included — is drawn by src/upload, which
+// dropped the whole sequence — Day included — is drawn by src/upload, which
 // owns its own constants (USC) straight from UploadSequenceEngine.swift.
 
 /** The question view with options to pick from: room for two rows of them. */
@@ -111,6 +111,7 @@ export function islandSize(
   mode: IslandMode,
   view: IslandViewName,
   chatCount = 0,
+  fullSettings = false,
 ): { w: number; h: number } {
   switch (mode) {
     case "hidden":
@@ -120,7 +121,9 @@ export function islandSize(
     case "compact":
       return { w: COMPACT_W, h: NOTCH_H };
     case "expanded": {
-      const h = view === "prompt" ? chatPromptHeight(chatCount) : VIEW_LAYOUTS[view].height;
+      const h = view === "prompt"
+        ? chatPromptHeight(chatCount)
+        : (view === "settings" && fullSettings ? 300 : VIEW_LAYOUTS[view].height);
       return { w: EXPANDED_W, h };
     }
   }
@@ -139,6 +142,7 @@ export function botPosition(
   view: IslandViewName,
   islandH: number,
   uploadProgress = 0,
+  fullSettings = false,
 ): BotPlacement {
   switch (mode) {
     case "hidden":
@@ -147,6 +151,9 @@ export function botPosition(
       return { cx: 40, cy: 17, diameter: 20, opacity: 1 };
     case "expanded": {
       const layout = VIEW_LAYOUTS[view];
+      if (view === "settings" && fullSettings) {
+        return { cx: layout.botX, cy: 50, diameter: 0, opacity: 0 };
+      }
       if (view === "uploading") {
         return {
           cx: 36 + uploadProgress * 526,

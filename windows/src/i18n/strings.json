@@ -728,6 +728,17 @@
    "ru": "Свой…",
    "id": "Kustom…"
   },
+  "Day to desktop on/off": {
+   "zh-Hans": "Day 桌面开/关",
+   "hi": "Day डेस्कटॉप पर चालू / बंद",
+   "es": "Day en el escritorio sí / no",
+   "ar": "Day على / إيقاف سطح المكتب",
+   "fr": "Day sur le bureau oui / non",
+   "bn": "Day ডেস্কটপে চালু / বন্ধ",
+   "pt-BR": "Day na área de trabalho sim / não",
+   "ru": "Day на рабочем столе вкл / выкл",
+   "id": "Day di desktop ya / tidak"
+  },
   "Default": {
    "zh-Hans": "默认",
    "hi": "डिफ़ॉल्ट",
@@ -827,16 +838,16 @@
    "ru": "Черновик",
    "id": "Draf"
   },
-  "Drop a file named like one of Mochi's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.": {
-   "zh-Hans": "在声音文件夹中放入与 Mochi 某个声音同名的文件（finish.wav、approval.mp3、greet.m4a…）即可替换它，然后重新载入。",
-   "hi": "Mochi की किसी साउंड के नाम वाली फ़ाइल (finish.wav, approval.mp3, greet.m4a…) साउंड फ़ोल्डर में रखें, वह उसकी जगह ले लेगी; फिर Reload करें।",
-   "es": "Deja en la carpeta de sonidos un archivo con el nombre de uno de los sonidos de Mochi (finish.wav, approval.mp3, greet.m4a…) para reemplazarlo y luego recarga.",
-   "ar": "ضع في مجلد الأصوات ملفًا يحمل اسم أحد أصوات Mochi (finish.wav وapproval.mp3 وgreet.m4a…) ليحل محله، ثم أعد التحميل.",
-   "fr": "Déposez dans le dossier des sons un fichier nommé comme l'un des sons de Mochi (finish.wav, approval.mp3, greet.m4a…) pour le remplacer, puis rechargez.",
-   "bn": "Mochi-র কোনো সাউন্ডের নামে একটি ফাইল (finish.wav, approval.mp3, greet.m4a…) সাউন্ড ফোল্ডারে রাখুন, সেটি বদলে যাবে; তারপর Reload করুন।",
-   "pt-BR": "Coloque na pasta de sons um arquivo com o nome de um dos sons do Mochi (finish.wav, approval.mp3, greet.m4a…) para substituí-lo e depois recarregue.",
-   "ru": "Положите в папку звуков файл с именем одного из звуков Mochi (finish.wav, approval.mp3, greet.m4a…), чтобы заменить его, затем перезагрузите.",
-   "id": "Taruh file bernama seperti salah satu suara Mochi (finish.wav, approval.mp3, greet.m4a…) di folder suara untuk menggantinya, lalu muat ulang."
+  "Drop a file named like one of Day's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.": {
+   "zh-Hans": "在声音文件夹中放入与 Day 某个声音同名的文件（finish.wav、approval.mp3、greet.m4a…）即可替换它，然后重新载入。",
+   "hi": "Day की किसी साउंड के नाम वाली फ़ाइल (finish.wav, approval.mp3, greet.m4a…) साउंड फ़ोल्डर में रखें, वह उसकी जगह ले लेगी; फिर Reload करें।",
+   "es": "Deja en la carpeta de sonidos un archivo con el nombre de uno de los sonidos de Day (finish.wav, approval.mp3, greet.m4a…) para reemplazarlo y luego recarga.",
+   "ar": "ضع في مجلد الأصوات ملفًا يحمل اسم أحد أصوات Day (finish.wav وapproval.mp3 وgreet.m4a…) ليحل محله، ثم أعد التحميل.",
+   "fr": "Déposez dans le dossier des sons un fichier nommé comme l'un des sons de Day (finish.wav, approval.mp3, greet.m4a…) pour le remplacer, puis rechargez.",
+   "bn": "Day-র কোনো সাউন্ডের নামে একটি ফাইল (finish.wav, approval.mp3, greet.m4a…) সাউন্ড ফোল্ডারে রাখুন, সেটি বদলে যাবে; তারপর Reload করুন।",
+   "pt-BR": "Coloque na pasta de sons um arquivo com o nome de um dos sons do Day (finish.wav, approval.mp3, greet.m4a…) para substituí-lo e depois recarregue.",
+   "ru": "Положите в папку звуков файл с именем одного из звуков Day (finish.wav, approval.mp3, greet.m4a…), чтобы заменить его, затем перезагрузите.",
+   "id": "Taruh file bernama seperti salah satu suara Day (finish.wav, approval.mp3, greet.m4a…) di folder suara untuk menggantinya, lalu muat ulang."
   },
   "Drop a file or window, or ask me anything.": {
    "zh-Hans": "拖入文件或窗口，或问我任何问题。",
@@ -1476,17 +1487,6 @@
    "ru": "Получатель не указан.",
    "id": "Penerima tidak ada."
   },
-  "Mochi to desktop on/off": {
-   "zh-Hans": "Mochi 桌面开/关",
-   "hi": "Mochi डेस्कटॉप पर चालू / बंद",
-   "es": "Mochi en el escritorio sí / no",
-   "ar": "Mochi على / إيقاف سطح المكتب",
-   "fr": "Mochi sur le bureau oui / non",
-   "bn": "Mochi ডেস্কটপে চালু / বন্ধ",
-   "pt-BR": "Mochi na área de trabalho sim / não",
-   "ru": "Mochi на рабочем столе вкл / выкл",
-   "id": "Mochi di desktop ya / tidak"
-  },
   "Model": {
    "zh-Hans": "模型",
    "hi": "मॉडल",
@@ -1509,16 +1509,16 @@
    "ru": "ID модели (напр. claude-sonnet-4-6)",
    "id": "ID model (mis. claude-sonnet-4-6)"
   },
-  "Move Mochi to my iPhone's Dynamic Island when my Mac is locked": {
-   "zh-Hans": "Mac 锁定时将 Mochi 移至我 iPhone 的灵动岛",
-   "hi": "Mac लॉक होने पर Mochi को मेरे iPhone की Dynamic Island पर ले जाएं",
-   "es": "Mover a Mochi a la Dynamic Island de mi iPhone cuando mi Mac esté bloqueado",
-   "ar": "نقل Mochi إلى Dynamic Island في iPhone عند إغلاق Mac",
-   "fr": "Déplacer Mochi vers la Dynamic Island de mon iPhone quand mon Mac est verrouillé",
-   "bn": "Mac লক থাকলে Mochi-কে আমার iPhone-এর Dynamic Island-এ নিয়ে যান",
-   "pt-BR": "Mover o Mochi para a Dynamic Island do meu iPhone quando meu Mac estiver bloqueado",
-   "ru": "Переносить Mochi на Dynamic Island моего iPhone, когда Mac заблокирован",
-   "id": "Pindahkan Mochi ke Dynamic Island iPhone saya saat Mac terkunci"
+  "Move Day to my iPhone's Dynamic Island when my Mac is locked": {
+   "zh-Hans": "Mac 锁定时将 Day 移至我 iPhone 的灵动岛",
+   "hi": "Mac लॉक होने पर Day को मेरे iPhone की Dynamic Island पर ले जाएं",
+   "es": "Mover a Day a la Dynamic Island de mi iPhone cuando mi Mac esté bloqueado",
+   "ar": "نقل Day إلى Dynamic Island في iPhone عند إغلاق Mac",
+   "fr": "Déplacer Day vers la Dynamic Island de mon iPhone quand mon Mac est verrouillé",
+   "bn": "Mac লক থাকলে Day-কে আমার iPhone-এর Dynamic Island-এ নিয়ে যান",
+   "pt-BR": "Mover o Day para a Dynamic Island do meu iPhone quando meu Mac estiver bloqueado",
+   "ru": "Переносить Day на Dynamic Island моего iPhone, когда Mac заблокирован",
+   "id": "Pindahkan Day ke Dynamic Island iPhone saya saat Mac terkunci"
   },
   "Muse Code hooks": {
    "zh-Hans": "Muse Code 钩子",
@@ -1850,17 +1850,6 @@
    "ru": "Открыть Codex",
    "id": "Buka Codex"
   },
-  "Open Day": {
-   "zh-Hans": "打开 Day",
-   "hi": "Day खोलें",
-   "es": "Abrir Day",
-   "ar": "فتح Day",
-   "fr": "Ouvrir Day",
-   "bn": "Day খুলুন",
-   "pt-BR": "Abrir Day",
-   "ru": "Открыть Day",
-   "id": "Buka Day"
-  },
   "Open Cursor": {
    "zh-Hans": "打开 Cursor",
    "hi": "Cursor खोलें",
@@ -1871,6 +1860,17 @@
    "pt-BR": "Abrir Cursor",
    "ru": "Открыть Cursor",
    "id": "Buka Cursor"
+  },
+  "Open Day": {
+   "zh-Hans": "打开 Day",
+   "hi": "Day खोलें",
+   "es": "Abrir Day",
+   "ar": "فتح Day",
+   "fr": "Ouvrir Day",
+   "bn": "Day খুলুন",
+   "pt-BR": "Abrir Day",
+   "ru": "Открыть Day",
+   "id": "Buka Day"
   },
   "Open Music": {
    "zh-Hans": "打开 Music",
@@ -3093,16 +3093,16 @@
    "ru": "Записывает",
    "id": "Menulis"
   },
-  "Writes:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (backup created first)": {
-   "zh-Hans": "将写入：\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json（先创建备份）",
-   "hi": "लिखेगा:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (पहले बैकअप बनाया जाएगा)",
-   "es": "Escribirá:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (se crea una copia de seguridad primero)",
-   "ar": "سيكتب:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (يُنشئ نسخة احتياطية أولاً)",
-   "fr": "Écrira :\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (sauvegarde créée d'abord)",
-   "bn": "লিখবে:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (আগে ব্যাকআপ তৈরি হবে)",
-   "pt-BR": "Vai escrever:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (backup criado antes)",
-   "ru": "Запишет:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (резервная копия создаётся сначала)",
-   "id": "Akan menulis:\n• ~/.claude/Day/nb-hook\n• ~/.claude/settings.json (backup dibuat terlebih dahulu)"
+  "Writes:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (backup created first)": {
+   "zh-Hans": "将写入：\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json（先创建备份）",
+   "hi": "लिखेगा:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (पहले बैकअप बनाया जाएगा)",
+   "es": "Escribirá:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (se crea una copia de seguridad primero)",
+   "ar": "سيكتب:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (يُنشئ نسخة احتياطية أولاً)",
+   "fr": "Écrira :\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (sauvegarde créée d'abord)",
+   "bn": "লিখবে:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (আগে ব্যাকআপ তৈরি হবে)",
+   "pt-BR": "Vai escrever:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (backup criado antes)",
+   "ru": "Запишет:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (резервная копия создаётся сначала)",
+   "id": "Akan menulis:\n• ~/.claude/day/nb-hook\n• ~/.claude/settings.json (backup dibuat terlebih dahulu)"
   },
   "Your answer…": {
    "zh-Hans": "您的答案…",
@@ -3346,16 +3346,16 @@
    "ru": "{n} мин назад",
    "id": "{n} menit lalu"
   },
-  "✓ Amp plugin installed in ~/.config/amp/plugins/Day.ts": {
-   "zh-Hans": "✓ Amp 插件已安装至 ~/.config/amp/plugins/Day.ts",
-   "hi": "✓ ~/.config/amp/plugins/Day.ts में Amp प्लगइन इंस्टॉल हुआ",
-   "es": "✓ Plugin de Amp instalado en ~/.config/amp/plugins/Day.ts",
-   "ar": "✓ ملحق Amp مثبَّت في ~/.config/amp/plugins/Day.ts",
-   "fr": "✓ Plugin Amp installé dans ~/.config/amp/plugins/Day.ts",
-   "bn": "✓ ~/.config/amp/plugins/Day.ts-এ Amp প্লাগইন ইনস্টল হয়েছে",
-   "pt-BR": "✓ Plugin do Amp instalado em ~/.config/amp/plugins/Day.ts",
-   "ru": "✓ Плагин Amp установлен в ~/.config/amp/plugins/Day.ts",
-   "id": "✓ Plugin Amp terpasang di ~/.config/amp/plugins/Day.ts"
+  "✓ Amp plugin installed in ~/.config/amp/plugins/day.ts": {
+   "zh-Hans": "✓ Amp 插件已安装至 ~/.config/amp/plugins/day.ts",
+   "hi": "✓ ~/.config/amp/plugins/day.ts में Amp प्लगइन इंस्टॉल हुआ",
+   "es": "✓ Plugin de Amp instalado en ~/.config/amp/plugins/day.ts",
+   "ar": "✓ ملحق Amp مثبَّت في ~/.config/amp/plugins/day.ts",
+   "fr": "✓ Plugin Amp installé dans ~/.config/amp/plugins/day.ts",
+   "bn": "✓ ~/.config/amp/plugins/day.ts-এ Amp প্লাগইন ইনস্টল হয়েছে",
+   "pt-BR": "✓ Plugin do Amp instalado em ~/.config/amp/plugins/day.ts",
+   "ru": "✓ Плагин Amp установлен в ~/.config/amp/plugins/day.ts",
+   "id": "✓ Plugin Amp terpasang di ~/.config/amp/plugins/day.ts"
   },
   "✓ Amp plugin removed.": {
    "zh-Hans": "✓ Amp 插件已移除。",
@@ -3454,16 +3454,16 @@
     "other": "✓ Connected · {count} models"
    }
   },
-  "✓ Copilot CLI hooks installed in ~/.copilot/hooks/Day.json": {
-   "zh-Hans": "✓ Copilot CLI Hooks 已安装至 ~/.copilot/hooks/Day.json",
-   "hi": "✓ ~/.copilot/hooks/Day.json में Copilot CLI हुक इंस्टॉल हुए",
-   "es": "✓ Hooks de Copilot CLI instalados en ~/.copilot/hooks/Day.json",
-   "ar": "✓ خطافات Copilot CLI مثبَّتة في ~/.copilot/hooks/Day.json",
-   "fr": "✓ Hooks Copilot CLI installés dans ~/.copilot/hooks/Day.json",
-   "bn": "✓ ~/.copilot/hooks/Day.json-এ Copilot CLI হুক ইনস্টল হয়েছে",
-   "pt-BR": "✓ Hooks do Copilot CLI instalados em ~/.copilot/hooks/Day.json",
-   "ru": "✓ Хуки Copilot CLI установлены в ~/.copilot/hooks/Day.json",
-   "id": "✓ Hooks Copilot CLI terpasang di ~/.copilot/hooks/Day.json"
+  "✓ Copilot CLI hooks installed in ~/.copilot/hooks/day.json": {
+   "zh-Hans": "✓ Copilot CLI Hooks 已安装至 ~/.copilot/hooks/day.json",
+   "hi": "✓ ~/.copilot/hooks/day.json में Copilot CLI हुक इंस्टॉल हुए",
+   "es": "✓ Hooks de Copilot CLI instalados en ~/.copilot/hooks/day.json",
+   "ar": "✓ خطافات Copilot CLI مثبَّتة في ~/.copilot/hooks/day.json",
+   "fr": "✓ Hooks Copilot CLI installés dans ~/.copilot/hooks/day.json",
+   "bn": "✓ ~/.copilot/hooks/day.json-এ Copilot CLI হুক ইনস্টল হয়েছে",
+   "pt-BR": "✓ Hooks do Copilot CLI instalados em ~/.copilot/hooks/day.json",
+   "ru": "✓ Хуки Copilot CLI установлены в ~/.copilot/hooks/day.json",
+   "id": "✓ Hooks Copilot CLI terpasang di ~/.copilot/hooks/day.json"
   },
   "✓ Copilot CLI hooks removed.": {
    "zh-Hans": "✓ Copilot CLI Hooks 已移除。",
@@ -3520,16 +3520,16 @@
    "ru": "✓ Плагин Hermes установлен",
    "id": "✓ Plugin Hermes terpasang"
   },
-  "✓ Hermes plugin installed in ~/.hermes/plugins/Day/": {
-   "zh-Hans": "✓ Hermes 插件已安装至 ~/.hermes/plugins/Day/",
-   "hi": "✓ Hermes प्लगइन ~/.hermes/plugins/Day/ में इंस्टॉल हुआ",
-   "es": "✓ Plugin de Hermes instalado en ~/.hermes/plugins/Day/",
-   "ar": "✓ ملحق Hermes مثبَّت في ~/.hermes/plugins/Day/",
-   "fr": "✓ Plugin Hermes installé dans ~/.hermes/plugins/Day/",
-   "bn": "✓ Hermes প্লাগইন ~/.hermes/plugins/Day/-এ ইনস্টল হয়েছে",
-   "pt-BR": "✓ Plugin do Hermes instalado em ~/.hermes/plugins/Day/",
-   "ru": "✓ Плагин Hermes установлен в ~/.hermes/plugins/Day/",
-   "id": "✓ Plugin Hermes terpasang di ~/.hermes/plugins/Day/"
+  "✓ Hermes plugin installed in ~/.hermes/plugins/day/": {
+   "zh-Hans": "✓ Hermes 插件已安装至 ~/.hermes/plugins/day/",
+   "hi": "✓ Hermes प्लगइन ~/.hermes/plugins/day/ में इंस्टॉल हुआ",
+   "es": "✓ Plugin de Hermes instalado en ~/.hermes/plugins/day/",
+   "ar": "✓ ملحق Hermes مثبَّت في ~/.hermes/plugins/day/",
+   "fr": "✓ Plugin Hermes installé dans ~/.hermes/plugins/day/",
+   "bn": "✓ Hermes প্লাগইন ~/.hermes/plugins/day/-এ ইনস্টল হয়েছে",
+   "pt-BR": "✓ Plugin do Hermes instalado em ~/.hermes/plugins/day/",
+   "ru": "✓ Плагин Hermes установлен в ~/.hermes/plugins/day/",
+   "id": "✓ Plugin Hermes terpasang di ~/.hermes/plugins/day/"
   },
   "✓ Hooks installed in ~/.claude/settings.json": {
    "zh-Hans": "✓ Hooks 已安装至 ~/.claude/settings.json",
@@ -3619,16 +3619,16 @@
    "ru": "✓ Ключ OpenAI сохранён.",
    "id": "✓ Kunci OpenAI tersimpan."
   },
-  "✓ OpenCode plugin installed in ~/.config/opencode/plugins/Day.js": {
-   "zh-Hans": "✓ OpenCode 插件已安装至 ~/.config/opencode/plugins/Day.js",
-   "hi": "✓ ~/.config/opencode/plugins/Day.js में OpenCode प्लगइन इंस्टॉल हुआ",
-   "es": "✓ Plugin de OpenCode instalado en ~/.config/opencode/plugins/Day.js",
-   "ar": "✓ ملحق OpenCode مثبَّت في ~/.config/opencode/plugins/Day.js",
-   "fr": "✓ Plugin OpenCode installé dans ~/.config/opencode/plugins/Day.js",
-   "bn": "✓ ~/.config/opencode/plugins/Day.js-এ OpenCode প্লাগইন ইনস্টল হয়েছে",
-   "pt-BR": "✓ Plugin do OpenCode instalado em ~/.config/opencode/plugins/Day.js",
-   "ru": "✓ Плагин OpenCode установлен в ~/.config/opencode/plugins/Day.js",
-   "id": "✓ Plugin OpenCode terpasang di ~/.config/opencode/plugins/Day.js"
+  "✓ OpenCode plugin installed in ~/.config/opencode/plugins/day.js": {
+   "zh-Hans": "✓ OpenCode 插件已安装至 ~/.config/opencode/plugins/day.js",
+   "hi": "✓ ~/.config/opencode/plugins/day.js में OpenCode प्लगइन इंस्टॉल हुआ",
+   "es": "✓ Plugin de OpenCode instalado en ~/.config/opencode/plugins/day.js",
+   "ar": "✓ ملحق OpenCode مثبَّت في ~/.config/opencode/plugins/day.js",
+   "fr": "✓ Plugin OpenCode installé dans ~/.config/opencode/plugins/day.js",
+   "bn": "✓ ~/.config/opencode/plugins/day.js-এ OpenCode প্লাগইন ইনস্টল হয়েছে",
+   "pt-BR": "✓ Plugin do OpenCode instalado em ~/.config/opencode/plugins/day.js",
+   "ru": "✓ Плагин OpenCode установлен в ~/.config/opencode/plugins/day.js",
+   "id": "✓ Plugin OpenCode terpasang di ~/.config/opencode/plugins/day.js"
   },
   "✓ OpenCode plugin removed.": {
    "zh-Hans": "✓ OpenCode 插件已移除。",
@@ -3676,4 +3676,3 @@
   }
  }
 }
-

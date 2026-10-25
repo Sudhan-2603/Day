@@ -13,13 +13,14 @@ import { DEFAULT_SETTINGS, type Settings } from "../core/state";
 import { Sound, SOUND_NAMES } from "../core/sound";
 import {
   OUTFIT_KEYS, OUTFIT_SELECTIONS, parseOutfit, seasonalOutfit, type OutfitSelection,
-} from "../mochi/wardrobe";
-import { drawWardrobeIcon } from "../mochi/outfits";
+} from "../day/wardrobe";
+import { drawWardrobeIcon } from "../day/outfits";
 import {
   MAX_DECLARED, PILL_CATEGORIES, availablePills, chooseMainPill, isComingSoon, mainPillChoices,
   sanitizeDeclared, toggleDeclared, type PillDefinition,
 } from "../core/pills";
-import { h, clear } from "../views/dom";
+import { h, clear, svg } from "../views/dom";
+import { ICONS } from "../views/icons";
 import { agentsSection } from "./agents";
 import { colorDot } from "./colors";
 import { renderDiff, statusDot } from "./parts";
@@ -41,7 +42,7 @@ async function save() {
   await Bridge.saveSettings(settings);
 }
 
-/** A colour was picked for a pill's Mochi (see ./colors.ts): the island follows. */
+/** A colour was picked for a pill's Day (see ./colors.ts): the island follows. */
 function pickColor(next: Record<string, string>) {
   settings.pillColors = next;
   void save();
@@ -811,7 +812,7 @@ function integrationsSection(present: Record<string, boolean>): HTMLElement {
 
   function updateNote() {
     const used = settings.activeIntegrations.length;
-    note.textContent = t("Pick up to {max} pills to show next to Mochi — {used}/{max} in use. Keys are stored in the {store}, never on disk.", { max: MAX_ACTIVE, used, store: KEY_STORE });
+    note.textContent = t("Pick up to {max} pills to show next to Day — {used}/{max} in use. Keys are stored in the {store}, never on disk.", { max: MAX_ACTIVE, used, store: KEY_STORE });
   }
   declaredViews.push(updateNote);
 
@@ -962,6 +963,48 @@ function generalSection(): HTMLElement {
     void save();
   });
 
+  const moveBtnSwitch = toggle(settings.showMoveBtn !== false, (v) => {
+    settings.showMoveBtn = v;
+    void save();
+  });
+
+  const closeBtnSwitch = toggle(settings.showCloseBtn !== false, (v) => {
+    settings.showCloseBtn = v;
+    void save();
+  });
+
+  const minBtnSwitch = toggle(settings.showMinimizeBtn !== false, (v) => {
+    settings.showMinimizeBtn = v;
+    void save();
+  });
+
+  const prevBtnSwitch = toggle(settings.showPreviousBtn !== false, (v) => {
+    settings.showPreviousBtn = v;
+    void save();
+  });
+
+  const undoBtnSwitch = toggle(settings.showUndoBtn !== false, (v) => {
+    settings.showUndoBtn = v;
+    void save();
+  });
+
+  const sysPermSwitch = toggle(settings.systemPermissions !== false, (v) => {
+    settings.systemPermissions = v;
+    void save();
+  });
+  const sysPermFilesSwitch = toggle(settings.systemPermFiles !== false, (v) => {
+    settings.systemPermFiles = v;
+    void save();
+  });
+  const sysPermEditorSwitch = toggle(settings.systemPermEditor !== false, (v) => {
+    settings.systemPermEditor = v;
+    void save();
+  });
+  const sysPermQuestionsSwitch = toggle(settings.systemPermQuestions !== false, (v) => {
+    settings.systemPermQuestions = v;
+    void save();
+  });
+
   const autostartSwitch = toggle(settings.autostart, (v) => {
     settings.autostart = v;
     if (!v && settings.alwaysIsland) {
@@ -990,12 +1033,12 @@ function generalSection(): HTMLElement {
       volume,
     ),
     h("div", { class: "row" }, soundsFolder, reloadSounds, customCount),
-    h("div", { class: "hint", text: t("Drop a file named like one of Mochi's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.") }),
+    h("div", { class: "hint", text: t("Drop a file named like one of Day's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.") }),
     h("div", { class: "row" },
-      h("label", { text: t("Always Island") }),
+      h("label", { text: "Always Island" }),
       alwaysIslandSwitch,
     ),
-    h("div", { class: "hint", text: t("Island stays enabled when System is ON and remains visible continuously; it stops only when System is OFF.") }),
+    h("div", { class: "hint", text: "Island stays enabled when System is ON and remains visible continuously; it stops only when System is OFF." }),
     h("div", { class: "row" },
       h("label", { text: t("Open on hover") }),
       toggle(settings.openOnHover, (v) => { settings.openOnHover = v; void save(); }),
@@ -1006,11 +1049,62 @@ function generalSection(): HTMLElement {
       toggle(settings.backgroundBlur !== false, (v) => { settings.backgroundBlur = v; void save(); }),
     ),
     h("div", { class: "row" },
-      h("label", { text: "Background opacity" }),
+      h("label", { text: "Opacity" }),
       opacitySlider,
       opacityLabel,
     ),
-    h("div", { class: "hint", text: "Reduce background opacity for a translucent glassmorphic look." }),
+    h("div", { class: "hint", text: "Adjust overall island transparency." }),
+    h("div", { class: "row" },
+      h("label", { text: "System Permissions" }),
+      sysPermSwitch,
+    ),
+    h("div", { class: "hint", text: "Allow all system operations: open and delete files, open code editor, write and edit code, and interactive question prompts." }),
+    h("div", { class: "row" },
+      h("label", { text: "Open & delete files" }),
+      sysPermFilesSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Open code editor & write code" }),
+      sysPermEditorSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Interactive confirmation questions" }),
+      sysPermQuestionsSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Move Island" }),
+      h("button", {
+        class: "btn secondary",
+        style: "padding:3px 12px;font-size:12px;cursor:pointer;",
+        onclick: () => {
+          settings.islandX = null;
+          settings.islandY = null;
+          void save();
+        },
+      }, "Reset to Default Center"),
+    ),
+    h("div", { class: "hint", text: "Drag directly from the Island or use the Move button to reposition Island anywhere on your screen." }),
+    h("div", { class: "row" },
+      h("label", { text: "Show move button" }),
+      moveBtnSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Show close button" }),
+      closeBtnSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Show minimize button" }),
+      minBtnSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Show previous button" }),
+      prevBtnSwitch,
+    ),
+    h("div", { class: "row" },
+      h("label", { text: "Show undo button" }),
+      undoBtnSwitch,
+    ),
+    h("div", { class: "hint", text: "Show quick action buttons on the right side of the Island header." }),
     h("div", { class: "row" },
       h("label", { text: t("Auto-close") }),
       autoClose,
@@ -1023,6 +1117,20 @@ function generalSection(): HTMLElement {
     h("div", { class: "row" },
       h("label", { text: t("Launch at startup") }),
       autostartSwitch,
+    ),
+    h("div", { class: "row", style: "justify-content:space-between;align-items:center;" },
+      h("div", {},
+        h("label", { text: "Updates & Versions" }),
+        h("div", { class: "hint", text: "Check for new updates, view release notes, or download previous versions." }),
+      ),
+      h("button", {
+        class: "btn secondary",
+        style: "display:inline-flex;align-items:center;gap:6px;padding:5px 14px;font-size:12px;cursor:pointer;",
+        onclick: () => {
+          Sound.play("pop");
+          openUpdateModal(version || "0.4.0");
+        },
+      }, svg(ICONS.arrowClockwise, 12), h("span", { text: "Check for Updates" })),
     ),
     ...recapRows(),
     avatarColorRow(),
@@ -1040,7 +1148,7 @@ function avatarColorRow(): HTMLElement {
     "#2DD4BF", "#38BDF8", "#818CF8", "#C084FC", "#E879F9", "#1E2026",
   ];
   const container = h("div", { class: "row", style: "gap:6px;align-items:center;" },
-    h("label", { text: t("Avatar Color") }),
+    h("label", { text: "Avatar Color" }),
   );
   const swatches: HTMLElement[] = [];
   const update = () => {
@@ -1073,13 +1181,13 @@ function avatarColorRow(): HTMLElement {
 
 /**
  * Settings → General → Assets & Outfits (Caps, Hats, and more).
- * Horizontally scrollable carousel where clicking any asset dresses Mochi.
+ * Horizontally scrollable carousel where clicking any asset dresses Day.
  */
 function wardrobeAssetsRow(): HTMLElement {
   const container = h("div", { class: "wardrobe-assets-container" });
   const header = h("div", { class: "row", style: "justify-content:space-between;align-items:center;" },
-    h("label", { text: t("Assets & Outfits") }),
-    h("span", { class: "hint", text: t("Caps, hats & accessories") }),
+    h("label", { text: "Assets & Outfits" }),
+    h("span", { class: "hint", text: "Caps, hats & accessories" }),
   );
   container.append(header);
 
@@ -1090,7 +1198,7 @@ function wardrobeAssetsRow(): HTMLElement {
   const cards: { btn: HTMLElement; sel: OutfitSelection }[] = [];
 
   const updateSelected = () => {
-    const current = parseOutfit(settings.mochiOutfit);
+    const current = parseOutfit(settings.dayOutfit);
     cards.forEach(({ btn, sel }) => {
       btn.classList.toggle("active", sel === current);
     });
@@ -1119,7 +1227,7 @@ function wardrobeAssetsRow(): HTMLElement {
       class: "wardrobe-asset-card",
       title: labelName,
       onclick: () => {
-        settings.mochiOutfit = sel;
+        settings.dayOutfit = sel;
         void save();
         updateSelected();
         Sound.play("pop");
@@ -1481,6 +1589,193 @@ async function main() {
   });
 }
 
+// ── Updates & Version History Modal ──────────────────────────────────────────
+
+function openUpdateModal(currVer: string) {
+  const existing = document.getElementById("update-modal-backdrop");
+  if (existing) existing.remove();
+
+  const activeVer = currVer || "0.4.0";
+  const GITHUB_RELEASES_URL = "https://github.com/louisraille/Day/releases";
+
+  const backdrop = h("div", {
+    id: "update-modal-backdrop",
+    class: "modal-backdrop",
+    onclick: (e: Event) => {
+      if (e.target === backdrop) close();
+    },
+  });
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") close();
+  };
+  window.addEventListener("keydown", onKeyDown);
+
+  const close = () => {
+    window.removeEventListener("keydown", onKeyDown);
+    backdrop.classList.remove("open");
+    setTimeout(() => backdrop.remove(), 250);
+  };
+
+  const closeBtn = h("button", {
+    class: "modal-close-btn",
+    title: "Close (Esc)",
+    onclick: close,
+  }, svg(ICONS.xmark, 12));
+
+  let checkTimer: number | null = null;
+  const statusIcon = svg(ICONS.seal, 20);
+  const statusTitle = h("div", { class: "update-status-title", text: "You're on the latest version" });
+  const statusSub = h("div", {
+    class: "update-status-sub",
+    text: `Day v${activeVer} • Checked just now`,
+  });
+
+  const refreshIcon = svg(ICONS.arrowClockwise, 13, { stroke: 2 });
+  const checkBtn = h("button", {
+    class: "update-btn-action",
+    onclick: () => {
+      if (checkBtn.disabled) return;
+      checkBtn.disabled = true;
+      refreshIcon.classList.add("spinning");
+      statusTitle.textContent = "Checking GitHub releases for updates…";
+      statusSub.textContent = "Fetching latest version tags…";
+      Sound.play("pop");
+
+      if (checkTimer) clearTimeout(checkTimer);
+      checkTimer = window.setTimeout(() => {
+        refreshIcon.classList.remove("spinning");
+        checkBtn.disabled = false;
+        statusTitle.textContent = "Day is up to date!";
+        statusSub.textContent = `Day v${activeVer} is the latest available release • Checked just now`;
+        Sound.play("finish");
+      }, 900);
+    },
+  }, refreshIcon, h("span", { text: "Check Now" }));
+
+  const statusCard = h("div", { class: "update-status-card" },
+    h("div", { class: "update-status-left" },
+      h("div", { class: "update-status-icon-wrap" }, statusIcon),
+      h("div", {}, statusTitle, statusSub),
+    ),
+    checkBtn,
+  );
+
+  const historyList = h("div", { class: "version-history-section" },
+    h("div", { class: "version-history-title", text: "Version History & Release Notes" }),
+
+    // v0.4.0 (Current)
+    h("div", { class: "version-item current" },
+      h("div", { class: "version-item-header" },
+        h("div", { class: "version-item-title-row" },
+          h("span", { class: "version-item-number", text: "v0.4.0" }),
+          h("span", { class: "version-badge latest", text: "Current Release" }),
+        ),
+        h("span", { class: "version-item-date", text: "October 2026" }),
+      ),
+      h("ul", { class: "version-item-notes" },
+        h("li", { text: "Island Header Quick Actions: Move, Minimize, Close, Previous, Undo toggle buttons" }),
+        h("li", { text: "Avatar Aura Color picker with vibrant presets and real-time glow effects" }),
+        h("li", { text: "Wardrobe Outfits Carousel for interactive mini-bot styling" }),
+        h("li", { text: "Translucent Island styling with customizable background blur and opacity slider" }),
+        h("li", { text: "Granular System Permissions: file operations, code editor launch, and interactive prompts" }),
+        h("li", { text: "Multi-agent relay hooks engine with real-time status reporting" }),
+      ),
+      h("div", { class: "version-actions-row" },
+        h("button", {
+          class: "version-action-btn primary",
+          onclick: () => void Bridge.openUrl(`${GITHUB_RELEASES_URL}/tag/v0.4.0`),
+        }, svg(ICONS.arrowUpRight, 11), h("span", { text: "View v0.4.0 Release Notes" })),
+      ),
+    ),
+
+    // v0.3.0 (Previous Version)
+    h("div", { class: "version-item" },
+      h("div", { class: "version-item-header" },
+        h("div", { class: "version-item-title-row" },
+          h("span", { class: "version-item-number", text: "v0.3.0" }),
+          h("span", { class: "version-badge prev", text: "Previous Version" }),
+        ),
+        h("span", { class: "version-item-date", text: "September 2026" }),
+      ),
+      h("ul", { class: "version-item-notes" },
+        h("li", { text: "Dynamic Island companion interface for Windows and Linux" }),
+        h("li", { text: "Spotify & MPRIS media player pill with live album art and playback controls" }),
+        h("li", { text: "Global keyboard shortcuts with portal integration and custom hotkeys" }),
+        h("li", { text: "Claude Code session targeting and status line hook relay" }),
+      ),
+      h("div", { class: "version-actions-row" },
+        h("button", {
+          class: "version-action-btn primary",
+          title: "Download or rollback to previous v0.3.0 release",
+          onclick: () => {
+            Sound.play("pop");
+            void Bridge.openUrl(`${GITHUB_RELEASES_URL}/tag/v0.3.0`);
+          },
+        }, svg(ICONS.arrowClockwise, 11), h("span", { text: "Download / Rollback to v0.3.0" })),
+        h("button", {
+          class: "version-action-btn",
+          onclick: () => void Bridge.openUrl(`${GITHUB_RELEASES_URL}/tag/v0.3.0`),
+        }, svg(ICONS.arrowUpRight, 11), h("span", { text: "Release Notes" })),
+      ),
+    ),
+
+    // v0.2.0 (Archive)
+    h("div", { class: "version-item" },
+      h("div", { class: "version-item-header" },
+        h("div", { class: "version-item-title-row" },
+          h("span", { class: "version-item-number", text: "v0.2.0" }),
+          h("span", { class: "version-badge archive", text: "Archive" }),
+        ),
+        h("span", { class: "version-item-date", text: "August 2026" }),
+      ),
+      h("ul", { class: "version-item-notes" },
+        h("li", { text: "Multi-monitor notch positioning and desktop companion mode" }),
+        h("li", { text: "Windows Credential Manager and Secret Service keychain integration" }),
+      ),
+      h("div", { class: "version-actions-row" },
+        h("button", {
+          class: "version-action-btn",
+          onclick: () => void Bridge.openUrl(`${GITHUB_RELEASES_URL}/tag/v0.2.0`),
+        }, svg(ICONS.arrowUpRight, 11), h("span", { text: "View v0.2.0 on GitHub" })),
+      ),
+    ),
+  );
+
+  const modal = h("div", { class: "update-modal" },
+    h("div", { class: "modal-header" },
+      h("div", { class: "modal-header-left" },
+        h("img", { src: "/logo.png" }),
+        h("div", {},
+          h("div", { class: "modal-header-title", text: "Day Updates & Version History" }),
+          h("div", { class: "modal-header-sub", text: "Manage updates, release notes, and previous versions" }),
+        ),
+      ),
+      closeBtn,
+    ),
+    h("div", { class: "modal-body" },
+      statusCard,
+      historyList,
+    ),
+    h("div", { class: "modal-footer" },
+      h("button", {
+        class: "btn secondary",
+        style: "display:inline-flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;",
+        onclick: () => void Bridge.openUrl(GITHUB_RELEASES_URL),
+      }, svg(ICONS.arrowUpRight, 12), h("span", { text: "All Releases on GitHub" })),
+      h("button", {
+        class: "btn primary",
+        style: "padding:6px 16px;font-size:12px;cursor:pointer;",
+        onclick: close,
+      }, t("Done")),
+    ),
+  );
+
+  backdrop.append(modal);
+  document.body.append(backdrop);
+  requestAnimationFrame(() => backdrop.classList.add("open"));
+}
+
 /** Reads what the sections show and draws them all. */
 async function render() {
   const status = (await Bridge.hooksStatus()) ?? {
@@ -1520,12 +1815,34 @@ async function render() {
   }
   const customKey = (await Bridge.secretPresent(CUSTOM_SERVER_KEY)) ?? false;
 
+  const updateTriggerBtn = h(
+    "button",
+    {
+      class: "update-badge-btn",
+      title: "Check for updates, release notes, and previous versions",
+      onclick: () => {
+        Sound.play("pop");
+        openUpdateModal(version || "0.4.0");
+      },
+    },
+    h("span", { class: "update-badge-dot" }),
+    svg(ICONS.arrowClockwise, 12),
+    h("span", { text: "Updates & Releases" }),
+  );
+
   declaredViews.length = 0;
   localRedraw = null;
   shortcutsListener = null;
   clear(root);
   root.append(
-    h("h1", {}, h("span", { text: "Day " }), h("span", { class: "version", text: version || "0.3.0" })),
+    h(
+      "h1",
+      { style: "display:flex;align-items:center;gap:12px;" },
+      h("img", { src: "/logo.png", style: "width:34px;height:34px;border-radius:10px;object-fit:contain;box-shadow:0 2px 8px rgba(0,0,0,0.3);" }),
+      h("span", { text: "Day " }),
+      h("span", { class: "version", text: `v${version || "0.4.0"}` }),
+      h("div", { class: "version-pill-group" }, updateTriggerBtn),
+    ),
     claudeSection(status),
     agentsSection(agents),
     planSection(status),

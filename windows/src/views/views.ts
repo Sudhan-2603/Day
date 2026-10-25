@@ -7,7 +7,7 @@ import { ICONS } from "./icons";
 import { Ticker } from "./ticker";
 import { State, type AgentTask } from "../core/state";
 import { washRGBA, type IslandViewName, type Wash } from "../core/layout";
-import { createMiniBot, pruneMiniBots } from "../mochi/minibots";
+import { createMiniBot, pruneMiniBots } from "../day/minibots";
 import { buildPrompt } from "./chat";
 import { buildChoose, buildUpload, buildUploading } from "./upload";
 import { renderIntegrationCard, type IntegrationCardHooks } from "./integrations";
@@ -23,7 +23,10 @@ import { buildRecap } from "./recap";
 import { buildWardrobe } from "./wardrobe";
 import { buildSpotifyCard, buildSpotifyPill, type SpotifyPillHost } from "./spotify";
 import { SPOTIFY_ID } from "../core/spotify";
-import type { Outfit, OutfitSelection } from "../mochi/wardrobe";
+import {
+  type Outfit, type OutfitSelection, OUTFIT_SELECTIONS, OUTFIT_KEYS, seasonalOutfit, parseOutfit,
+} from "../day/wardrobe";
+import { drawWardrobeIcon } from "../day/outfits";
 import { language, t, tl, type Msg } from "../i18n/i18n";
 import type { ViewCommand } from "../island/shortcuts";
 
@@ -32,6 +35,8 @@ export interface ViewActions {
   /** "Cancel" on a dropped file: forgets it and goes back home. */
   cancelDrop(): void;
   collapse(): void;
+  closeToLine?(): void;
+  startMoveMode?(): void;
   /** Folds a waiting card to the compact island without answering it. */
   foldApproval(): void;
   setFocus(id: string): void;
@@ -48,10 +53,11 @@ export interface ViewActions {
   setVolume(v: number): void;
   setAutoClose(seconds: number): void;
   openSettingsWindow(): void;
+  toggleFullSettings?(open?: boolean): void;
   blip(): void;
   /** Wardrobe click: keeps the outfit ("auto" and "none" included). */
   chooseOutfit(selection: OutfitSelection): void;
-  /** Wardrobe hover: shows an outfit on Mochi without keeping it; null ends it. */
+  /** Wardrobe hover: shows an outfit on Day without keeping it; null ends it. */
   previewOutfit(outfit: Outfit | null): void;
 }
 
@@ -111,12 +117,122 @@ export function buildHeader(actions: ViewActions): ViewHost {
   const tabChat = h("button", { class: "tab", title: tl("Ask"), onclick: () => go("prompt") }, svg(ICONS.bubble, 13));
   const tabDrop = h("button", { class: "tab", title: tl("Drop"), onclick: () => go("upload") }, svg(ICONS.plus, 13));
 
-  const gearBtn = h("button", {
-    title: tl("Open Settings Panel"),
-    onclick: () => {
-      go("settings");
-      actions.openSettingsWindow();
+  const undoBtn = h(
+    "button",
+    {
+      class: "hdr-btn undo-btn",
+      title: "Undo",
+      onclick: () => {
+        actions.blip();
+        if (State.pendingApproval) {
+          actions.decide("deny");
+        } else if (State.view === "prompt" && State.chatHistory.length > 0) {
+          State.chatHistory.pop();
+          State.notify();
+        }
+      },
     },
+    svg(ICONS.undo, 13),
+  );
+
+  const prevBtn = h(
+    "button",
+    {
+      class: "hdr-btn prev-btn",
+      title: tl("Previous"),
+      onclick: () => {
+        actions.blip();
+        if (State.view !== "overview" && State.view !== "empty") {
+          actions.setView("overview");
+        } else {
+          const s = State.settings;
+          const declared = [s.mainPill, ...(s.activeIntegrations || [])];
+          if (declared.length > 1) {
+            const curIdx = State.focusId ? declared.indexOf(State.focusId) : -1;
+            const prevIdx = (curIdx - 1 + declared.length) % declared.length;
+            actions.setFocus(declared[prevIdx]);
+          }
+        }
+      },
+    },
+    svg(ICONS.chevronLeft, 13),
+  );
+
+  let moveTimer: number | null = null;
+  const cancelMove = () => {
+    if (moveTimer != null) {
+      clearTimeout(moveTimer);
+      moveTimer = null;
+    }
+  };
+
+  const moveBtn = h(
+    "button",
+    {
+      class: "hdr-btn move-btn",
+      title: "Long press to minimize & move",
+      onmousedown: (e: Event) => {
+        e.preventDefault();
+        cancelMove();
+        moveTimer = window.setTimeout(() => {
+          moveTimer = null;
+          actions.blip();
+          if (actions.startMoveMode) {
+            actions.startMoveMode();
+          } else {
+            actions.collapse();
+            document.getElementById("island")?.classList.add("is-moving-shake");
+            void Bridge.startDragging();
+          }
+        }, 200);
+      },
+      onmousemove: () => {
+        if (moveTimer != null) {
+          cancelMove();
+          actions.blip();
+          if (actions.startMoveMode) actions.startMoveMode();
+        }
+      },
+      onmouseup: cancelMove,
+      onmouseleave: cancelMove,
+    },
+    svg(ICONS.move, 12),
+  );
+
+  const minBtn = h(
+    "button",
+    {
+      class: "hdr-btn min-btn",
+      title: "Minimize",
+      onclick: () => {
+        actions.blip();
+        actions.collapse();
+      },
+    },
+    svg(ICONS.minimize, 13),
+  );
+
+  const closeBtn = h(
+    "button",
+    {
+      class: "hdr-btn close-btn",
+      title: tl("Close"),
+      onclick: (e: Event) => {
+        e.stopPropagation();
+        actions.blip();
+        if (actions.closeToLine) {
+          actions.closeToLine();
+        } else {
+          actions.collapse();
+        }
+      },
+    },
+    svg(ICONS.xmark, 11),
+  );
+
+  const gearBtn = h("button", {
+    title: tl("Settings"),
+    onclick: () => go("settings"),
   }, svg(ICONS.gear, 14));
   const soundBtn = h("button", { title: tl("Mute"), onclick: () => actions.toggleSound() }, svg(ICONS.speakerOn, 14));
   // Plan usage pills (off by default): before the gear, Claude first, as on the Mac.
@@ -134,7 +250,7 @@ export function buildHeader(actions: ViewActions): ViewHost {
     "div",
     { id: "header" },
     h("div", { class: "tabs" }, tabHome, tabChat, tabDrop),
-    h("div", { class: "header-actions" }, planPills, gearBtn, soundBtn),
+    h("div", { class: "header-actions" }, planPills, moveBtn, undoBtn, prevBtn, minBtn, closeBtn, soundBtn, gearBtn),
   );
   const headerActions = el.lastElementChild as HTMLElement;
 
@@ -150,6 +266,12 @@ export function buildHeader(actions: ViewActions): ViewHost {
       gearBtn.append(svg(v === "settings" ? ICONS.gearFill : ICONS.gear, 14));
       clear(soundBtn);
       soundBtn.append(svg(State.settings.soundEnabled ? ICONS.speakerOn : ICONS.speakerOff, 14));
+      const s = State.settings;
+      moveBtn.style.display = s.showMoveBtn !== false ? "" : "none";
+      undoBtn.style.display = s.showUndoBtn !== false ? "" : "none";
+      prevBtn.style.display = s.showPreviousBtn !== false ? "" : "none";
+      minBtn.style.display = s.showMinimizeBtn !== false ? "" : "none";
+      closeBtn.style.display = s.showCloseBtn !== false ? "" : "none";
       syncPlanPills();
       el.style.opacity = v === "confused" ? "0" : "1";
     },
@@ -384,7 +506,7 @@ function buildOverview(actions: ViewActions): ViewHost {
         }
       }
 
-      jump.style.display = detailOpen || mode === "plan" || mode === "diff" ? "none" : "";
+      jump.style.display = detailOpen || mode === "plan" || mode === "diff" || task?.id === "integration_claude" ? "none" : "";
 
       // Ctrl+↓ Ctrl+↑ walk the open GitHub list (cardItemCount / cardSelection).
       const rows = mode === "card" ? listRows(leftBody) : [];
@@ -733,17 +855,12 @@ const AVATAR_COLORS = [
 ];
 
 function buildSettings(actions: ViewActions): ViewHost {
+  // ── Mini Settings Elements ──────────────────────────────────────────────────
   const soundSwitch = h("button", { class: "switch", onclick: () => actions.toggleSound() });
   const volume = h("input", {
     type: "range", min: "0", max: "0.2", step: "0.005",
     oninput: (e: Event) => actions.setVolume(Number((e.target as HTMLInputElement).value)),
   }) as HTMLInputElement;
-  const autoLabel = h("span", {});
-  const segButtons = [10, 15, 30].map((s) =>
-    h("button", { onclick: () => actions.setAutoClose(s) }, `${s}s`),
-  );
-  const claudeBadge = h("span", { class: "status-badge" });
-  const apiBadge = h("span", { class: "status-badge" });
 
   const avatarSwatches = AVATAR_COLORS.map((hex) => {
     const btn = h("button", {
@@ -759,50 +876,559 @@ function buildSettings(actions: ViewActions): ViewHost {
     return btn;
   });
 
-  const rows = h(
+  const miniRows = h(
     "div",
     { class: "settings-rows" },
     h("div", { class: "settings-row" }, soundSwitch, h("span", { text: tl("Sound") }), volume),
     h(
       "div",
-      { class: "settings-row" },
-      svg(ICONS.timer, 12),
-      autoLabel,
-      h("div", { class: "seg" }, ...segButtons),
-    ),
-    h(
-      "div",
       { class: "settings-row", style: "gap:4px;align-items:center;" },
-      h("span", { text: tl("Avatar"), style: "font-size:11px;color:#8e939c;margin-right:2px;" }),
+      h("span", { text: "Avatar", style: "font-size:11px;color:#8e939c;margin-right:2px;" }),
       ...avatarSwatches,
     ),
     h(
       "div",
-      { class: "settings-row", style: "gap:14px" },
-      claudeBadge,
-      apiBadge,
-      h("div", { class: "grow" }),
-      h("button", {
-        class: "link-btn",
-        style: "color:#8e939c;font-size:11.5px;font-weight:600;",
-        text: tl("Open Main Settings Panel →"),
-        onclick: () => actions.openSettingsWindow(),
-      }),
+      { class: "settings-row", style: "margin-top:2px;justify-content:flex-end;" },
+      h(
+        "button",
+        {
+          class: "btn secondary settings-expand-btn",
+          style: "padding:5px 13px;border-radius:14px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);",
+          onclick: () => actions.toggleFullSettings?.(true),
+        },
+        svg(ICONS.gearFill, 13),
+        h("span", { text: tl("Settings") }),
+      ),
     ),
   );
 
-  const el = h("div", { class: "view" },
-    card(null, h("div", { class: "stack", style: "padding:14px 16px 14px 84px" }, rows)));
+  const miniCard = card(null, h("div", { class: "stack", style: "padding:14px 16px 14px 84px" }, miniRows));
+
+  // ── In-Island Full Settings Elements ───────────────────────────────────────
+  let activeTab: "general" | "appearance" | "shortcuts" | "ai" = "general";
+
+  const backBtn = h(
+    "button",
+    {
+      class: "settings-back-btn",
+      style: "display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:3px 9px;color:#cbd5e1;font-size:11.5px;font-weight:600;cursor:pointer;transition:all 0.15s ease;",
+      onclick: () => actions.toggleFullSettings?.(false),
+    },
+    svg(ICONS.chevronLeft, 11),
+    h("span", { text: tl("Back") }),
+  );
+
+  const titleEl = h("span", { text: tl("Settings"), style: "font-size:13px;font-weight:700;color:#fff;" });
+
+  const tabs = [
+    { id: "general", label: tl("General") },
+    { id: "appearance", label: "Appearance" },
+    { id: "shortcuts", label: tl("Shortcuts") },
+    { id: "ai", label: "AI & Keys" },
+  ] as const;
+
+  const glassSlider = h("div", { class: "glass-tab-slider" });
+  const tabContainer = h("div", {
+    class: "settings-tab-bar",
+  }, glassSlider);
+
+  const tabBtns: HTMLElement[] = [];
+
+  tabs.forEach((tab, index) => {
+    const btn = h(
+      "button",
+      {
+        class: "settings-tab-btn" + (index === 0 ? " active" : ""),
+        onclick: () => selectTab(index, true),
+      },
+      tab.label,
+    );
+    tabBtns.push(btn);
+    tabContainer.append(btn);
+  });
+
+  const fullHeader = h(
+    "div",
+    {
+      style: "display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);",
+    },
+    h("div", { style: "display:flex;align-items:center;gap:8px;" }, backBtn, titleEl),
+    tabContainer,
+  );
+
+  const carousel = h("div", { class: "settings-sections-carousel" });
+  const slideGeneral = h("div", { class: "settings-section-slide", "data-tab": "general" });
+  const slideAppearance = h("div", { class: "settings-section-slide", "data-tab": "appearance" });
+  const slideShortcuts = h("div", { class: "settings-section-slide", "data-tab": "shortcuts" });
+  const slideAi = h("div", { class: "settings-section-slide", "data-tab": "ai" });
+  const slides = [slideGeneral, slideAppearance, slideShortcuts, slideAi];
+  carousel.append(slideGeneral, slideAppearance, slideShortcuts, slideAi);
+
+  function updateGlassSlider(index: number) {
+    const activeBtn = tabBtns[index];
+    if (activeBtn) {
+      glassSlider.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+      glassSlider.style.width = `${activeBtn.offsetWidth}px`;
+    }
+  }
+
+  function selectTab(index: number, smoothScroll = true) {
+    activeTab = tabs[index].id;
+    tabBtns.forEach((btn, i) => {
+      btn.classList.toggle("active", i === index);
+    });
+    updateGlassSlider(index);
+
+    if (smoothScroll && slides[index]) {
+      carousel.scrollTo({
+        left: slides[index].offsetLeft,
+        behavior: "smooth",
+      });
+    }
+  }
+
+  let scrollTimeout: any = null;
+  carousel.addEventListener("scroll", () => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const scrollLeft = carousel.scrollLeft;
+      const width = carousel.clientWidth || 1;
+      const index = Math.min(tabs.length - 1, Math.max(0, Math.round(scrollLeft / width)));
+      if (tabs[index] && tabs[index].id !== activeTab) {
+        activeTab = tabs[index].id;
+        tabBtns.forEach((btn, i) => btn.classList.toggle("active", i === index));
+        updateGlassSlider(index);
+      }
+    }, 40);
+  });
+
+  const fullCardContent = h(
+    "div",
+    {
+      class: "stack",
+      style: "display:flex;flex-direction:column;height:100%;padding:12px 18px;box-sizing:border-box;",
+    },
+    fullHeader,
+    carousel,
+  );
+
+  const fullCard = card(null, fullCardContent);
+
+  function renderSections() {
+    clear(slideGeneral);
+    clear(slideAppearance);
+    clear(slideShortcuts);
+    clear(slideAi);
+
+    const s = State.settings;
+
+    // ── General Slide ────────────────────────────────────────────────────────
+    const alwaysSwitch = h("button", {
+      class: s.alwaysIsland ? "switch on" : "switch",
+      onclick: () => {
+        s.alwaysIsland = !s.alwaysIsland;
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const autostartSwitch = h("button", {
+      class: s.autostart ? "switch on" : "switch",
+      onclick: () => {
+        s.autostart = !s.autostart;
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const langSelect = h(
+      "select",
+      {
+        style: "background:#1e2026;color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:3px 8px;font-size:11.5px;",
+        onchange: (e: Event) => {
+          s.language = (e.target as HTMLSelectElement).value;
+          void Bridge.saveSettings(s);
+          State.notify();
+        },
+      },
+      h("option", { value: "", text: "System Default", selected: !s.language }),
+      h("option", { value: "en", text: "English", selected: s.language === "en" }),
+      h("option", { value: "es", text: "Español", selected: s.language === "es" }),
+      h("option", { value: "fr", text: "Français", selected: s.language === "fr" }),
+      h("option", { value: "de", text: "Deutsch", selected: s.language === "de" }),
+      h("option", { value: "zh-Hans", text: "简体中文", selected: s.language === "zh-Hans" }),
+      h("option", { value: "ja", text: "日本語", selected: s.language === "ja" }),
+    );
+
+    const standaloneBtn = h(
+      "button",
+      {
+        class: "btn secondary",
+        style: "padding:4px 10px;font-size:11px;border-radius:10px;gap:5px;",
+        onclick: () => actions.openSettingsWindow(),
+      },
+      svg(ICONS.arrowUpRight, 11),
+      h("span", { text: "Open Dedicated Window" }),
+    );
+
+    // ── System Permissions ──
+    const sysPermMasterSwitch = h("button", {
+      class: s.systemPermissions !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.systemPermissions = !(s.systemPermissions !== false);
+        void Bridge.saveSettings(s);
+        renderSections();
+      },
+    });
+
+    const sysPermFilesSwitch = h("button", {
+      class: s.systemPermFiles !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.systemPermFiles = !(s.systemPermFiles !== false);
+        void Bridge.saveSettings(s);
+        renderSections();
+      },
+    });
+
+    const sysPermEditorSwitch = h("button", {
+      class: s.systemPermEditor !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.systemPermEditor = !(s.systemPermEditor !== false);
+        void Bridge.saveSettings(s);
+        renderSections();
+      },
+    });
+
+    const sysPermQuestionsSwitch = h("button", {
+      class: s.systemPermQuestions !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.systemPermQuestions = !(s.systemPermQuestions !== false);
+        void Bridge.saveSettings(s);
+        renderSections();
+      },
+    });
+
+    const permissionsCard = h(
+      "div",
+      {
+        style: "margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;display:flex;flex-direction:column;gap:5px;",
+      },
+      h("div", { style: "display:flex;align-items:center;justify-content:space-between;" },
+        h("div", {},
+          h("span", { style: "font-weight:600;font-size:11.5px;color:#fff;", text: "System Permissions" }),
+          h("div", { style: "font-size:10px;color:#64748b;margin-top:1px;" }, "Allow open & delete files, open code editor & write code")),
+        sysPermMasterSwitch),
+      s.systemPermissions !== false
+        ? h("div", { style: "display:flex;flex-direction:column;gap:4px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;margin-top:2px;" },
+            h("div", { class: "settings-row", style: "justify-content:space-between;padding:2px 0;" },
+              h("span", { style: "font-size:11px;color:#cbd5e1;", text: "Open & Delete Files" }),
+              sysPermFilesSwitch),
+            h("div", { class: "settings-row", style: "justify-content:space-between;padding:2px 0;" },
+              h("span", { style: "font-size:11px;color:#cbd5e1;", text: "Open Code Editor & Write Code" }),
+              sysPermEditorSwitch),
+            h("div", { class: "settings-row", style: "justify-content:space-between;padding:2px 0;" },
+              h("span", { style: "font-size:11px;color:#cbd5e1;", text: "Interactive Confirmation Questions" }),
+              sysPermQuestionsSwitch),
+          )
+        : null,
+    );
+
+    slideGeneral.append(
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("span", { text: "Interface Language" }), langSelect),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("div", {}, h("span", { text: "Always Visible Island" }), h("div", { style: "font-size:10px;color:#64748b;" }, "Keep island enabled from system start")),
+        alwaysSwitch),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("div", {}, h("span", { text: "Autostart with Windows" }), h("div", { style: "font-size:10px;color:#64748b;" }, "Launch Day on system startup")),
+        autostartSwitch),
+      permissionsCard,
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:6px;" },
+        h("span", { text: "More Preferences", style: "font-size:11.5px;color:#94a3b8;" }), standaloneBtn),
+    );
+
+    // ── Appearance Slide ─────────────────────────────────────────────────────
+    const appearanceSwatches = AVATAR_COLORS.map((hex) => {
+      const isCurrent = (s.avatarColor || "#FFFFFF") === hex;
+      return h("button", {
+        style: `background:${hex};width:18px;height:18px;border-radius:50%;border:2px solid ${isCurrent ? "#fff" : "rgba(255,255,255,0.2)"};box-shadow:${isCurrent ? `0 0 8px ${hex}` : "none"};cursor:pointer;padding:0;transition:all 0.15s ease;`,
+        onclick: () => {
+          s.avatarColor = hex;
+          void Bridge.saveSettings(s);
+          State.notify();
+        },
+      });
+    });
+
+    const season = seasonalOutfit(new Date());
+    const outfitCardsRow = h("div", { class: "outfit-visual-row" });
+    const outfitCards: { btn: HTMLElement; sel: OutfitSelection }[] = [];
+
+    const updateOutfitCards = () => {
+      const cur = parseOutfit(s.dayOutfit);
+      outfitCards.forEach(({ btn, sel }) => {
+        btn.classList.toggle("active", sel === cur);
+      });
+    };
+
+    const ICON_SIZE = 26;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+
+    for (const sel of OUTFIT_SELECTIONS) {
+      const canvas = h("canvas", {
+        width: String(Math.round(ICON_SIZE * dpr)),
+        height: String(Math.round(ICON_SIZE * dpr)),
+      }) as HTMLCanvasElement;
+
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drawWardrobeIcon(ctx, ICON_SIZE, sel, season, "AUTO");
+      }
+
+      const label = tl(OUTFIT_KEYS[sel]);
+      const btn = h(
+        "button",
+        {
+          type: "button",
+          class: "outfit-visual-card",
+          title: label,
+          onclick: () => {
+            actions.chooseOutfit(sel);
+            updateOutfitCards();
+          },
+        },
+        canvas,
+        h("span", { text: label }),
+      );
+
+      outfitCards.push({ btn, sel });
+      outfitCardsRow.append(btn);
+    }
+    updateOutfitCards();
+
+    const tabSoundSwitch = h("button", {
+      class: s.soundEnabled ? "switch on" : "switch",
+      onclick: () => {
+        actions.toggleSound();
+        renderSections();
+      },
+    });
+
+    const tabVolume = h("input", {
+      type: "range", min: "0", max: "0.2", step: "0.005", value: String(s.soundVolume),
+      oninput: (e: Event) => actions.setVolume(Number((e.target as HTMLInputElement).value)),
+    }) as HTMLInputElement;
+
+    const opacityPct = Math.round((s.backgroundOpacity ?? 0.85) * 100);
+    const opacityPctText = h("span", { style: "font-size:11px;color:#94a3b8;min-width:32px;text-align:right;", text: `${opacityPct}%` });
+    const opacityInput = h("input", {
+      type: "range", min: "15", max: "100", step: "1", value: String(opacityPct),
+      oninput: (e: Event) => {
+        const val = Number((e.target as HTMLInputElement).value);
+        opacityPctText.textContent = `${val}%`;
+        s.backgroundOpacity = val / 100;
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    }) as HTMLInputElement;
+
+    const moveSwitch = h("button", {
+      class: s.showMoveBtn !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showMoveBtn = !(s.showMoveBtn !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const closeSwitch = h("button", {
+      class: s.showCloseBtn !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showCloseBtn = !(s.showCloseBtn !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const minSwitch = h("button", {
+      class: s.showMinimizeBtn !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showMinimizeBtn = !(s.showMinimizeBtn !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const prevSwitch = h("button", {
+      class: s.showPreviousBtn !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showPreviousBtn = !(s.showPreviousBtn !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const undoSwitch = h("button", {
+      class: s.showUndoBtn !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showUndoBtn = !(s.showUndoBtn !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    slideAppearance.append(
+      h("div", { class: "settings-row", style: "flex-direction:column;align-items:flex-start;gap:6px;padding:4px 0;" },
+        h("span", { text: "Avatar Aura Color" }),
+        h("div", { style: "display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;" }, ...appearanceSwatches)),
+      h("div", { class: "settings-row", style: "flex-direction:column;align-items:flex-start;gap:6px;padding:6px 0;margin-top:4px;" },
+        h("div", { style: "display:flex;justify-content:space-between;width:100%;align-items:center;" },
+          h("span", { text: "Day's Outfit" }),
+          h("span", { style: "font-size:10px;color:#94a3b8;", text: "Visual Style" })),
+        outfitCardsRow),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
+        h("div", {},
+          h("span", { text: "Move Island" }),
+          h("div", { style: "font-size:10px;color:#64748b;" }, "Hold & drag button to move Island on screen")),
+        (() => {
+          let slideMoveTimer: number | null = null;
+          const cancelSlideMove = () => {
+            if (slideMoveTimer != null) {
+              clearTimeout(slideMoveTimer);
+              slideMoveTimer = null;
+            }
+          };
+          return h("div", { style: "display:flex;align-items:center;gap:6px;" },
+            h("button", {
+              class: "btn secondary",
+              style: "display:inline-flex;align-items:center;gap:6px;padding:4px 10px;font-size:11px;cursor:grab;",
+              onmousedown: (e: Event) => {
+                e.preventDefault();
+                cancelSlideMove();
+                slideMoveTimer = window.setTimeout(() => {
+                  slideMoveTimer = null;
+                  actions.blip();
+                  if (actions.startMoveMode) actions.startMoveMode();
+                }, 200);
+              },
+              onmousemove: () => {
+                if (slideMoveTimer != null) {
+                  cancelSlideMove();
+                  actions.blip();
+                  if (actions.startMoveMode) actions.startMoveMode();
+                }
+              },
+              onmouseup: cancelSlideMove,
+              onmouseleave: cancelSlideMove,
+            }, svg(ICONS.move, 12), h("span", { text: "Drag to Move" })),
+            h("button", {
+              class: "btn secondary",
+              style: "padding:4px 8px;font-size:11px;color:#94a3b8;",
+              onclick: () => {
+                s.islandX = null;
+                s.islandY = null;
+                void Bridge.saveSettings(s);
+                State.notify();
+              },
+            }, "Reset"),
+          );
+        })(),
+      ),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
+        h("div", {},
+          h("span", { text: "Opacity" }),
+          h("div", { style: "font-size:10px;color:#64748b;" }, "Overall island transparency")),
+        h("div", { style: "display:flex;align-items:center;gap:8px;" }, opacityInput, opacityPctText)),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
+        h("span", { text: "Sound Effects & Volume" }),
+        h("div", { style: "display:flex;align-items:center;gap:8px;" }, tabSoundSwitch, tabVolume)),
+      h("div", { style: "border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;padding-top:6px;" },
+        h("div", { style: "font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:4px;" }, "Island Right-Side Action Buttons"),
+        h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+          h("span", { text: "Move Button" }), moveSwitch),
+        h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+          h("span", { text: "Close Button" }), closeSwitch),
+        h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+          h("span", { text: "Minimize Button" }), minSwitch),
+        h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+          h("span", { text: "Previous Button" }), prevSwitch),
+        h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+          h("span", { text: "Undo Button" }), undoSwitch)),
+    );
+
+    // ── Shortcuts Slide ──────────────────────────────────────────────────────
+    const kbd = (key: string) => h("span", {
+      style: "background:#22252c;border:1px solid rgba(255,255,255,0.18);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:600;color:#e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,0.4);",
+    }, key);
+
+    slideShortcuts.append(
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("span", { text: "Toggle / Open Island" }), kbd("Alt + Space")),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("span", { text: "Open Chat Prompt" }), kbd("Ctrl + Shift + C")),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("span", { text: "Day's Wardrobe" }), kbd("Ctrl + Shift + W")),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("span", { text: "Screenshot / Drop" }), kbd("Ctrl + Shift + S")),
+      h("div", {
+        style: "margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(255,255,255,0.08);font-size:11px;color:#94a3b8;line-height:1.4;",
+      }, "💡 Long press or drag anywhere on the island to move it to your own custom screen position."),
+    );
+
+    // ── AI Slide ─────────────────────────────────────────────────────────────
+    const providerSelect = h(
+      "select",
+      {
+        style: "background:#1e2026;color:#fff;border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:3px 8px;font-size:11.5px;",
+        onchange: (e: Event) => {
+          s.chatProvider = (e.target as HTMLSelectElement).value as any;
+          void Bridge.saveSettings(s);
+          State.notify();
+        },
+      },
+      h("option", { value: "anthropic", text: "Anthropic (Claude)", selected: s.chatProvider === "anthropic" }),
+      h("option", { value: "openai", text: "OpenAI (GPT-4o)", selected: s.chatProvider === "openai" }),
+      h("option", { value: "google", text: "Google (Gemini)", selected: s.chatProvider === "google" }),
+      h("option", { value: "ollama", text: "Ollama (Local)", selected: s.chatProvider === "ollama" }),
+      h("option", { value: "lmstudio", text: "LM Studio (Local)", selected: s.chatProvider === "lmstudio" }),
+      h("option", { value: "custom", text: "Custom Server", selected: s.chatProvider === "custom" }),
+    );
+
+    const hookBadge = dot(s.hooksInstalled ? "#22C55E" : "#F4505E", 7);
+    const hookText = h("span", { text: s.hooksInstalled ? "Hooks Connected" : "Not Configured" });
+
+    slideAi.append(
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
+        h("span", { text: "Chat Provider" }), providerSelect),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
+        h("span", { text: "Claude Code Integration" }),
+        h("div", { style: "display:flex;align-items:center;gap:6px;font-size:11.5px;" }, hookBadge, hookText)),
+      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
+        h("span", { text: "Manage API Keys" }),
+        h("button", {
+          class: "btn secondary",
+          style: "padding:3px 10px;font-size:11px;border-radius:10px;",
+          onclick: () => actions.openSettingsWindow(),
+        }, "Configure Keys ↗")),
+    );
+  }
+
+  renderSections();
+
+  const el = h("div", { class: "view" }, miniCard, fullCard);
 
   return {
     el,
     sync() {
+      const isFull = Boolean(State.fullSettingsOpen);
+      miniCard.style.display = isFull ? "none" : "block";
+      fullCard.style.display = isFull ? "block" : "none";
+
       const s = State.settings;
       soundSwitch.classList.toggle("on", s.soundEnabled);
       volume.value = String(s.soundVolume);
       volume.style.opacity = s.soundEnabled ? "1" : "0.4";
-      autoLabel.textContent = t("Auto-close · {seconds}s", { seconds: Math.round(s.autoCloseInterval) });
-      segButtons.forEach((b, i) => b.classList.toggle("on", s.autoCloseInterval === [10, 15, 30][i]));
       avatarSwatches.forEach((b, i) => {
         const hex = AVATAR_COLORS[i];
         const current = s.avatarColor || "#FFFFFF";
@@ -811,13 +1437,14 @@ function buildSettings(actions: ViewActions): ViewHost {
         (b as HTMLElement).style.borderColor = isCurrent ? "#FFFFFF" : "rgba(255,255,255,0.25)";
         (b as HTMLElement).style.boxShadow = isCurrent ? `0 0 6px ${hex}` : "none";
       });
-      clear(claudeBadge);
-      claudeBadge.append(
-        dot(s.hooksInstalled ? "#22C55E" : "#F4505E", 6),
-        h("span", { text: "Claude Code" }),
-      );
-      clear(apiBadge);
-      apiBadge.append(dot("#F4505E", 6), h("span", { text: "API" }));
+
+      if (isFull) {
+        renderSections();
+        requestAnimationFrame(() => {
+          const idx = tabs.findIndex((t) => t.id === activeTab);
+          updateGlassSlider(idx >= 0 ? idx : 0);
+        });
+      }
     },
   };
 }

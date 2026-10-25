@@ -1,7 +1,7 @@
 // App state — mirror of AppState.swift (the parts the island needs).
 
 import type { BotEmoteName, BotStateName, IslandMode, IslandViewName } from "./layout";
-import type { EyeShape } from "../mochi/engine";
+import type { EyeShape } from "../day/engine";
 import {
   DEFAULT_MAIN_PILL, HOST_OS, availablePills, orderPills, pillDefinition, sanitizeDeclared,
   toggleDeclared, type HostOs, type PillDefinition,
@@ -10,7 +10,7 @@ import type { CodexPlanUsage, PlanUsage } from "./plan";
 import type { ProviderId } from "./providers";
 import type { FileDiff } from "./diff";
 import type { Bindings } from "./shortcuts";
-import { DEFAULT_OUTFIT, type Outfit } from "../mochi/wardrobe";
+import { DEFAULT_OUTFIT, type Outfit } from "../day/wardrobe";
 import { pillColor } from "./pill-colors";
 import { Spotify, musicPlaying } from "./spotify";
 
@@ -105,6 +105,24 @@ export interface Settings {
   backgroundBlur?: boolean;
   /** Background opacity from 0.0 to 1.0 (default 0.85). */
   backgroundOpacity?: number;
+  /** Show move button on the right side of the Island header. */
+  showMoveBtn?: boolean;
+  /** Show close button on the right side of the Island header. */
+  showCloseBtn?: boolean;
+  /** Show minimize button on the right side of the Island header. */
+  showMinimizeBtn?: boolean;
+  /** Show previous button on the right side of the Island header. */
+  showPreviousBtn?: boolean;
+  /** Show undo button on the right side of the Island header. */
+  showUndoBtn?: boolean;
+  /** Master toggle for system permissions (open/delete files, open editor, write code, questions). */
+  systemPermissions?: boolean;
+  /** Allow file operations (open and delete files). */
+  systemPermFiles?: boolean;
+  /** Allow opening code editor and writing code. */
+  systemPermEditor?: boolean;
+  /** Allow interactive questions / prompts. */
+  systemPermQuestions?: boolean;
   /** Hovering the island opens it all the way (off: hovering only peeks). */
   openOnHover: boolean;
   /** If true, the island stays enabled from System ON and only stops on System OFF (always visible). */
@@ -137,13 +155,13 @@ export interface Settings {
   /** Global shortcuts the user changed, by action id (see core/shortcuts.ts). */
   shortcuts: Bindings;
   /**
-   * Mochi's outfit: "auto" (dresses for the season), "none" or an outfit id.
-   * Same raw values as the Mac's "mochiOutfit"; read it through parseOutfit.
+   * Day's outfit: "auto" (dresses for the season), "none" or an outfit id.
+   * Same raw values as the Mac's "dayOutfit"; read it through parseOutfit.
    */
-  mochiOutfit: string;
+  dayOutfit: string;
   avatarColor?: string;
   /**
-   * A colour of the user's own for a pill's Mochi, by pill ID ("#RRGGBB").
+   * A colour of the user's own for a pill's Day, by pill ID ("#RRGGBB").
    * Empty means the catalog's colours; read it through core/pill-colors.ts.
    * Same key and values as the Mac's "pillColors".
    */
@@ -153,8 +171,10 @@ export interface Settings {
    * else English), or one of src/i18n's ten codes ("fr", "pt-BR", "zh-Hans"…).
    */
   language: string;
-  /** Mochi on the desktop. Rust owns it: whatever the page sends back is ignored. */
-  desktopMochi?: {
+  islandX?: number | null;
+  islandY?: number | null;
+  /** Day on the desktop. Rust owns it: whatever the page sends back is ignored. */
+  desktopDay?: {
     onDesktop: boolean;
     spot: { x: number; y: number; space: string } | null;
   };
@@ -167,6 +187,15 @@ export const DEFAULT_SETTINGS: Settings = {
   autoCloseInterval: 15,
   backgroundBlur: true,
   backgroundOpacity: 0.85,
+  showMoveBtn: true,
+  showCloseBtn: true,
+  showMinimizeBtn: true,
+  showPreviousBtn: true,
+  showUndoBtn: true,
+  systemPermissions: true,
+  systemPermFiles: true,
+  systemPermEditor: true,
+  systemPermQuestions: true,
   openOnHover: false,
   absenceInterval: 180,
   activeIntegrations: [
@@ -186,7 +215,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lmstudioUrl: "",
   customUrl: "",
   shortcuts: {},
-  mochiOutfit: DEFAULT_OUTFIT,
+  dayOutfit: DEFAULT_OUTFIT,
   avatarColor: "",
   pillColors: {},
   language: "",
@@ -215,6 +244,7 @@ class AppState {
 
   isPinned = false;
   paused = false;
+  fullSettingsOpen = false;
 
   uploadProgress = 0;
   uploadDuration = 2.4;
@@ -249,12 +279,12 @@ class AppState {
   /** Rows in the list on screen, 0 when there is none (AppState.cardItemCount). */
   cardItemCount = 0;
   /**
-   * Mochi is out of the island — on the desktop, flying, or being dragged
-   * there — so the island's own Mochi is hidden (AppState.mochiOnDesktop).
+   * Day is out of the island — on the desktop, flying, or being dragged
+   * there — so the island's own Day is hidden (AppState.dayOnDesktop).
    */
-  mochiOnDesktop = false;
+  dayOnDesktop = false;
 
-  /** Outfit shown on Mochi while the pointer rests on a wardrobe button. */
+  /** Outfit shown on Day while the pointer rests on a wardrobe button. */
   wardrobePreview: Outfit | null = null;
 
   lastActivity = performance.now();
@@ -284,7 +314,7 @@ class AppState {
     return this.stateOverride ?? this.focusTask?.state ?? "idle";
   }
 
-  /** Spotify plays on a declared pill: Mochi dances (Linux; never on Windows yet). */
+  /** Spotify plays on a declared pill: Day dances (Linux; never on Windows yet). */
   get spotifyPlaying(): boolean {
     return musicPlaying(Spotify.state, sanitizeDeclared(this.settings, this.os).activeIntegrations);
   }

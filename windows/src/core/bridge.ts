@@ -5,6 +5,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Settings } from "./state";
 import type { RecapHistory, RecapPrefs } from "../recap/summary";
 import type { SpotifyState } from "./spotify";
@@ -69,6 +70,15 @@ export const Bridge = {
   focusWindow: (focused: boolean) => call<void>("focus_window", { focused }),
 
   reposition: () => call<void>("reposition"),
+  /** Moves the island window along with the cursor (native OS window dragging). */
+  startDragging: async () => {
+    if (!IS_TAURI) return;
+    try {
+      await getCurrentWindow().startDragging();
+    } catch {
+      await call<void>("start_dragging_island");
+    }
+  },
 
   /** Displays the island can be pinned to: `key` is what `settings.screen` stores. */
   listMonitors: () => call<{ key: string; label: string }[]>("list_monitors"),
@@ -211,25 +221,25 @@ export const Bridge = {
   /** Opens the folder of the image saved last. */
   recapRevealSaved: () => call<void>("recap_reveal_saved"),
 
-  // ── Mochi on the desktop (src-tauri/src/desktop.rs) ───────────────────────
-  desktopInfo: () => call<DesktopInfo>("desktop_mochi_info"),
+  // ── Day on the desktop (src-tauri/src/desktop.rs) ───────────────────────
+  desktopInfo: () => call<DesktopInfo>("desktop_day_info"),
   /** Dragged out of the island: (x, y) is the pointer in island-window coordinates. */
-  desktopPickUp: (x: number, y: number) => call<boolean>("desktop_mochi_pick_up", { x, y }),
+  desktopPickUp: (x: number, y: number) => call<boolean>("desktop_day_pick_up", { x, y }),
   /** Linux: the pointer moved during that drag (Windows carries him from Rust). */
-  desktopCarry: (x: number, y: number) => call<void>("desktop_mochi_carry", { x, y }),
-  desktopCarryEnd: (x: number, y: number) => call<void>("desktop_mochi_carry_end", { x, y }),
-  /** A drag started on the desktop Mochi; resolves to his top-left corner. */
-  desktopDragBegin: () => call<[number, number] | null>("desktop_mochi_drag_begin"),
+  desktopCarry: (x: number, y: number) => call<void>("desktop_day_carry", { x, y }),
+  desktopCarryEnd: (x: number, y: number) => call<void>("desktop_day_carry_end", { x, y }),
+  /** A drag started on the desktop Day; resolves to his top-left corner. */
+  desktopDragBegin: () => call<[number, number] | null>("desktop_day_drag_begin"),
   /** X11: top-left corner, physical pixels. */
-  desktopDragMove: (x: number, y: number) => call<void>("desktop_mochi_drag_move", { x, y }),
-  desktopDragEnd: (x: number, y: number) => call<void>("desktop_mochi_drag_end", { x, y }),
+  desktopDragMove: (x: number, y: number) => call<void>("desktop_day_drag_move", { x, y }),
+  desktopDragEnd: (x: number, y: number) => call<void>("desktop_day_drag_end", { x, y }),
   /** From the island to his spot. False: no spot on any connected display.
    *  `anywhere`: the first-visit corner then, rather than staying home. */
-  desktopFlyOut: (anywhere = false) => call<boolean>("desktop_mochi_fly_out", { anywhere }),
+  desktopFlyOut: (anywhere = false) => call<boolean>("desktop_day_fly_out", { anywhere }),
   /** To the island, then hidden. `forget`: he lives in the island again. */
-  desktopFlyHome: (forget: boolean) => call<boolean>("desktop_mochi_fly_home", { forget }),
+  desktopFlyHome: (forget: boolean) => call<boolean>("desktop_day_fly_home", { forget }),
   /** Asleep, the cursor poll stops. */
-  desktopSetAsleep: (asleep: boolean) => call<void>("desktop_mochi_set_asleep", { asleep }),
+  desktopSetAsleep: (asleep: boolean) => call<void>("desktop_day_set_asleep", { asleep }),
 
   // ── Spotify (src-tauri/src/spotify.rs, Linux) ─────────────────────────────
   /** Reads the player again (the card came on screen) and reports it. */
@@ -262,7 +272,7 @@ export interface ShortcutsReport {
   portal?: "pending" | "active" | null;
 }
 
-/** How the desktop Mochi's window works here (platform::DesktopMode). */
+/** How the desktop Day's window works here (platform::DesktopMode). */
 export type DesktopMode = "poll" | "window" | "layer" | "off";
 
 export interface DesktopInfo {
@@ -271,7 +281,7 @@ export interface DesktopInfo {
   onDesktop: boolean;
 }
 
-/** An event for one window only (island ⇄ desktop Mochi). Never throws. */
+/** An event for one window only (island ⇄ desktop Day). Never throws. */
 export async function emitToWindow(label: string, event: string, payload?: unknown) {
   if (!IS_TAURI) return;
   try {

@@ -1,11 +1,11 @@
 // Day relay — a stateless Cloudflare Worker.
 //
 // The Mac app can't send Live Activity pushes itself: that needs the APNs key,
-// which must never ship inside an app. The Mac posts Mochi's state here, the
+// which must never ship inside an app. The Mac posts Day's state here, the
 // relay signs a token with the key (a Worker secret) and forwards the push to
 // Apple. Nothing is stored and nothing is logged: no database, observability
 // off. The state holds no project name, command or path (see
-// MochiActivityState.swift), and the relay builds the push itself, so it can't
+// DayActivityState.swift), and the relay builds the push itself, so it can't
 // be used to send arbitrary notifications.
 
 export interface Env {
@@ -107,7 +107,7 @@ function buildPayload(body: RelayRequest) {
   // Only the known fields, so nothing else rides along.
   const state: Record<string, unknown> = {};
   for (const key of [...STATE_STRINGS, ...STATE_NUMBERS]) state[key] = body.state[key];
-  // When Mochi left for the iPhone: the activity counts the time from it.
+  // When Day left for the iPhone: the activity counts the time from it.
   if (typeof body.state["since"] === "number") state["since"] = body.state["since"];
   // The pending command's fingerprint (a hash), for Allow / Deny on the Lock Screen.
   if (typeof body.state["approval"] === "string") state["approval"] = body.state["approval"];
@@ -120,7 +120,7 @@ function buildPayload(body: RelayRequest) {
     "stale-date": now + 15 * 60,
   };
   if (body.event === "start") {
-    aps["attributes-type"] = "MochiActivityAttributes";
+    aps["attributes-type"] = "DayActivityAttributes";
     aps["attributes"] = {};
     // iOS requires an alert to start a Live Activity from a push.
     aps["alert"] = { title: "Day", body: `${state.agent} · ${state.statusText}` };

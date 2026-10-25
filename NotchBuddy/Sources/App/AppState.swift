@@ -29,8 +29,8 @@ final class AppState: ObservableObject {
     // Bot drag-attach state (hides original bot while ghost follows cursor)
     @Published var isDraggingBot: Bool = false
 
-    // Desktop Mochi: true while Mochi lives on the desktop instead of the notch
-    @Published var mochiOnDesktop: Bool = false
+    // Desktop Day: true while Day lives on the desktop instead of the notch
+    @Published var dayOnDesktop: Bool = false
 
     // Mouse tracking
     var mousePosition: CGPoint = .zero
@@ -69,11 +69,11 @@ final class AppState: ObservableObject {
         didSet { UserDefaults.standard.set(recapHideProjects, forKey: "recapHideProjects") }
     }
 
-    // Mochi outfit selection — persisted
-    @Published var mochiOutfitSelection: Outfit = .auto {
-        didSet { Outfit.stored = mochiOutfitSelection }
+    // Day outfit selection — persisted
+    @Published var dayOutfitSelection: Outfit = .auto {
+        didSet { Outfit.stored = dayOutfitSelection }
     }
-    // A colour of the user's own for each pill's Mochi (pill id → "#RRGGBB") — persisted.
+    // A colour of the user's own for each pill's Day (pill id → "#RRGGBB") — persisted.
     // Empty means the catalog's colours. PillDefinition.color reads the stored value, so
     // what is built from the catalog follows on its own; the tasks already on the island
     // hold a copy of their colour and are repainted here.
@@ -91,7 +91,7 @@ final class AppState: ObservableObject {
             if changed { tasks = repainted }
         }
     }
-    /// Picks a colour for a pill's Mochi; nil, or the pill's own catalog colour, goes back to the default.
+    /// Picks a colour for a pill's Day; nil, or the pill's own catalog colour, goes back to the default.
     func setPillColor(_ id: String, _ hex: String?) {
         guard let def = PillCatalog.definition(for: id) else { return }
         pillColors = PillColors.picking(hex, for: id, catalogColor: def.defaultColor, in: pillColors)
@@ -102,7 +102,7 @@ final class AppState: ObservableObject {
     private var _seasonalCache: (dayOfYear: Int, year: Int, outfit: Outfit)?
     var resolvedOutfit: Outfit {
         if let preview = wardrobePreviewOutfit { return preview }
-        guard mochiOutfitSelection == .auto else { return mochiOutfitSelection }
+        guard dayOutfitSelection == .auto else { return dayOutfitSelection }
         let cal = Calendar.current
         let now = Date()
         let day  = cal.ordinality(of: .day, in: .year, for: now) ?? 0
@@ -473,7 +473,7 @@ final class AppState: ObservableObject {
 
         if let v = ud.object(forKey: "soundEnabled") as? Bool   { soundEnabled = v }
         if let v = ud.object(forKey: "soundVolume")  as? Double { soundVolume  = v }
-        mochiOutfitSelection = Outfit.stored
+        dayOutfitSelection = Outfit.stored
         pillColors = PillColors.stored
         if let v = ud.string(forKey: "claudeModel"),
            !v.trimmingCharacters(in: .whitespaces).isEmpty { claudeModel = v }

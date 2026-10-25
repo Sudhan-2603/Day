@@ -1,4 +1,4 @@
-// The island: DOM shell, sizing animation, Mochi placement, mouse handling.
+// The island: DOM shell, sizing animation, Day placement, mouse handling.
 // Mirrors IslandRootView.swift + IslandWindowController.swift.
 
 import { Tracked, Spring, clamp } from "../core/anim";
@@ -13,10 +13,10 @@ import {
 import { Sound } from "../core/sound";
 import { State } from "../core/state";
 import { SPOTIFY_ID, islandDances } from "../core/spotify";
-import { BotEngine, hexToRGB } from "../mochi/engine";
-import { Greeting } from "../mochi/greeting";
-import { syncMiniBotStates, tickMiniBots } from "../mochi/minibots";
-import { SeasonCache, parseOutfit } from "../mochi/wardrobe";
+import { BotEngine, hexToRGB } from "../day/engine";
+import { Greeting } from "../day/greeting";
+import { syncMiniBotStates, tickMiniBots } from "../day/minibots";
+import { SeasonCache, parseOutfit } from "../day/wardrobe";
 import { UploadCanvas } from "../upload/canvas";
 import { USC, UploadSeq } from "../upload/sequence";
 import { closePlanCard, openPlanColor, planCardOpen } from "../views/usage";
@@ -26,11 +26,11 @@ import { IslandStateMachine } from "./fsm";
 import { refreshHookPills } from "./integrations";
 import { DesktopLink } from "./desktop";
 import type { ViewCommand } from "./shortcuts";
-import { DRAG_THRESHOLD } from "../mochi/desktop-logic";
+import { DRAG_THRESHOLD } from "../day/desktop-logic";
 
 const BOT_OVERHANG = 40;
 const CLAUDE_DESKTOP_ID = "agent_claude-desktop";
-/** Extra canvas on each side of Mochi, for the witch hat's brim and the Santa hat's tip. */
+/** Extra canvas on each side of Day, for the witch hat's brim and the Santa hat's tip. */
 const BOT_SIDE = 24;
 /** Same margin as the Rust hit test (src-tauri/src/island.rs). */
 const HIT_MARGIN = 14;
@@ -45,7 +45,7 @@ const modeOrder = (m: IslandMode) => (m === "hidden" ? 0 : m === "compact" ? 1 :
 
 export class Island {
   readonly fsm = new IslandStateMachine();
-  /** Mochi on the desktop: his life cycle and the drag out of the island. */
+  /** Day on the desktop: his life cycle and the drag out of the island. */
   readonly desktop: DesktopLink;
 
   private root: HTMLElement;
@@ -103,7 +103,7 @@ export class Island {
   onGreetingDone: (() => void) | null = null;
   onWake: (() => void) | null = null;
 
-  /** Where a press on Mochi started: moving past DRAG_THRESHOLD drags him out. */
+  /** Where a press on Day started: moving past DRAG_THRESHOLD drags him out. */
   private botPress: { x: number; y: number } | null = null;
 
   /** The next reveal from hidden makes no peek (music starting, as on macOS). */
@@ -160,6 +160,8 @@ export class Island {
       setView: (v) => this.setView(v),
       cancelDrop: () => this.discardDrop(),
       collapse: () => this.collapse(),
+      closeToLine: () => this.closeToLine(),
+      startMoveMode: () => this.startMoveMode(),
       foldApproval: () => this.foldApproval(),
       setFocus: (id) => {
         State.setFocus(id);
@@ -242,10 +244,15 @@ export class Island {
         this.fsm.forceHome();
         void Bridge.openSettingsWindow();
       },
+      toggleFullSettings: (open?: boolean) => {
+        State.fullSettingsOpen = open ?? !State.fullSettingsOpen;
+        this.animateGeometry(!State.fullSettingsOpen);
+        State.notify();
+      },
       blip: () => Sound.play("blip"),
       chooseOutfit: (selection) => {
-        if (parseOutfit(State.settings.mochiOutfit) === selection) return;
-        State.settings.mochiOutfit = selection;
+        if (parseOutfit(State.settings.dayOutfit) === selection) return;
+        State.settings.dayOutfit = selection;
         void Bridge.saveSettings(State.settings);
         Sound.play("pop");
         this.engine.triggerEmote("proud");
@@ -270,7 +277,7 @@ export class Island {
     for (const v of this.views.values()) this.viewsEl.append(v.el);
     this.contentEl = h("div", { id: "content" }, this.header.el, this.viewsEl);
 
-    // The drop sequence draws the card, the bar and its own Mochi. It sits under
+    // The drop sequence draws the card, the bar and its own Day. It sits under
     // the header, which stays visible on top of it exactly as on macOS.
     this.uploadCanvas = new UploadCanvas({
       ask: () => {
@@ -298,6 +305,17 @@ export class Island {
       this.miniGrid,
       this.countdown,
     );
+
+    // Click on line-mode restores the island
+    this.islandEl.addEventListener("click", () => {
+      if (this.islandEl.classList.contains("line-mode")) {
+        this.islandEl.classList.remove("line-mode");
+        Sound.play("pop");
+        this.fsm.forceHome();
+        this.animateGeometry(false);
+        State.notify();
+      }
+    });
 
     // Double tap/click the black island container to minimize / collapse
     this.islandEl.addEventListener("dblclick", (e: MouseEvent) => {
@@ -401,6 +419,7 @@ export class Island {
   }
 
   expand(view: IslandViewName) {
+    this.islandEl.classList.remove("line-mode");
     this.stopSequenceIfLeaving(view);
     if (view !== "overview") closePlanCard();
     State.view = view;
@@ -411,6 +430,7 @@ export class Island {
   }
 
   setView(view: IslandViewName) {
+    this.islandEl.classList.remove("line-mode");
     this.stopSequenceIfLeaving(view);
     if (view !== "overview") closePlanCard();
     if (State.mode !== "expanded") {
@@ -427,11 +447,39 @@ export class Island {
     State.notify();
   }
 
+  closeToLine() {
+    if (State.fullSettingsOpen) {
+      State.fullSettingsOpen = false;
+    }
+    State.isPinned = false;
+    this.fsm.pinned = false;
+    this.islandEl.classList.add("line-mode");
+    const rect = { x: (PANEL_W - 140) / 2, y: 8, w: 140, h: 10 };
+    this.pushedRect = rect;
+    void Bridge.setIslandRect(rect.x, rect.y, rect.w, rect.h);
+  }
+
+  startMoveMode() {
+    this.islandEl.classList.remove("line-mode");
+    if (State.fullSettingsOpen) {
+      State.fullSettingsOpen = false;
+    }
+    State.isPinned = false;
+    this.fsm.pinned = false;
+    this.fsm.forcePetit();
+    this.islandEl.classList.add("is-moving-shake");
+    void Bridge.startDragging();
+  }
+
   collapse() {
+    this.islandEl.classList.remove("line-mode");
     // A waiting card is only ever folded, never dropped by a close.
     if (State.pendingApproval) {
       this.foldApproval();
       return;
+    }
+    if (State.fullSettingsOpen) {
+      State.fullSettingsOpen = false;
     }
     State.isPinned = false;
     this.fsm.pinned = false;
@@ -443,12 +491,14 @@ export class Island {
 
   /** Alert from the hook server: open on this view. Pinned alerts never auto-close. */
   alert(view: IslandViewName) {
+    this.islandEl.classList.remove("line-mode");
     this.fsm.pinned = State.isPinned;
     this.fsm.forceHome();
     this.expand(view);
   }
 
   reveal() {
+    this.islandEl.classList.remove("line-mode");
     this.fsm.reveal();
   }
 
@@ -459,17 +509,17 @@ export class Island {
     this.silentReveal = false;
   }
 
-  /** Right-click on Mochi: wardrobe open ↔ back to the usual view. */
+  /** Right-click on Day: wardrobe open ↔ back to the usual view. */
   toggleWardrobe() {
     if (State.paused || State.mode === "hidden") return;
-    // The greeting and the drop sequence draw a Mochi of their own.
+    // The greeting and the drop sequence draw a Day of their own.
     if (State.mode === "expanded" && (State.view === "greeting" || this.uploadActive)) return;
     if (State.mode === "expanded" && State.view === "wardrobe") this.setView(State.defaultView());
     else this.setView("wardrobe");
   }
 
   /**
-   * Right-click on the desktop Mochi (macOS openWardrobeFromDesktop): opens the
+   * Right-click on the desktop Day (macOS openWardrobeFromDesktop): opens the
    * wardrobe from any state, or goes back if it is already open.
    */
   wardrobeFromDesktop() {
@@ -478,7 +528,7 @@ export class Island {
 
   /**
    * The wardrobe from any state — compact or hidden island included — or back
-   * to the usual view if it is already open. The desktop Mochi's right-click
+   * to the usual view if it is already open. The desktop Day's right-click
    * and the wardrobe shortcut (`open-wardrobe`) both land here.
    */
   wardrobeAnywhere() {
@@ -523,17 +573,17 @@ export class Island {
     void Bridge.focusWindow(true);
   }
 
-  /** The desktop shortcut needs a desktop Mochi: none on GNOME's Wayland. */
+  /** The desktop shortcut needs a desktop Day: none on GNOME's Wayland. */
   canLeaveIsland(): boolean {
     return this.desktop.supported;
   }
 
-  /** The desktop shortcut (macOS DesktopMochiController.flyOutOrHome). */
+  /** The desktop shortcut (macOS DesktopDayController.flyOutOrHome). */
   flyOutOrHome() {
-    // The greeting and the drop sequence draw a Mochi of their own: he stays
+    // The greeting and the drop sequence draw a Day of their own: he stays
     // for them, as he does for a drag (canDragOut).
     const busy = State.mode === "expanded" && (State.view === "greeting" || this.uploadActive);
-    if (busy && !State.mochiOnDesktop) return;
+    if (busy && !State.dayOnDesktop) return;
     this.desktop.flyOutOrHome();
   }
 
@@ -583,7 +633,7 @@ export class Island {
   }
 
   /**
-   * Mochi eats the file. Nothing here waits on the file system: the copy into
+   * Day eats the file. Nothing here waits on the file system: the copy into
    * the inbox runs in the background and swaps the path in when it lands, so a
    * slow disk can never stall the animation — same as FileDropHandler on macOS.
    */
@@ -635,7 +685,7 @@ export class Island {
 
   /**
    * Sounds and view changes hung off the canvas timeline: a `tick` every 10 %,
-   * the ✓ chime when the bar completes, then `choose` once Mochi has grown back.
+   * the ✓ chime when the bar completes, then `choose` once Day has grown back.
    */
   private stepSequence() {
     const since = UploadSeq.sinceDrop();
@@ -663,7 +713,7 @@ export class Island {
   // ── Geometry ────────────────────────────────────────────────────────────────
 
   private targetSize(): { w: number; h: number; r: number } {
-    let { w, h } = islandSize(State.mode, State.view, State.chatHistory.length);
+    let { w, h } = islandSize(State.mode, State.view, State.chatHistory.length, Boolean(State.fullSettingsOpen));
     if (State.mode === "expanded" && State.view === "question" && State.pendingApproval?.questions) {
       h = QUESTION_PICKER_H;
     }
@@ -686,6 +736,15 @@ export class Island {
   }
 
   private applyGeometry() {
+    if (this.islandEl.classList.contains("line-mode")) {
+      const rect = { x: (PANEL_W - 140) / 2, y: 8, w: 140, h: 10 };
+      const p = this.pushedRect;
+      if (Math.abs(p.x - rect.x) > 0.5 || Math.abs(p.w - rect.w) > 0.5 || Math.abs(p.h - rect.h) > 0.5) {
+        this.pushedRect = rect;
+        void Bridge.setIslandRect(rect.x, rect.y, rect.w, rect.h);
+      }
+      return;
+    }
     const w = this.width.value;
     const hh = this.height.value;
     const r = this.radius.value;
@@ -749,58 +808,106 @@ export class Island {
       if (State.mode === "hidden") this.fsm.mouseEntered();
     });
 
+    let islandPress: { x: number; y: number; isCompact: boolean } | null = null;
+    let longPressTimer: number | null = null;
+
+    const cancelLongPress = () => {
+      if (longPressTimer != null) {
+        window.clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
     this.islandEl.addEventListener("mousedown", (e) => {
       Sound.resume();
       State.lastActivity = performance.now();
       // A click makes a hover-opened island an ordinary open one.
       this.fsm.userInteracted();
-      // A press on Mochi may become a drag out to the desktop.
+      // A press on Day may become a drag out to the desktop.
       if (e.button === 0 && this.isBotHit(e.clientX, e.clientY)) {
         this.botPress = { x: e.clientX, y: e.clientY };
+        return;
       }
-      // Right-click on Mochi opens the wardrobe, and closes it again.
+      // Right-click on Day opens the wardrobe, and closes it again.
       if (e.button === 2 && this.isBotHit(e.clientX, e.clientY)) {
         this.cancelBotHover();
         this.toggleWardrobe();
         return;
       }
-      if (State.mode !== "expanded") {
-        this.fsm.click();
-        return;
-      }
-      if (this.isBotHit(e.clientX, e.clientY)) {
-        this.cancelBotHover();
-        this.engine.slap();
+
+      if (e.button === 0) {
+        const target = e.target as HTMLElement | null;
+        const isInteractive = target?.closest(
+          "button, input, textarea, select, a, [role='button'], .avatar-color-swatch, .switch, .link-btn, .seg button, .clickable, .settings-tab-btn",
+        );
+        if (!isInteractive) {
+          const isCompact = State.mode !== "expanded";
+          islandPress = { x: e.clientX, y: e.clientY, isCompact };
+          cancelLongPress();
+          longPressTimer = window.setTimeout(() => {
+            longPressTimer = null;
+            islandPress = null;
+            void Bridge.startDragging();
+          }, 220);
+        }
       }
     });
 
-    // No browser menu over Mochi: his right-click is the wardrobe. Everywhere
+    // No browser menu over Day: his right-click is the wardrobe. Everywhere
     // else (the chat field) the webview keeps its own menu.
     this.islandEl.addEventListener("contextmenu", (e) => {
       if (this.isBotHit(e.clientX, e.clientY)) e.preventDefault();
     });
 
-    // Dragging Mochi out of the island puts him on the desktop.
+    // Dragging Day out of the island puts him on the desktop, or dragging the island window.
     window.addEventListener("mousemove", (e) => {
       if (this.desktop.carrying) {
         this.desktop.carry(e.clientX, e.clientY);
         return;
       }
       const press = this.botPress;
-      if (!press) return;
-      if (!(e.buttons & 1)) {
-        this.botPress = null;
+      if (press) {
+        if (!(e.buttons & 1)) {
+          this.botPress = null;
+          return;
+        }
+        if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > DRAG_THRESHOLD) {
+          this.botPress = null;
+          if (this.canDragOut()) {
+            this.cancelBotHover();
+            this.desktop.pickUp(e.clientX, e.clientY);
+          }
+        }
         return;
       }
-      if (Math.hypot(e.clientX - press.x, e.clientY - press.y) <= DRAG_THRESHOLD) return;
-      this.botPress = null;
-      if (!this.canDragOut()) return;
-      this.cancelBotHover();
-      this.desktop.pickUp(e.clientX, e.clientY);
+
+      if (islandPress) {
+        if (!(e.buttons & 1)) {
+          cancelLongPress();
+          islandPress = null;
+          return;
+        }
+        if (Math.hypot(e.clientX - islandPress.x, e.clientY - islandPress.y) > 4) {
+          cancelLongPress();
+          islandPress = null;
+          void Bridge.startDragging();
+          return;
+        }
+      }
     });
+
     window.addEventListener("mouseup", (e) => {
+      this.islandEl.classList.remove("is-moving-shake");
       this.botPress = null;
       if (this.desktop.carrying) this.desktop.carryEnd(e.clientX, e.clientY);
+      if (islandPress) {
+        cancelLongPress();
+        const wasCompact = islandPress.isCompact;
+        islandPress = null;
+        if (wasCompact) {
+          this.fsm.click();
+        }
+      }
     });
 
     // Only keys typed into the island itself land here, never Escape typed in
@@ -895,15 +1002,15 @@ export class Island {
     this.ensureRunning();
   }
 
-  /** The greeting and the drop sequence draw a Mochi of their own: not that one. */
+  /** The greeting and the drop sequence draw a Day of their own: not that one. */
   private canDragOut(): boolean {
     if (State.mode === "hidden" || !this.desktop.canPickUp()) return false;
     return !(State.mode === "expanded" && (State.view === "greeting" || this.uploadActive));
   }
 
   private isBotHit(x: number, y: number): boolean {
-    // Out on the desktop, the island's Mochi is invisible: nothing to hit.
-    if (State.mochiOnDesktop) return false;
+    // Out on the desktop, the island's Day is invisible: nothing to hit.
+    if (State.dayOnDesktop) return false;
     const rect = this.islandRect();
     const cx = rect.x + this.botCx.value;
     const cy = rect.y + this.botCy.value;
@@ -995,7 +1102,7 @@ export class Island {
         this.greeting.draw(gctx);
       }
     } else {
-      // Kept running even while the drop canvas is up, so the island's own Mochi
+      // Kept running even while the drop canvas is up, so the island's own Day
       // is already in the right place the moment the canvas fades out.
       this.drawBot(dt);
     }
@@ -1034,15 +1141,15 @@ export class Island {
   };
 
   private updateBotTargets() {
-    const p = botPosition(State.mode, State.view, this.height.value, State.uploadProgress);
+    const p = botPosition(State.mode, State.view, this.height.value, State.uploadProgress, Boolean(State.fullSettingsOpen));
     this.botCx.target = p.cx;
     this.botCy.target = p.cy;
     this.botSize.target = p.diameter / 0.6;
 
     const greetingActive = State.mode === "expanded" && State.view === "greeting";
-    // The drop canvas draws its own Mochi; two of them would overlap. Out on the
+    // The drop canvas draws its own Day; two of them would overlap. Out on the
     // desktop, he isn't here at all.
-    const away = State.mochiOnDesktop;
+    const away = State.dayOnDesktop;
     const visible = p.opacity > 0 && !greetingActive && !this.uploadActive && !away;
     this.botCanvas.style.opacity = visible ? "1" : "0";
 
@@ -1081,7 +1188,7 @@ export class Island {
     if (!ctx) return;
 
     const focus = State.focusTask;
-    // Avatar color customizes Mochi bot & mini-bot color:
+    // Avatar color customizes Day bot & mini-bot color:
     const avatar = State.settings.avatarColor;
     this.engine.bodyColor = planCardOpen()
       ? hexToRGB(openPlanColor())
@@ -1102,14 +1209,14 @@ export class Island {
         this.engine.slotHVel = 0;
       }
     }
-    // Only the main Mochi is dressed — the one of the main tool's pill (Settings →
+    // Only the main Day is dressed — the one of the main tool's pill (Settings →
     // Active pills): a focused integration pill shows its own colours, unless
     // the wardrobe is open (BotCanvasView.showOutfit, macOS).
     // In the wardrobe the hovered outfit swaps in at once, without the drop-in.
     const inWardrobe = State.mode === "expanded" && State.view === "wardrobe";
     const mainFocused = State.focusId == null || State.focusId === State.mainPillId;
     const showOutfit = mainFocused || State.mode !== "expanded" || inWardrobe;
-    const outfit = State.wardrobePreview ?? this.seasons.get(parseOutfit(State.settings.mochiOutfit));
+    const outfit = State.wardrobePreview ?? this.seasons.get(parseOutfit(State.settings.dayOutfit));
     this.engine.setOutfit(showOutfit ? outfit : "none", !inWardrobe);
     // Dances while music plays: always in the compact island, expanded only on
     // the music pill's card (BotCanvasView, macOS). Asked every frame.
@@ -1204,6 +1311,8 @@ export class Island {
     this.engine.setState(State.effectiveState);
 
     const opacity = State.settings.backgroundOpacity ?? 0.85;
+    this.islandEl.style.opacity = `${opacity}`;
+    this.islandEl.style.setProperty("--island-opacity", `${opacity}`);
     this.islandEl.style.background = `rgba(10, 11, 14, ${opacity})`;
     this.islandEl.style.borderColor = "rgba(255, 255, 255, 0.12)";
     this.islandEl.style.boxShadow = "0 10px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08)";
@@ -1221,6 +1330,8 @@ export class Island {
     }
     const blur = State.settings.backgroundBlur !== false;
     const opacity = State.settings.backgroundOpacity ?? 0.85;
+    this.islandEl.style.opacity = `${opacity}`;
+    this.islandEl.style.setProperty("--island-opacity", `${opacity}`);
     this.islandEl.style.setProperty("--island-blur", blur ? "24px" : "0px");
     this.islandEl.style.setProperty("--island-bg-opacity", `${opacity}`);
     this.islandEl.style.background = `rgba(10, 11, 14, ${opacity})`;
