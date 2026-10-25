@@ -7,6 +7,6 @@
     "dev": "npm --prefix windows run dev",
     "test": "npm --prefix windows run test",
     "start": "powershell -NoProfile -Command \"Start-Process .\\Day.exe\"",
-    "setup": "powershell -NoProfile -Command \"& \\\"$env:LOCALAPPDATA\\Programs\\Inno Setup 6\\ISCC.exe\\\" installer.iss\""
+    "setup": "powershell -NoProfile -Command \"if (-not (Test-Path Day.exe)) { Copy-Item windows\\target\\release\\Day.exe . -Force }; if (-not (Test-Path Day-hook.exe)) { Copy-Item windows\\target\\release\\Day-hook.exe . -Force }; & \\\"$env:LOCALAPPDATA\\Programs\\Inno Setup 6\\ISCC.exe\\\" installer.iss\""
   }
 }
