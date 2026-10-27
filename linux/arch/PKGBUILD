@@ -4,7 +4,7 @@
 
 pkgname=day-git
 _pkgname=day
-pkgver=0.3.0
+pkgver=0.4.0
 pkgrel=1
 pkgdesc="Day lives at the top of your screen and keeps an eye on your Claude Code sessions"
 arch=('x86_64' 'aarch64')
