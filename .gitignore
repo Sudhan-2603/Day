@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production / Builds
+dist/
+build/
+target/
+release/
+*.tsbuildinfo
+
+# Tauri
+**/src-tauri/target/
+**/src-tauri/gen/schemas/
+
+# Android
+.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.temp
+
+# IDE / Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment secrets
+.env
+.env.*
+!.env.example
