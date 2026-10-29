@@ -20,13 +20,12 @@ for (const o of outfits) {
   for (const c of cols) {
     const cv = document.createElement('canvas'); cv.width=W*2; cv.height=W*2; cv.style.width=W+'px'; cv.style.height=W+'px'; cv.style.background='#15171b'; cv.style.borderRadius='10px';
     const ctx = cv.getContext('2d'); ctx.scale(2,2);
-    drawDay(ctx, W, {...c, scale:0.62, outfit: o==='none'?null:o});
+    drawMochi(ctx, W, {...c, scale:0.62, outfit: o==='none'?null:o});
     row.appendChild(cv);
   }
   const cv = document.createElement('canvas'); cv.width=small*2; cv.height=small*2; cv.style.width=small+'px'; cv.style.height=small+'px'; cv.style.background='#000';
-  const ctx = cv.getContext('2d'); ctx.scale(2,2); drawDay(ctx, small, {scale:0.62, outfit:o==='none'?null:o});
+  const ctx = cv.getContext('2d'); ctx.scale(2,2); drawMochi(ctx, small, {scale:0.62, outfit:o==='none'?null:o});
   row.appendChild(cv);
   S.appendChild(row);
 }
 </script></body></html>
-

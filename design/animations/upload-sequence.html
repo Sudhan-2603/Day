@@ -171,7 +171,7 @@ function drawEye(shape,w,h){
     default: rr(X,-w/2,-h/2,w,h,w/2); X.fill();
   }
 }
-function drawDay(f){
+function drawMochi(f){
   const R=f.d/2/1.04, m=f.morph;
   X.save(); X.translate(f.x,f.y+f.hop); X.rotate(f.tilt); X.scale(f.sx,f.sy);
   const {p,rx,ry}=bodyPath(m,R);
@@ -264,7 +264,7 @@ function draw(t){
     X.fillStyle='#F5F6F8'; rr(X,100,113,176,26,13); X.fill(); text('Poser une question dessus',188,126,12.5,500,'#0B0C0E','center');
     X.fillStyle='rgba(255,255,255,.09)'; rr(X,284,113,128,26,13); X.fill(); text('Envoyer par mail',348,126,12.5,500,'#F1F2F4','center'); X.restore() }
   // Day puis fichier par-dessus (le fichier est masqué sous le haut de la bouche)
-  drawDay(f);
+  drawMochi(f);
   if(f.fileVisible) drawFile(f);
   drawCursor(f.cursor,t>=T.drop&&t<T.drop+.12);
   if(guides){ X.strokeStyle='#FF0'; X.lineWidth=.5; X.setLineDash([3,3]); X.beginPath(); X.moveTo(FOLLOW.min,36); X.lineTo(FOLLOW.min,166); X.moveTo(FOLLOW.max,36); X.lineTo(FOLLOW.max,166); X.stroke(); X.setLineDash([]); X.beginPath(); X.arc(f.x,f.y,LOCK_IN,0,Math.PI*2); X.stroke() }
@@ -301,4 +301,3 @@ requestAnimationFrame(loop);
 </script>
 </body>
 </html>
-

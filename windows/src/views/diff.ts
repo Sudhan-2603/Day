@@ -65,4 +65,3 @@ export function buildDiffCard(diff: FileDiff, hooks: DiffCardHooks): HTMLElement
 
   return h("div", { class: "diff-card" }, head, content);
 }
-

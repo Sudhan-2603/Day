@@ -1,10 +1,7 @@
-// The Spotify pill on the page: what src-tauri/src/spotify.rs reports (Linux,
-// through MPRIS), and the pure rules the views and Day follow — ports of
+// The Spotify pill on the page: what src-tauri/src/spotify.rs reports (MPRIS
+// on Linux, the system media controls on Windows), and the pure rules the views and Day follow — ports of
 // SpotifyController.swift, NowPlayingViews.swift and the Mac's dance rules
-// (BotCanvasView, DesktopDay.swift).
-//
-// Windows has no music source yet: nothing ever reports a track there, so
-// nothing plays and Day never dances, through the same code.
+// (BotCanvasView, DesktopMochi.swift).
 
 import type { BotStateName, IslandMode, IslandViewName } from "./layout";
 
@@ -118,8 +115,7 @@ export function islandDances(o: {
   return o.mode === "expanded" && o.view === "overview" && o.focusId === SPOTIFY_ID;
 }
 
-/** Day on the desktop: the compact island's rules (DesktopDay.swift). */
+/** Day on the desktop: the compact island's rules (DesktopMochi.swift). */
 export function desktopDances(music: boolean, state: BotStateName): boolean {
   return music && DANCE_STATES.has(state);
 }
-

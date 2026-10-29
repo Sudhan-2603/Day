@@ -78,7 +78,7 @@ test("Write and MultiEdit are diffed too; other tools and PreToolUse are not", (
 
 test("an edit with no change, or one the relay had to cut, adds no diff", () => {
   hook({ hook_event_name: "PostToolUse", tool_name: "Edit", tool_input: { file_path: "/p/a.ts", old_string: "same", new_string: "same" } });
-  edit({ Day_diff_truncated: true });
+  edit({ coucou_diff_truncated: true });
   assert.deepEqual(task().steps, []);
   assert.equal(diffs().length, 0);
 });
@@ -109,14 +109,14 @@ test("diffs are forgotten an hour after the last one, and at the end of the sess
 });
 
 test("an agent pill's diffs go with the pill", () => {
-  hook({ hook_event_name: "PreToolUse", Day_agent: "gemini", tool_name: "Edit", tool_input: { file_path: "/p/a.ts" } });
-  edit({ Day_agent: "gemini" });
+  hook({ hook_event_name: "PreToolUse", coucou_agent: "gemini", tool_name: "Edit", tool_input: { file_path: "/p/a.ts" } });
+  edit({ coucou_agent: "gemini" });
   assert.equal(diffs("agent_gemini").length, 1);
-  hook({ hook_event_name: "SessionEnd", Day_agent: "gemini" });
+  hook({ hook_event_name: "SessionEnd", coucou_agent: "gemini" });
   assert.equal(task("agent_gemini"), undefined);
   assert.equal(State.sessionDiffs.has("agent_gemini"), false);
   // An event for a pill that does not exist stores nothing.
-  edit({ Day_agent: "ghost" });
+  edit({ coucou_agent: "ghost" });
   assert.equal(State.sessionDiffs.has("agent_ghost"), false);
 });
 
@@ -161,3 +161,24 @@ for (const [what, event] of [
     assert.equal(task().finalLine, null);
   });
 }
+
+// ── Subagents ─────────────────────────────────────────────────────────────────
+
+test("the SubagentStop Claude Code sends after Stop leaves the last edit on the ticker (#840)", () => {
+  edit();
+  hook({ hook_event_name: "Stop", last_assistant_message: "Done." });
+  const steps = [...task().steps];
+  // Captured from Claude Code: no SubagentStart, empty agent_type, a few seconds after Stop.
+  hook({ hook_event_name: "SubagentStop", agent_id: "a6f6d8a2ad8a9ef2b", agent_type: "" });
+  assert.deepEqual(task().steps, steps);
+  assert.ok(parseDiffStep(task().steps.at(-2)));
+});
+
+test("a real subagent still shows its start and end, and an agent without agent_type too", () => {
+  hook({ hook_event_name: "SubagentStart", agent_id: "abb32627dee1d8ff6", agent_type: "Explore" });
+  hook({ hook_event_name: "SubagentStop", agent_id: "abb32627dee1d8ff6", agent_type: "Explore" });
+  assert.deepEqual(task().steps.slice(-2), ["+ subagent", "• subagent done"]);
+  hook({ hook_event_name: "SubagentStop" });
+  assert.equal(task().steps.at(-1), "• subagent done");
+  assert.equal(task().steps.length, 3);
+});

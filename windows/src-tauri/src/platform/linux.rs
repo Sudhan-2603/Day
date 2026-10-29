@@ -23,7 +23,7 @@ use tauri::{AppHandle, WebviewWindow};
 use super::{home_dir, LocalTime};
 
 /// File name of the Claude Code relay.
-pub const HOOK_EXE: &str = "Day-hook";
+pub const HOOK_EXE: &str = "coucou-hook";
 
 /// Environment variable holding the home directory.
 pub const HOME_VAR: &str = "HOME";
@@ -39,16 +39,16 @@ fn xdg(var: &str, fallback: &str) -> PathBuf {
         .unwrap_or_else(|| home_dir().join(fallback))
 }
 
-/// ~/.config/Day — preferences.
+/// ~/.config/coucou — preferences.
 pub fn config_dir() -> PathBuf {
-    xdg("XDG_CONFIG_HOME", ".config").join("Day")
+    xdg("XDG_CONFIG_HOME", ".config").join("coucou")
 }
 
-/// ~/.local/share/Day — where Day-hook, the inbox and the log live. The
+/// ~/.local/share/coucou — where coucou-hook, the inbox and the log live. The
 /// relay has to sit at a stable path: an AppImage is mounted somewhere new on
 /// every launch.
 pub fn local_dir() -> PathBuf {
-    xdg("XDG_DATA_HOME", ".local/share").join("Day")
+    xdg("XDG_DATA_HOME", ".local/share").join("coucou")
 }
 
 /// Where a saved image goes, best first: the XDG pictures folder named in
@@ -97,7 +97,7 @@ pub fn prepare_environment() {
     if std::env::var_os("APPIMAGE").is_none() || std::env::var_os("GST_REGISTRY").is_some() {
         return;
     }
-    let cache = xdg("XDG_CACHE_HOME", ".cache").join("Day");
+    let cache = xdg("XDG_CACHE_HOME", ".cache").join("coucou");
     if std::fs::create_dir_all(&cache).is_ok() {
         std::env::set_var("GST_REGISTRY", cache.join("gstreamer-registry.bin"));
     }
@@ -107,13 +107,13 @@ pub fn prepare_environment() {
 /// to go, so the island lands in the middle of the screen. Through XWayland it
 /// can be placed, and a Dock window survives "show desktop" (Super+D).
 /// An inherited GDK_BACKEND=wayland is overridden too: editors and terminals
-/// pass theirs down to every child. Day_X11=0 keeps the Wayland window.
+/// pass theirs down to every child. COUCOU_X11=0 keeps the Wayland window.
 fn prefer_x11_on_gnome() {
     let env = |k: &str| std::env::var(k).unwrap_or_default();
     if should_prefer_x11(
         &env("XDG_SESSION_TYPE"),
         &env("XDG_CURRENT_DESKTOP"),
-        &env("Day_X11"),
+        &env("COUCOU_X11"),
         &env("DISPLAY"),
     ) {
         std::env::set_var("GDK_BACKEND", "x11");
@@ -200,8 +200,8 @@ fn is_private_dir(dir: &Path) -> bool {
         .unwrap_or(false)
 }
 
-/// Where Day-hook finds us: `$XDG_RUNTIME_DIR/Day.sock`, or
-/// `/run/user/<uid>/Day.sock` when the variable is missing. A directory
+/// Where coucou-hook finds us: `$XDG_RUNTIME_DIR/coucou.sock`, or
+/// `/run/user/<uid>/coucou.sock` when the variable is missing. A directory
 /// that is not ours and private means no relay at all — never a fallback to a
 /// shared place like /tmp. Must match `socket_path()` in hook/src/unix.rs
 /// exactly.
@@ -210,7 +210,7 @@ pub fn relay_socket_path() -> Option<PathBuf> {
         .map(PathBuf::from)
         .filter(|p| p.is_absolute())
         .unwrap_or_else(|| PathBuf::from(format!("/run/user/{}", unsafe { libc::getuid() })));
-    is_private_dir(&dir).then(|| dir.join("Day.sock"))
+    is_private_dir(&dir).then(|| dir.join("coucou.sock"))
 }
 
 // ── Who we are ────────────────────────────────────────────────────────────────
@@ -338,9 +338,9 @@ mod layer {
     }
 }
 
-/// Day_LAYER_SHELL=0 is the way out on a compositor where it misbehaves.
+/// COUCOU_LAYER_SHELL=0 is the way out on a compositor where it misbehaves.
 fn layer_shell_wanted() -> bool {
-    std::env::var("Day_LAYER_SHELL").map(|v| v != "0").unwrap_or(true)
+    std::env::var("COUCOU_LAYER_SHELL").map(|v| v != "0").unwrap_or(true)
 }
 
 /// True once the island window is a layer-shell surface.
@@ -364,7 +364,7 @@ pub fn unblock_webview_drops(_app: &AppHandle) {}
 /// the keyboard. Must run before the window is first shown: a layer surface
 /// cannot be made out of a window the compositor already knows.
 ///
-/// Without layer-shell (GNOME, X11, or Day_LAYER_SHELL=0) the window stays
+/// Without layer-shell (GNOME, X11, or COUCOU_LAYER_SHELL=0) the window stays
 /// an ordinary always-on-top window that refuses focus; where it lands is then
 /// up to the window manager.
 pub fn make_non_activating(win: &WebviewWindow) {
@@ -377,7 +377,7 @@ pub fn make_non_activating(win: &WebviewWindow) {
     let supported = unsafe { layer::gtk_layer_is_supported() } != 0;
     if !wanted || !supported || gw.is_realized() {
         let why = if !wanted {
-            "Day_LAYER_SHELL=0"
+            "COUCOU_LAYER_SHELL=0"
         } else if supported {
             "window already shown"
         } else {
@@ -388,8 +388,8 @@ pub fn make_non_activating(win: &WebviewWindow) {
         if !gw.is_realized() {
             // On X11 a Dock is kept above everything and is the only kind of
             // window, besides the desktop, that "show desktop" leaves alone.
-            // Day_DOCK=0 falls back to a utility window.
-            let dock = std::env::var("Day_DOCK").map(|v| v != "0").unwrap_or(true);
+            // COUCOU_DOCK=0 falls back to a utility window.
+            let dock = std::env::var("COUCOU_DOCK").map(|v| v != "0").unwrap_or(true);
             gw.set_type_hint(if dock {
                 gtk::gdk::WindowTypeHint::Dock
             } else {
@@ -407,7 +407,7 @@ pub fn make_non_activating(win: &WebviewWindow) {
     let ptr = gtk_window_ptr(&gw);
     unsafe {
         layer::gtk_layer_init_for_window(ptr);
-        layer::gtk_layer_set_namespace(ptr, c"Day".as_ptr());
+        layer::gtk_layer_set_namespace(ptr, c"coucou".as_ptr());
         layer::gtk_layer_set_layer(ptr, layer::LAYER_OVERLAY);
         // Top edge only: the compositor centres the surface horizontally.
         layer::gtk_layer_set_anchor(ptr, layer::EDGE_TOP, 1);
@@ -576,7 +576,7 @@ fn apply_input_region(gw: &impl IsA<gtk::Widget>, rect: Region) {
 /// grab made through XWayland only sees keys typed into other X11 windows, so
 /// it would look registered and never fire. On Wayland the shortcuts go to the
 /// desktop through the XDG GlobalShortcuts portal instead (portal.rs), and
-/// where there is none Settings explains how to bind `Day --shortcut <id>`
+/// where there is none Settings explains how to bind `coucou --shortcut <id>`
 /// in the desktop's own keyboard settings.
 pub fn global_shortcuts_blocked() -> Option<&'static str> {
     let set = |var: &str| std::env::var_os(var).is_some_and(|v| !v.is_empty());
@@ -625,7 +625,7 @@ pub fn desktop_mode() -> super::DesktopMode {
 }
 
 /// The input shape last asked for the desktop Day, re-applied on every map.
-static DAY_SHAPE: Mutex<super::MouseShape> = Mutex::new(super::MouseShape::Empty);
+static MOCHI_SHAPE: Mutex<super::MouseShape> = Mutex::new(super::MouseShape::Empty);
 
 /// Sets the window up for `mode` before it is ever shown. False means it can't
 /// be used (a layer surface can't be made from a window already shown).
@@ -642,7 +642,7 @@ pub fn prepare_desktop_window(win: &WebviewWindow, mode: super::DesktopMode) -> 
             let ptr = gtk_window_ptr(&gw);
             unsafe {
                 layer::gtk_layer_init_for_window(ptr);
-                layer::gtk_layer_set_namespace(ptr, c"Day-day".as_ptr());
+                layer::gtk_layer_set_namespace(ptr, c"coucou-mochi".as_ptr());
                 // Above windows, below fullscreen video — like a floating panel.
                 layer::gtk_layer_set_layer(ptr, layer::LAYER_TOP);
                 layer::gtk_layer_set_anchor(ptr, layer::EDGE_TOP, 1);
@@ -655,13 +655,13 @@ pub fn prepare_desktop_window(win: &WebviewWindow, mode: super::DesktopMode) -> 
             // Same first-frame problem as the island (see make_non_activating).
             let remapped = std::cell::Cell::new(false);
             gw.connect_map_event(move |w, _| {
-                apply_mouse_shape(w, *DAY_SHAPE.lock().unwrap());
+                apply_mouse_shape(w, *MOCHI_SHAPE.lock().unwrap());
                 if !remapped.replace(true) {
                     let w = w.clone();
                     gtk::glib::idle_add_local_once(move || {
                         w.hide();
                         w.show_all();
-                        apply_mouse_shape(&w, *DAY_SHAPE.lock().unwrap());
+                        apply_mouse_shape(&w, *MOCHI_SHAPE.lock().unwrap());
                     });
                 }
                 gtk::glib::Propagation::Proceed
@@ -670,7 +670,7 @@ pub fn prepare_desktop_window(win: &WebviewWindow, mode: super::DesktopMode) -> 
         }
         super::DesktopMode::Window => {
             gw.connect_map_event(|w, _| {
-                apply_mouse_shape(w, *DAY_SHAPE.lock().unwrap());
+                apply_mouse_shape(w, *MOCHI_SHAPE.lock().unwrap());
                 gtk::glib::Propagation::Proceed
             });
             true
@@ -681,7 +681,7 @@ pub fn prepare_desktop_window(win: &WebviewWindow, mode: super::DesktopMode) -> 
 
 /// Which part of the desktop Day takes the mouse. Main thread.
 pub fn set_desktop_shape(win: &WebviewWindow, shape: super::MouseShape) {
-    *DAY_SHAPE.lock().unwrap() = shape;
+    *MOCHI_SHAPE.lock().unwrap() = shape;
     let Ok(gw) = win.gtk_window() else { return };
     apply_mouse_shape(&gw, shape);
 }
@@ -750,7 +750,7 @@ pub fn set_layer_overlay(win: &WebviewWindow, on: bool) {
 
 /// Layer surface only: puts the desktop Day on the island's display and
 /// returns that display's logical size. Main thread.
-pub fn layer_display(island: &WebviewWindow, day: &WebviewWindow) -> Option<(f64, f64)> {
+pub fn layer_display(island: &WebviewWindow, mochi: &WebviewWindow) -> Option<(f64, f64)> {
     let island_gw = island.gtk_window().ok()?;
     let display = gtk::gdk::Display::default()?;
     let monitor = island_gw
@@ -758,7 +758,7 @@ pub fn layer_display(island: &WebviewWindow, day: &WebviewWindow) -> Option<(f64
         .and_then(|w| display.monitor_at_window(&w))
         .or_else(|| display.primary_monitor())
         .or_else(|| display.monitor(0))?;
-    if let Ok(gw) = day.gtk_window() {
+    if let Ok(gw) = mochi.gtk_window() {
         unsafe { layer::gtk_layer_set_monitor(gtk_window_ptr(&gw), monitor.to_glib_none().0) };
     }
     let g = monitor.geometry();
@@ -771,7 +771,7 @@ mod tests {
 
     #[test]
     fn only_a_private_directory_of_ours_can_hold_the_relay_socket() {
-        let base = std::env::temp_dir().join(format!("Day-rt-{}", std::process::id()));
+        let base = std::env::temp_dir().join(format!("coucou-rt-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&base);
         let dir = base.join("runtime");
         std::fs::create_dir_all(&dir).unwrap();
@@ -821,7 +821,7 @@ mod tests {
     #[test]
     fn private_dirs_are_closed_to_everyone_else() {
         use std::os::unix::fs::MetadataExt;
-        let dir = std::env::temp_dir().join(format!("Day-priv-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("coucou-priv-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o755)).unwrap();
@@ -844,3 +844,96 @@ mod tests {
     }
 }
 
+// ── Flow dictation's pill ─────────────────────────────────────────────────────
+//
+// The pill rests at the bottom (or on the left or right edge) of the screen.
+// On X11 it is an ordinary always-on-top window placed with set_position; on a
+// layer-shell compositor a layer surface anchored to that edge. Either way the
+// input region is the pill and its bubble, so clicks anywhere else go through.
+
+/// The pill's input rectangles, re-applied on every map.
+static PILL_SHAPE: Mutex<Vec<(f64, f64, f64, f64)>> = Mutex::new(Vec::new());
+
+/// Sets the pill's window up before it is ever shown. Main thread.
+pub fn prepare_pill_window(win: &WebviewWindow, mode: super::DesktopMode) -> bool {
+    let Ok(gw) = win.gtk_window() else { return false };
+    gw.set_accept_focus(false);
+    let reapply = |w: &gtk::ApplicationWindow| apply_rects(w, &PILL_SHAPE.lock().unwrap());
+    match mode {
+        super::DesktopMode::Layer => {
+            if gw.is_realized() {
+                return false;
+            }
+            gw.set_titlebar(None::<&gtk::Widget>);
+            let ptr = gtk_window_ptr(&gw);
+            unsafe {
+                layer::gtk_layer_init_for_window(ptr);
+                layer::gtk_layer_set_namespace(ptr, c"coucou-pill".as_ptr());
+                layer::gtk_layer_set_layer(ptr, layer::LAYER_OVERLAY);
+                layer::gtk_layer_set_anchor(ptr, layer::EDGE_BOTTOM, 1);
+                layer::gtk_layer_set_exclusive_zone(ptr, 0);
+                layer::gtk_layer_set_keyboard_mode(ptr, layer::KEYBOARD_NONE);
+            }
+            let remapped = std::cell::Cell::new(false);
+            gw.connect_map_event(move |w, _| {
+                reapply(w);
+                if !remapped.replace(true) {
+                    let w = w.clone();
+                    gtk::glib::idle_add_local_once(move || {
+                        w.hide();
+                        w.show_all();
+                        apply_rects(&w, &PILL_SHAPE.lock().unwrap());
+                    });
+                }
+                gtk::glib::Propagation::Proceed
+            });
+            true
+        }
+        super::DesktopMode::Window => {
+            if !gw.is_realized() {
+                gw.set_type_hint(gtk::gdk::WindowTypeHint::Dock);
+            }
+            gw.set_keep_above(true);
+            gw.connect_map_event(move |w, _| {
+                reapply(w);
+                gtk::glib::Propagation::Proceed
+            });
+            true
+        }
+        _ => false,
+    }
+}
+
+/// Layer surface only: anchors the pill to its edge, centred along it. Main thread.
+pub fn set_pill_edge(win: &WebviewWindow, edge: &str) {
+    let Ok(gw) = win.gtk_window() else { return };
+    let ptr = gtk_window_ptr(&gw);
+    unsafe {
+        layer::gtk_layer_set_anchor(ptr, layer::EDGE_BOTTOM, (edge == "bottom") as i32);
+        layer::gtk_layer_set_anchor(ptr, layer::EDGE_LEFT, (edge == "left") as i32);
+        layer::gtk_layer_set_anchor(ptr, layer::EDGE_RIGHT, (edge == "right") as i32);
+        layer::gtk_layer_set_anchor(ptr, layer::EDGE_TOP, 0);
+    }
+}
+
+/// The parts of the pill's window that take the mouse. Main thread.
+pub fn set_pill_input(win: &WebviewWindow, rects: Vec<(f64, f64, f64, f64)>) {
+    *PILL_SHAPE.lock().unwrap() = rects.clone();
+    let Ok(gw) = win.gtk_window() else { return };
+    apply_rects(&gw, &rects);
+}
+
+fn apply_rects(gw: &impl IsA<gtk::Widget>, rects: &[(f64, f64, f64, f64)]) {
+    use gtk::cairo::{RectangleInt, Region};
+    let Some(gdk_window) = gw.window() else { return };
+    let region = Region::create_rectangle(&RectangleInt::new(0, 0, 0, 0));
+    for &(x, y, w, h) in rects {
+        let _ = region.union_rectangle(&RectangleInt::new(
+            x.floor() as i32,
+            y.floor() as i32,
+            w.ceil().max(0.0) as i32,
+            h.ceil().max(0.0) as i32,
+        ));
+    }
+    gdk_window.input_shape_combine_region(&region, 0, 0);
+}

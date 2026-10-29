@@ -2,7 +2,8 @@
 // (SpotifyViews.swift) and the shared now-playing pieces (NowPlayingViews.swift
 // and MusicControlButton). Sizes, colours and wording are the Mac's.
 //
-// What they show comes from src-tauri/src/spotify.rs (Linux, MPRIS) through
+// What they show comes from src-tauri/src/spotify.rs (MPRIS on Linux, the
+// system media controls on Windows) through
 // island/spotify.ts. A click changes the page's copy at once and Spotify
 // confirms it, as the Mac's controller does.
 
@@ -14,7 +15,7 @@ import {
   SPOTIFY_GREEN, SPOTIFY_ID, Spotify, currentArtwork, formatTime, isAd, spotifyPosition, volumeLevel, withPlaying,
   type SpotifyTrack,
 } from "../core/spotify";
-import { createMiniBot } from "../day/minibots";
+import { createMiniBot } from "../mochi/minibots";
 import { pillDefinition } from "../core/pills";
 import { N_, t } from "../i18n/i18n";
 
@@ -428,4 +429,3 @@ export function buildSpotifyCard(): SpotifyCardHost {
     },
   };
 }
-

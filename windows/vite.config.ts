@@ -16,7 +16,7 @@ export const SOUNDS_DIR = resolve(__dirname, "../NotchBuddy/Resources/sounds");
 function sharedSounds(): Plugin {
   const prefix = "/sounds/";
   return {
-    name: "Day-shared-sounds",
+    name: "coucou-shared-sounds",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (!req.url?.startsWith(prefix)) return next();
@@ -62,10 +62,18 @@ export default defineConfig({
     rollupOptions: {
       input: {
         island: resolve(__dirname, "index.html"),
-        settings: resolve(__dirname, "settings.html"),
         day: resolve(__dirname, "day.html"),
+        settings: resolve(__dirname, "settings.html"),
+        pill: resolve(__dirname, "pill.html"),
+      },
+      output: {
+        // The interface's strings in every language (src/i18n/*.json) make a
+        // chunk of their own, kept apart from the code that changes more often.
+        manualChunks: (id) => (/[\\/]src[\\/]i18n[\\/][^\\/]+\.json$/.test(id) ? "i18n" : undefined),
       },
     },
+    // That chunk is about 0.8 MB and loaded from disk, never downloaded: the
+    // default 500 kB warning is meant for web pages.
+    chunkSizeWarningLimit: 1200,
   },
 });
-

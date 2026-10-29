@@ -14,8 +14,6 @@ use std::sync::{Mutex, MutexGuard, PoisonError};
 #[serde(rename_all = "camelCase", default)]
 pub struct Settings {
     pub sound_enabled: bool,
-    /// Keep the island visible while system is on; stops only on system off.
-    pub always_island: bool,
     pub sound_volume: f64,
     pub auto_close_interval: f64,
     /// Hovering the island opens it all the way, and it folds again shortly
@@ -58,24 +56,56 @@ pub struct Settings {
     /// Day's outfit, picked in the wardrobe: "auto" (dresses for the
     /// season), "none" or an outfit id — the Mac's raw values. The island reads
     /// anything it doesn't know as "auto", so the value is stored as it comes.
-    pub day_outfit: String,
+    pub mochi_outfit: String,
     /// A colour of the user's own for a pill's Day, by pill ID ("#RRGGBB"),
     /// picked in Settings → Active pills. Empty means the catalog's colours.
-    /// Kept as it comes, like `day_outfit`: src/core/pill-colors.ts reads
+    /// Kept as it comes, like `mochi_outfit`: src/core/pill-colors.ts reads
     /// whatever is not a colour as "no choice".
     pub pill_colors: BTreeMap<String, String>,
     /// Interface language: "" follows the system, else one of i18n::LANGUAGES
-    /// ("fr", "pt-BR", "zh-Hans"…). Kept as it comes, like `day_outfit`: a
+    /// ("fr", "pt-BR", "zh-Hans"…). Kept as it comes, like `mochi_outfit`: a
     /// code this build doesn't know reads as "".
     pub language: String,
     /// Day on the desktop: whether he lives there, and his spot. Owned by
     /// the Rust side (desktop.rs) — what a webview sends back is ignored.
-    pub desktop_day: DesktopDayPref,
+    pub desktop_mochi: DesktopMochiPref,
+    /// The phone link (phone_link/) is on: a TLS server for the Android app on
+    /// the local network. Off until the user turns it on in Settings → Phone;
+    /// owned by the Rust side, so what a webview sends back is ignored.
+    pub phone_link: bool,
+    /// The phone may chat through this computer's API keys (phone_link/chat.rs).
+    /// Off until the user turns it on in Settings → Android phone; owned by the
+    /// Rust side like `phone_link`, so what a webview sends back is ignored.
+    pub phone_chat: bool,
+    /// Which models the phone may use, as "provider/model". Empty allows none.
+    /// Also owned by the Rust side (phone_link::set_chat_models cleans it).
+    pub phone_chat_models: Vec<String>,
+    /// The phone may see session details (steps, last line, project folder name, colour). Off until the
+    /// user turns it on in Settings → Android phone; owned by the Rust side like `phone_link`.
+    pub phone_details: bool,
+    /// Let the phone answer the questions Claude Code asks (cap `answers`). Off by default; owned by Rust like the other phone switches.
+    pub phone_answers: bool,
+    /// Show the files an agent changed on the phone, and their diffs on request (cap `diffs`). Off by default; owned by Rust like the other phone switches.
+    pub phone_diffs: bool,
+    /// Show the Claude and Codex plan usage on the phone (cap `usage`). Off by default; owned by Rust like the other phone switches.
+    pub phone_usage: bool,
+    /// Show last week's recap (counts only) on the phone (cap `recap`). Off by default; owned by Rust like the other phone switches.
+    pub phone_recap: bool,
+    /// The service pills whose cards the phone may see, by pill id (cap `services`). None by default; owned by Rust like the other phone switches.
+    pub phone_services: Vec<String>,
+    /// Reach the phone through the user's own relay when it is not on this network (phone_link/relay_client.rs).
+    /// Off by default; owned by Rust like the other phone switches. The access key, the room and the pairing key live
+    /// in the OS keystore, never here.
+    pub phone_relay: bool,
+    /// The relay's address (`wss://…`), empty until the user enters it. Not a secret. Owned by Rust.
+    pub phone_relay_url: String,
+    /// The date and time in the middle of the compact island. Off by default.
+    pub show_clock: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
-pub struct DesktopDayPref {
+pub struct DesktopMochiPref {
     /// He was on the desktop when the app quit: he flies back out at launch.
     pub on_desktop: bool,
     /// Top-left corner of his window where the user last left him.
@@ -98,7 +128,6 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             sound_enabled: true,
-            always_island: false,
             sound_volume: 0.12,
             auto_close_interval: 15.0,
             open_on_hover: false,
@@ -123,10 +152,22 @@ impl Default for Settings {
             lmstudio_url: String::new(),
             custom_url: String::new(),
             shortcuts: Default::default(),
-            day_outfit: "auto".into(),
+            mochi_outfit: "auto".into(),
             pill_colors: BTreeMap::new(),
             language: String::new(),
-            desktop_day: DesktopDayPref::default(),
+            desktop_mochi: DesktopMochiPref::default(),
+            phone_link: false,
+            phone_chat: false,
+            phone_chat_models: Vec::new(),
+            phone_details: false,
+            phone_answers: false,
+            phone_diffs: false,
+            phone_usage: false,
+            phone_recap: false,
+            phone_services: Vec::new(),
+            phone_relay: false,
+            phone_relay_url: String::new(),
+            show_clock: false,
         }
     }
 }
@@ -164,7 +205,15 @@ fn not_loaded() -> MutexGuard<'static, Vec<PathBuf>> {
     NOT_LOADED.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
-/// One line in Day.log. Tests must never write to the real one.
+/// Serializes saves across all threads so concurrent writes do not collide on
+/// the temporary file or interleave file renames.
+static SAVE_LOCK: Mutex<()> = Mutex::new(());
+
+fn save_lock() -> MutexGuard<'static, ()> {
+    SAVE_LOCK.lock().unwrap_or_else(PoisonError::into_inner)
+}
+
+/// One line in coucou.log. Tests must never write to the real one.
 fn note(message: String) {
     #[cfg(not(test))]
     crate::log::line(message);
@@ -209,7 +258,7 @@ fn salvage(fields: Map<String, Value>) -> Settings {
 
 /// The log line for a field `salvage` had to drop. The name comes straight from
 /// the file, so it is written escaped: a line break in it must not be able to
-/// start what looks like another line of Day.log.
+/// start what looks like another line of coucou.log.
 fn unusable_field(key: &str) -> String {
     format!("settings.json: {key:?} is not usable — its default is used instead")
 }
@@ -349,6 +398,7 @@ fn write_whole(file: &mut std::fs::File, bytes: &[u8]) -> std::io::Result<()> {
 
 /// `save`, for the file at `path`, whose directory already exists.
 fn save_to(path: &Path, settings: &Settings) -> std::io::Result<()> {
+    let _lock = save_lock();
     keep_what_was_not_loaded(path)?;
     let json = serde_json::to_vec_pretty(settings)
         .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e))?;
@@ -362,7 +412,7 @@ fn save_to(path: &Path, settings: &Settings) -> std::io::Result<()> {
 
     // Write beside the target and rename over it: a crash, a full disk or a
     // power cut leaves the previous settings.json intact rather than half a file.
-    let temp = path.with_extension(format!("json.Day-{}", std::process::id()));
+    let temp = path.with_extension(format!("json.coucou-{}", std::process::id()));
     let written = std::fs::File::create(&temp)
         .and_then(|mut file| write_whole(&mut file, &json))
         .and_then(|()| std::fs::rename(&temp, path));
@@ -381,7 +431,6 @@ mod tests {
     // Two #: the colours in it are written "#RRGGBB".
     const CUSTOM: &str = r##"{
   "soundEnabled": false,
-  "alwaysIsland": true,
   "soundVolume": 0.5,
   "autoCloseInterval": 30.0,
   "openOnHover": true,
@@ -401,10 +450,22 @@ mod tests {
   "lmstudioUrl": "http://127.0.0.1:1234",
   "customUrl": "https://llm.example.com",
   "shortcuts": { "openChat": { "keys": "Ctrl+Shift+K", "enabled": false } },
-  "dayOutfit": "witchHat",
+  "mochiOutfit": "witchHat",
   "pillColors": { "integration_claude": "#2DD4BF" },
   "language": "pt-BR",
-  "desktopDay": { "onDesktop": true, "spot": { "x": 1500.5, "y": -300.0, "space": "screen" } }
+  "desktopMochi": { "onDesktop": true, "spot": { "x": 1500.5, "y": -300.0, "space": "screen" } },
+  "phoneLink": true,
+  "phoneChat": true,
+  "phoneChatModels": ["openai/gpt-x"],
+  "phoneDetails": true,
+  "phoneAnswers": true,
+  "phoneDiffs": true,
+  "phoneUsage": true,
+  "phoneRecap": true,
+  "phoneServices": ["integration_stripe"],
+  "phoneRelay": true,
+  "phoneRelayUrl": "wss://relay.example.workers.dev",
+  "showClock": true
 }"##;
 
     fn custom() -> Value {
@@ -433,7 +494,7 @@ mod tests {
     /// A fresh directory of our own, and the settings.json it will hold.
     fn scratch(name: &str) -> (PathBuf, PathBuf) {
         let dir = std::env::temp_dir()
-            .join(format!("Day-settings-{name}-{}", std::process::id()));
+            .join(format!("coucou-settings-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let file = dir.join("settings.json");
@@ -495,42 +556,145 @@ mod tests {
     }
 
     #[test]
-    fn a_file_from_before_the_wardrobe_dresses_day_for_the_seasons() {
-        let loaded = parse(&custom_with("dayOutfit", None)).unwrap();
-        assert_eq!(loaded.day_outfit, "auto");
+    fn a_file_from_before_the_wardrobe_dresses_mochi_for_the_seasons() {
+        let loaded = parse(&custom_with("mochiOutfit", None)).unwrap();
+        assert_eq!(loaded.mochi_outfit, "auto");
         assert_eq!(loaded.model, "some-model");
         assert!(!loaded.sound_enabled);
     }
 
     #[test]
-    fn a_file_from_before_the_desktop_day_keeps_him_in_the_island() {
-        let loaded = parse(&custom_with("desktopDay", None)).unwrap();
-        assert_eq!(loaded.desktop_day, DesktopDayPref::default());
-        assert!(!loaded.desktop_day.on_desktop);
-        assert_eq!(loaded.day_outfit, "witchHat");
+    fn a_file_from_before_the_desktop_mochi_keeps_him_in_the_island() {
+        let loaded = parse(&custom_with("desktopMochi", None)).unwrap();
+        assert_eq!(loaded.desktop_mochi, DesktopMochiPref::default());
+        assert!(!loaded.desktop_mochi.on_desktop);
+        assert_eq!(loaded.mochi_outfit, "witchHat");
+    }
+
+    #[test]
+    fn a_file_from_before_the_phone_link_keeps_it_off() {
+        // The link opens a port on the local network: it is never on by default,
+        // and an older file must not be read as consent.
+        assert!(!Settings::default().phone_link);
+        let loaded = parse(&custom_with("phoneLink", None)).unwrap();
+        assert!(!loaded.phone_link);
+        assert_eq!(loaded.mochi_outfit, "witchHat");
+        assert!(parse(&custom_with("phoneLink", Some(serde_json::json!(true)))).unwrap().phone_link);
+
+        // A value of the wrong type does not switch it on either, and costs nothing else.
+        let (dir, file) = scratch("phone-link");
+        std::fs::write(&file, custom_with("phoneLink", Some(serde_json::json!("yes")))).unwrap();
+        let odd = load_from(&file);
+        assert!(!odd.phone_link);
+        assert_eq!(odd.mochi_outfit, "witchHat");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_file_from_before_phone_chat_keeps_it_off_and_empty() {
+        // Chat spends the user's API credit: never on by default, and an older file is not consent.
+        let d = Settings::default();
+        assert!(!d.phone_chat);
+        assert!(d.phone_chat_models.is_empty());
+        let loaded = parse(&custom_with("phoneChat", None)).unwrap();
+        assert!(!loaded.phone_chat);
+        assert!(parse(&custom_with("phoneChat", Some(serde_json::json!(true)))).unwrap().phone_chat);
+        let odd = parse(&custom_with("phoneChat", Some(serde_json::json!("yes")))).unwrap();
+        assert!(!odd.phone_chat, "a wrong type does not switch it on");
+        assert_eq!(odd.mochi_outfit, "witchHat");
+        let models = parse(&custom_with("phoneChatModels", Some(serde_json::json!(["openai/gpt-x"])))).unwrap();
+        assert_eq!(models.phone_chat_models, vec!["openai/gpt-x".to_string()]);
+        let bad = parse(&custom_with("phoneChatModels", Some(serde_json::json!("openai/gpt-x")))).unwrap();
+        assert!(bad.phone_chat_models.is_empty());
+    }
+
+    #[test]
+    fn a_file_from_before_phone_answers_keeps_it_off() {
+        // Answering for the agent from the phone is never on by default; an older file is not consent.
+        assert!(!Settings::default().phone_answers);
+        assert!(!parse(&custom_with("phoneAnswers", None)).unwrap().phone_answers);
+        assert!(parse(&custom_with("phoneAnswers", Some(serde_json::json!(true)))).unwrap().phone_answers);
+        assert!(!parse(&custom_with("phoneAnswers", Some(serde_json::json!("yes")))).unwrap().phone_answers, "a wrong type does not switch it on");
+    }
+
+    #[test]
+    fn a_file_from_before_phone_diffs_keeps_it_off() {
+        // Showing what an agent changed on the phone is never on by default; an older file is not consent.
+        assert!(!Settings::default().phone_diffs);
+        assert!(!parse(&custom_with("phoneDiffs", None)).unwrap().phone_diffs);
+        assert!(parse(&custom_with("phoneDiffs", Some(serde_json::json!(true)))).unwrap().phone_diffs);
+        assert!(!parse(&custom_with("phoneDiffs", Some(serde_json::json!("yes")))).unwrap().phone_diffs, "a wrong type does not switch it on");
+    }
+
+    #[test]
+    fn a_file_from_before_phone_usage_keeps_it_off() {
+        assert!(!Settings::default().phone_usage);
+        assert!(!parse(&custom_with("phoneUsage", None)).unwrap().phone_usage);
+        assert!(parse(&custom_with("phoneUsage", Some(serde_json::json!(true)))).unwrap().phone_usage);
+        assert!(!parse(&custom_with("phoneUsage", Some(serde_json::json!("yes")))).unwrap().phone_usage, "a wrong type does not switch it on");
+    }
+
+    #[test]
+    fn a_file_from_before_the_weekly_recap_on_the_phone_keeps_it_off() {
+        // Sending last week's numbers to the phone is never on by default; an older file is not consent.
+        assert!(!Settings::default().phone_recap);
+        assert!(!parse(&custom_with("phoneRecap", None)).unwrap().phone_recap);
+        assert!(parse(&custom_with("phoneRecap", Some(serde_json::json!(true)))).unwrap().phone_recap);
+        assert!(!parse(&custom_with("phoneRecap", Some(serde_json::json!("yes")))).unwrap().phone_recap, "a wrong type does not switch it on");
+    }
+
+    #[test]
+    fn a_file_from_before_the_relay_keeps_it_off_and_empty() {
+        assert!(!Settings::default().phone_relay);
+        assert!(Settings::default().phone_relay_url.is_empty());
+        let old = parse(&custom_with("phoneRelay", None)).unwrap();
+        assert!(!old.phone_relay);
+        assert!(parse(&custom_with("phoneRelay", Some(serde_json::json!(true)))).unwrap().phone_relay);
+        assert!(!parse(&custom_with("phoneRelay", Some(serde_json::json!("yes")))).unwrap().phone_relay, "a wrong type does not switch it on");
+        assert!(parse(&custom_with("phoneRelayUrl", Some(serde_json::json!(5)))).unwrap().phone_relay_url.is_empty());
+    }
+
+    #[test]
+    fn a_file_from_before_phone_services_shows_none() {
+        // Showing a service on the phone is never on by default; an older file is not consent.
+        assert!(Settings::default().phone_services.is_empty());
+        assert!(parse(&custom_with("phoneServices", None)).unwrap().phone_services.is_empty());
+        assert_eq!(parse(&custom_with("phoneServices", Some(serde_json::json!(["integration_stripe"])))).unwrap().phone_services, vec!["integration_stripe".to_string()]);
+        assert!(parse(&custom_with("phoneServices", Some(serde_json::json!("integration_stripe")))).unwrap().phone_services.is_empty(), "a wrong type shows none");
+    }
+
+    #[test]
+    fn a_file_from_before_phone_details_keeps_them_off() {
+        // Details can include commands and folder names: never on by default, an older file is not consent.
+        assert!(!Settings::default().phone_details);
+        assert!(!parse(&custom_with("phoneDetails", None)).unwrap().phone_details);
+        assert!(parse(&custom_with("phoneDetails", Some(serde_json::json!(true)))).unwrap().phone_details);
+        let odd = parse(&custom_with("phoneDetails", Some(serde_json::json!("yes")))).unwrap();
+        assert!(!odd.phone_details, "a wrong type does not switch it on");
+        assert_eq!(odd.mochi_outfit, "witchHat");
     }
 
     #[test]
     fn a_half_written_desktop_spot_costs_only_the_spot() {
         let loaded = parse(&custom_with(
-            "desktopDay",
+            "desktopMochi",
             Some(json!({ "onDesktop": true, "spot": { "x": "left" } })),
         ))
         .unwrap();
         // The whole field falls back, and nothing else does.
-        assert_eq!(loaded.desktop_day, DesktopDayPref::default());
+        assert_eq!(loaded.desktop_mochi, DesktopMochiPref::default());
         assert_eq!(loaded.model, "some-model");
 
-        let loaded = parse(&custom_with("desktopDay", Some(json!({ "onDesktop": true })))).unwrap();
-        assert!(loaded.desktop_day.on_desktop);
-        assert_eq!(loaded.desktop_day.spot, None);
+        let loaded = parse(&custom_with("desktopMochi", Some(json!({ "onDesktop": true })))).unwrap();
+        assert!(loaded.desktop_mochi.on_desktop);
+        assert_eq!(loaded.desktop_mochi.spot, None);
     }
 
     #[test]
     fn a_file_from_before_the_colours_paints_every_pill_as_the_catalog_says() {
         let loaded = parse(&custom_with("pillColors", None)).unwrap();
         assert!(loaded.pill_colors.is_empty());
-        assert_eq!(loaded.day_outfit, "witchHat");
+        assert_eq!(loaded.mochi_outfit, "witchHat");
     }
 
     #[test]
@@ -548,8 +712,8 @@ mod tests {
     fn an_outfit_this_build_does_not_know_is_kept_as_written() {
         // A newer build may add outfits: the island shows "auto" for it, but
         // the choice must survive a save made by this one.
-        let loaded = parse(&custom_with("dayOutfit", Some(json!("topHat")))).unwrap();
-        assert_eq!(loaded.day_outfit, "topHat");
+        let loaded = parse(&custom_with("mochiOutfit", Some(json!("topHat")))).unwrap();
+        assert_eq!(loaded.mochi_outfit, "topHat");
         // The language too: "" (follow the system) when absent, as it comes otherwise.
         assert_eq!(parse(&custom_with("language", None)).unwrap().language, "");
         assert_eq!(parse(&custom_with("language", Some(json!("xx")))).unwrap().language, "xx");
@@ -785,7 +949,6 @@ mod tests {
             keys,
             [
                 "soundEnabled",
-                "alwaysIsland",
                 "soundVolume",
                 "autoCloseInterval",
                 "openOnHover",
@@ -805,10 +968,22 @@ mod tests {
                 "lmstudioUrl",
                 "customUrl",
                 "shortcuts",
-                "dayOutfit",
+                "mochiOutfit",
                 "pillColors",
                 "language",
-                "desktopDay",
+                "desktopMochi",
+                "phoneLink",
+                "phoneChat",
+                "phoneChatModels",
+                "phoneDetails",
+                "phoneAnswers",
+                "phoneDiffs",
+                "phoneUsage",
+                "phoneRecap",
+                "phoneServices",
+                "phoneRelay",
+                "phoneRelayUrl",
+                "showClock",
             ]
         );
         let _ = std::fs::remove_dir_all(&dir);
@@ -838,12 +1013,35 @@ mod tests {
         // directory squatting on that name, the write cannot even start.
         let (dir, file) = scratch("blocked");
         std::fs::write(&file, CUSTOM).unwrap();
-        let temp = dir.join(format!("settings.json.Day-{}", std::process::id()));
+        let temp = dir.join(format!("settings.json.coucou-{}", std::process::id()));
         std::fs::create_dir(&temp).unwrap();
 
         assert!(save_to(&file, &Settings::default()).is_err());
         assert_eq!(std::fs::read(&file).unwrap(), CUSTOM.as_bytes());
         let _ = std::fs::remove_dir_all(&dir);
     }
-}
 
+    #[test]
+    fn concurrent_saves_never_collide() {
+        let (dir, file) = scratch("concurrent");
+        let handles: Vec<_> = (0..20)
+            .map(|i| {
+                let path = file.clone();
+                std::thread::spawn(move || {
+                    let mut s = Settings::default();
+                    s.sound_volume = (i as f64) * 0.05;
+                    save_to(&path, &s)
+                })
+            })
+            .collect();
+
+        for h in handles {
+            assert!(h.join().unwrap().is_ok());
+        }
+
+        // Must still be valid settings that load cleanly without corruption
+        let loaded = load_from(&file);
+        assert!(loaded.sound_volume >= 0.0);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}

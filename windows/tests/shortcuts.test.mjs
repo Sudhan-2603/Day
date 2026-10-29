@@ -305,7 +305,7 @@ beforeEach(() => {
   State.stateOverride = null;
   State.chatHistory = [];
   State.settings = { ...DEFAULT_SETTINGS };
-  State.dayOnDesktop = false;
+  State.mochiOnDesktop = false;
   State.cardSelection = null;
   State.cardItemCount = 0;
   desktopSupported = true;
@@ -450,7 +450,7 @@ test("the desktop shortcut sends Day out, lifting Pause, and brings him home", (
   assert.deepEqual(did, ["resume", "desktop"]);
   // Out there already: home, and Pause stays as it is.
   did = [];
-  State.dayOnDesktop = true;
+  State.mochiOnDesktop = true;
   runGlobalShortcut(host, "desktopToggle", resume);
   assert.deepEqual(did, ["desktop"]);
   assert.deepEqual(calls, []);
@@ -466,7 +466,7 @@ test("the desktop shortcut arrives like the others, and runs from the command li
   emit("shortcut", "desktopToggle");
   assert.deepEqual(did, ["resume", "desktop"]);
   const rust = readFileSync(new URL("../src-tauri/src/shortcuts.rs", import.meta.url), "utf8");
-  assert.match(rust, /from_args\(&args\(&\["Day", "--shortcut", "desktopToggle"\]\)\), Some\("desktopToggle"\)/);
+  assert.match(rust, /from_args\(&args\(&\["coucou", "--shortcut", "desktopToggle"\]\)\), Some\("desktopToggle"\)/);
 });
 
 test("actions that aren't the island's do nothing here", () => {

@@ -1,15 +1,15 @@
-// Day on the desktop: the pure logic and the life cycle (src/day/desktop-logic.ts).
-// The first half mirrors tests/DesktopDayTests.swift; the geometry of the
+// Day on the desktop: the pure logic and the life cycle (src/mochi/desktop-logic.ts).
+// The first half mirrors tests/DesktopMochiTests.swift; the geometry of the
 // window itself (clamping, saved spots, the island's home zone) is tested in
 // src-tauri/src/desktop.rs, where it lives.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  BODY_RADIUS_FRACTION, DesktopDayController, PANEL_SIZE, RETRACT_DELAY_MS, RETURN_DELAY_MS,
+  BODY_RADIUS_FRACTION, DesktopMochiController, PANEL_SIZE, RETRACT_DELAY_MS, RETURN_DELAY_MS,
   agentActive, alertActive, gaze, isOverBody, layerDragTopLeft, lookOrigin, pointerDistance,
   shouldRetractOnLanding, shouldSleep, windowDragTopLeft,
-} from "../src/day/desktop-logic.ts";
+} from "../src/mochi/desktop-logic.ts";
 
 // ── shouldSleep ───────────────────────────────────────────────────────────────
 
@@ -177,7 +177,7 @@ function world({ alert = false, flyOutOk = true } = {}) {
       later: (fn, ms) => timers.push({ fn, ms }),
     },
   };
-  w.c = new DesktopDayController(w.port);
+  w.c = new DesktopMochiController(w.port);
   return w;
 }
 

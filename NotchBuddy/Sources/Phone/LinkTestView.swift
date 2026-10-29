@@ -24,15 +24,15 @@ struct LinkTestView: View {
 
                 Section("Sessions on your Mac") {
                     if link.sessions.isEmpty {
-                        Text("No session yet. Open Day on your Mac (NotchBuddyCloud).")
+                        Text("No session yet. Open Coucou on your Mac (NotchBuddyCloud).")
                             .foregroundStyle(.secondary)
                     }
                     ForEach(link.sessions) { session in
                         HStack(alignment: .top, spacing: 12) {
-                            DayStill(state: session.state)
+                            MochiStill(state: session.state)
                                 .padding(4)
                                 .frame(width: 40, height: 40)
-                                .background(Color.dayTile(hex: session.color), in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.mochiTile(hex: session.color), in: RoundedRectangle(cornerRadius: 10))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(session.name.isEmpty ? session.pillName : session.name)
                                 Text("\(session.pillName) · \(session.state.rawValue)" +
@@ -93,7 +93,7 @@ struct LinkTestView: View {
                     }
                 }
             }
-            .navigationTitle("Day link test")
+            .navigationTitle("Coucou link test")
             .refreshable { await link.refresh() }
             .toolbar {
                 NavigationLink("Kit") { KitPreviewView() }
@@ -109,7 +109,7 @@ struct LinkTestView: View {
                   systemImage: "icloud.slash")
                 .foregroundStyle(.orange)
         case .zoneMissing:
-            Label("The Day zone doesn't exist yet. Launch Day on your Mac (NotchBuddyCloud scheme), then pull to refresh.",
+            Label("The Coucou zone doesn't exist yet. Launch Coucou on your Mac (NotchBuddyCloud scheme), then pull to refresh.",
                   systemImage: "tray")
                 .foregroundStyle(.orange)
         case .ready:

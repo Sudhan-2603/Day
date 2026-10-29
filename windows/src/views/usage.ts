@@ -52,7 +52,7 @@ export function closePlanCard(): void {
 
 // ── Claude numbers ────────────────────────────────────────────────────────────
 
-const STORE_KEY = "Day.claudePlanUsage";
+const STORE_KEY = "coucou.claudePlanUsage";
 
 /** New numbers from the status line; kept so they survive a restart, as on the Mac. */
 export function setClaudePlanUsage(usage: PlanUsage): void {
@@ -212,4 +212,3 @@ export class PlanCard {
     this.el.append(head(codexColor(now), PLAN_TEXT.codexTitle, codexSubtitle(u, now)), rows);
   }
 }
-

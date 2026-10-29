@@ -1,7 +1,7 @@
 // App state — mirror of AppState.swift (the parts the island needs).
 
 import type { BotEmoteName, BotStateName, IslandMode, IslandViewName } from "./layout";
-import type { EyeShape } from "../day/engine";
+import type { EyeShape } from "../mochi/engine";
 import {
   DEFAULT_MAIN_PILL, HOST_OS, availablePills, orderPills, pillDefinition, sanitizeDeclared,
   toggleDeclared, type HostOs, type PillDefinition,
@@ -10,7 +10,7 @@ import type { CodexPlanUsage, PlanUsage } from "./plan";
 import type { ProviderId } from "./providers";
 import type { FileDiff } from "./diff";
 import type { Bindings } from "./shortcuts";
-import { DEFAULT_OUTFIT, type Outfit } from "../day/wardrobe";
+import { DEFAULT_OUTFIT, type Outfit } from "../mochi/wardrobe";
 import { pillColor } from "./pill-colors";
 import { Spotify, musicPlaying } from "./spotify";
 
@@ -101,32 +101,10 @@ export interface Settings {
   soundEnabled: boolean;
   soundVolume: number;
   autoCloseInterval: number;
-  /** Background blur enabled for capsule (default true). */
-  backgroundBlur?: boolean;
-  /** Background opacity from 0.0 to 1.0 (default 0.85). */
-  backgroundOpacity?: number;
-  /** Show move button on the right side of the Island header. */
-  showMoveBtn?: boolean;
-  /** Show close button on the right side of the Island header. */
-  showCloseBtn?: boolean;
-  /** Show minimize button on the right side of the Island header. */
-  showMinimizeBtn?: boolean;
-  /** Show previous button on the right side of the Island header. */
-  showPreviousBtn?: boolean;
-  /** Show undo button on the right side of the Island header. */
-  showUndoBtn?: boolean;
-  /** Master toggle for system permissions (open/delete files, open editor, write code, questions). */
-  systemPermissions?: boolean;
-  /** Allow file operations (open and delete files). */
-  systemPermFiles?: boolean;
-  /** Allow opening code editor and writing code. */
-  systemPermEditor?: boolean;
-  /** Allow interactive questions / prompts. */
-  systemPermQuestions?: boolean;
   /** Hovering the island opens it all the way (off: hovering only peeks). */
   openOnHover: boolean;
-  /** If true, the island stays enabled from System ON and only stops on System OFF (always visible). */
-  alwaysIsland: boolean;
+  /** Date and time in the middle of the compact island. */
+  showClock: boolean;
   absenceInterval: number;
   /** Declared pills next to the main one (at most 4), in the order they were added. */
   activeIntegrations: string[];
@@ -156,10 +134,9 @@ export interface Settings {
   shortcuts: Bindings;
   /**
    * Day's outfit: "auto" (dresses for the season), "none" or an outfit id.
-   * Same raw values as the Mac's "dayOutfit"; read it through parseOutfit.
+   * Same raw values as the Mac's "mochiOutfit"; read it through parseOutfit.
    */
-  dayOutfit: string;
-  avatarColor?: string;
+  mochiOutfit: string;
   /**
    * A colour of the user's own for a pill's Day, by pill ID ("#RRGGBB").
    * Empty means the catalog's colours; read it through core/pill-colors.ts.
@@ -171,36 +148,44 @@ export interface Settings {
    * else English), or one of src/i18n's ten codes ("fr", "pt-BR", "zh-Hans"…).
    */
   language: string;
-  islandX?: number | null;
-  islandY?: number | null;
+  /**
+   * The phone link for Day for Android is on. Rust owns it (only the switch in
+   * Settings → Android phone turns it on): whatever the page sends back is ignored.
+   */
+  phoneLink?: boolean;
+  /** The phone may chat through this computer's API keys. Rust owns it too. */
+  phoneChat?: boolean;
+  /** The phone may see session details (steps, last line, folder name, colour). Rust owns it too. */
+  phoneDetails?: boolean;
+  /** Which models the phone may use, "provider/model". Rust owns it too. */
+  phoneChatModels?: string[];
   /** Day on the desktop. Rust owns it: whatever the page sends back is ignored. */
-  desktopDay?: {
+  desktopMochi?: {
     onDesktop: boolean;
     spot: { x: number; y: number; space: string } | null;
   };
+  showPrevBtn?: boolean;
+  showUndoBtn?: boolean;
+  showCloseBtn?: boolean;
+  showMinBtn?: boolean;
+  showAlwaysBtn?: boolean;
+  alwaysIsland?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
-  alwaysIsland: false,
   soundVolume: 0.12,
   autoCloseInterval: 15,
-  backgroundBlur: true,
-  backgroundOpacity: 0.85,
-  showMoveBtn: true,
-  showCloseBtn: true,
-  showMinimizeBtn: true,
-  showPreviousBtn: true,
-  showUndoBtn: true,
-  systemPermissions: true,
-  systemPermFiles: true,
-  systemPermEditor: true,
-  systemPermQuestions: true,
   openOnHover: false,
+  showClock: false,
   absenceInterval: 180,
-  activeIntegrations: [
-    "integration_resend", "integration_n8n", "integration_vercel", "integration_github",
-  ],
+  activeIntegrations: [],
+  showPrevBtn: true,
+  showUndoBtn: true,
+  showCloseBtn: true,
+  showMinBtn: true,
+  showAlwaysBtn: true,
+  alwaysIsland: false,
   mainPill: DEFAULT_MAIN_PILL,
   screen: "primary",
   autostart: false,
@@ -215,8 +200,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lmstudioUrl: "",
   customUrl: "",
   shortcuts: {},
-  dayOutfit: DEFAULT_OUTFIT,
-  avatarColor: "",
+  mochiOutfit: DEFAULT_OUTFIT,
   pillColors: {},
   language: "",
 };
@@ -244,7 +228,6 @@ class AppState {
 
   isPinned = false;
   paused = false;
-  fullSettingsOpen = false;
 
   uploadProgress = 0;
   uploadDuration = 2.4;
@@ -280,9 +263,9 @@ class AppState {
   cardItemCount = 0;
   /**
    * Day is out of the island — on the desktop, flying, or being dragged
-   * there — so the island's own Day is hidden (AppState.dayOnDesktop).
+   * there — so the island's own Day is hidden (AppState.mochiOnDesktop).
    */
-  dayOnDesktop = false;
+  mochiOnDesktop = false;
 
   /** Outfit shown on Day while the pointer rests on a wardrobe button. */
   wardrobePreview: Outfit | null = null;
@@ -542,4 +525,3 @@ class AppState {
 }
 
 export const State = new AppState();
-

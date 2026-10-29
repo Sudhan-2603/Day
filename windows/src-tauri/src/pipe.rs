@@ -1,13 +1,13 @@
-// Relay server for Day-hook.
+// Relay server for coucou-hook.
 //
-// Windows: the named pipe `\\.\pipe\Day-<sid>`, one instance per connection.
-// Linux: the Unix socket `$XDG_RUNTIME_DIR/Day.sock`. Every hook event is
+// Windows: the named pipe `\\.\pipe\coucou-<sid>`, one instance per connection.
+// Linux: the Unix socket `$XDG_RUNTIME_DIR/coucou.sock`. Every hook event is
 // forwarded to the island as a `hook` event. `PermissionRequest` is the only one
 // that keeps its connection open: it waits for the island's decision and writes
 // it back on the same connection, which is how approving from the island works.
 //
 // Claude Code is never blocked by us. Three things guarantee it:
-//   * Day-hook gives the connection 300 ms and exits cleanly if we are closed;
+//   * coucou-hook gives the connection 300 ms and exits cleanly if we are closed;
 //   * we only wait for a human once the island has *confirmed* the card is on
 //     screen, so a paused island or a webview that is not listening costs a few
 //     hundred milliseconds, not two minutes;
@@ -17,7 +17,7 @@
 // What we write back is the bare word `allow` or `deny` — or, when the request
 // was Claude Code asking a question, `{"answers":{…}}` with what was picked on
 // the island. Turning either into the documented hookSpecificOutput JSON is
-// Day-hook's job, so the wire format Claude Code expects lives in exactly
+// coucou-hook's job, so the wire format Claude Code expects lives in exactly
 // one place.
 
 use std::collections::HashMap;
@@ -36,7 +36,7 @@ use crate::island::WINDOW_LABEL;
 use crate::log;
 use crate::session_window;
 
-/// Slightly under Day-hook's own 110 s wait, so we always answer first.
+/// Slightly under coucou-hook's own 110 s wait, so we always answer first.
 const DECISION_TIMEOUT: Duration = Duration::from_secs(108);
 /// How long the island gets to say "the card is up". This is the whole of B4:
 /// without it, an island that is paused, hidden behind a crashed webview or
@@ -61,12 +61,12 @@ pub struct Pending(pub Mutex<HashMap<String, mpsc::Sender<Reply>>>);
 
 static COUNTER: AtomicU64 = AtomicU64::new(1);
 
-/// `\\.\pipe\Day-<sid>` — must match Day-hook's `pipe_path()` exactly.
+/// `\\.\pipe\coucou-<sid>` — must match coucou-hook's `pipe_path()` exactly.
 #[cfg(windows)]
 pub fn pipe_name() -> String {
     let key = crate::platform::current_user_sid()
         .unwrap_or_else(|| std::env::var("USERNAME").unwrap_or_else(|_| "user".into()));
-    format!(r"\\.\pipe\Day-{key}")
+    format!(r"\\.\pipe\coucou-{key}")
 }
 
 #[cfg(windows)]
@@ -84,6 +84,10 @@ pub fn start(app: AppHandle) {
         };
         loop {
             if server.connect().await.is_err() {
+                // A failed instance never connects again (#853): listen on a fresh one.
+                if let Ok(fresh) = ServerOptions::new().create(&name) {
+                    server = fresh;
+                }
                 tokio::time::sleep(Duration::from_millis(200)).await;
                 continue;
             }
@@ -240,11 +244,18 @@ async fn handle(app: AppHandle, mut pipe: impl Relay) {
     let decision = wait_for_decision(&id, &mut rx).await;
     app.state::<Pending>().0.lock().unwrap().remove(&id);
 
-    // No decision: say nothing at all. Day-hook then writes nothing to stdout
+    // No decision: say nothing at all. coucou-hook then writes nothing to stdout
     // and Claude Code asks in the terminal, exactly as if Day were closed.
-    if let Some(d) = decision {
-        let _ = pipe.write_all(format!("{d}\n").as_bytes()).await;
-        let _ = pipe.flush().await;
+    // The island is told, so a card that came up late (or is still up after the
+    // long wait) goes instead of holding the view with nobody to answer (#857).
+    match decision {
+        Some(d) => {
+            let _ = pipe.write_all(format!("{d}\n").as_bytes()).await;
+            let _ = pipe.flush().await;
+        }
+        None => {
+            let _ = app.emit_to(WINDOW_LABEL, "approval-expired", &id);
+        }
     }
     pipe.finish();
 }
@@ -340,7 +351,7 @@ pub fn decline(app: &AppHandle, request_id: &str) {
 }
 
 /// Called by the island's Allow / Deny buttons. Only ever a bare word: turning
-/// it into Claude Code's JSON is Day-hook's job.
+/// it into Claude Code's JSON is coucou-hook's job.
 pub fn answer(app: &AppHandle, request_id: &str, decision: &str) {
     let word = match decision {
         "allow" | "always" => "allow",
@@ -359,4 +370,3 @@ pub fn answer_question(app: &AppHandle, request_id: &str, answers: &HashMap<Stri
     let line = json!({ "answers": answers }).to_string();
     send(app, request_id, Reply::Decision(line), false);
 }
-

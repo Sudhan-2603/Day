@@ -3,7 +3,7 @@
 // The shortcuts are registered from Rust through tauri-plugin-global-shortcut
 // (RegisterHotKey on Windows, XGrabKey on X11). Wayland has no key grabs: there
 // they go to the desktop through the XDG GlobalShortcuts portal (portal.rs), and
-// where there is no such portal Settings lists `Day --shortcut <id>` commands
+// where there is no such portal Settings lists `coucou --shortcut <id>` commands
 // to bind by hand. A press is handed to the island
 // as a `shortcut` event carrying the action id; the island does the rest, the
 // same way it handles the tray menu. The wardrobe is the exception: it goes out
@@ -294,7 +294,7 @@ pub fn plan(
         .collect()
 }
 
-/// `Day --shortcut <id>` → the action id, when it names a ported one.
+/// `coucou --shortcut <id>` → the action id, when it names a ported one.
 pub fn from_args(args: &[String]) -> Option<&'static str> {
     let at = args.iter().position(|a| a == "--shortcut")?;
     let def = find(args.get(at + 1)?)?;
@@ -422,7 +422,7 @@ fn launch_command() -> String {
         .map(std::path::PathBuf::from)
         .or_else(|| std::env::current_exe().ok())
         .map(|p| p.to_string_lossy().to_string())
-        .unwrap_or_else(|| "Day".to_string());
+        .unwrap_or_else(|| "coucou".to_string());
     if exe.contains(' ') {
         format!("\"{exe}\"")
     } else {
@@ -850,13 +850,12 @@ mod tests {
     #[test]
     fn the_command_line_names_an_action() {
         let args = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>();
-        assert_eq!(from_args(&args(&["Day", "--shortcut", "openChat"])), Some("openChat"));
-        assert_eq!(from_args(&args(&["Day", "--shortcut", "wardrobeToggle"])), Some("wardrobeToggle"));
-        assert_eq!(from_args(&args(&["Day", "--shortcut"])), None);
-        assert_eq!(from_args(&args(&["Day", "--shortcut", "rm -rf"])), None);
-        assert_eq!(from_args(&args(&["Day", "--shortcut", "desktopToggle"])), Some("desktopToggle"));
-        assert_eq!(from_args(&args(&["Day", "--shortcut", "attachFrontWindow"])), None);
-        assert_eq!(from_args(&args(&["Day"])), None);
+        assert_eq!(from_args(&args(&["coucou", "--shortcut", "openChat"])), Some("openChat"));
+        assert_eq!(from_args(&args(&["coucou", "--shortcut", "wardrobeToggle"])), Some("wardrobeToggle"));
+        assert_eq!(from_args(&args(&["coucou", "--shortcut"])), None);
+        assert_eq!(from_args(&args(&["coucou", "--shortcut", "rm -rf"])), None);
+        assert_eq!(from_args(&args(&["coucou", "--shortcut", "desktopToggle"])), Some("desktopToggle"));
+        assert_eq!(from_args(&args(&["coucou", "--shortcut", "attachFrontWindow"])), None);
+        assert_eq!(from_args(&args(&["coucou"])), None);
     }
 }
-

@@ -28,7 +28,7 @@ export interface ShortcutHost {
   wardrobeAnywhere(): void;
   /** False where Day can't leave the island (GNOME on Wayland). */
   canLeaveIsland(): boolean;
-  /** Day out to the desktop, or home (DesktopDayController.flyOutOrHome). */
+  /** Day out to the desktop, or home (DesktopMochiController.flyOutOrHome). */
   flyOutOrHome(): void;
   /** Hands Ctrl+O / Ctrl+E to the view on screen (the Mac posts notifications). */
   viewCommand(command: ViewCommand): void;
@@ -128,7 +128,7 @@ export function runGlobalShortcut(host: ShortcutHost, action: string, resume: ()
         Sound.play("error");
         break;
       }
-      if (!State.dayOnDesktop) resume();
+      if (!State.mochiOnDesktop) resume();
       host.flyOutOrHome();
       break;
 
@@ -191,7 +191,7 @@ function inTextField(target: EventTarget | null): boolean {
 export function registerShortcutHandlers(host: ShortcutHost, resume: () => void) {
   void onEvent<string>("shortcut", (action) => runGlobalShortcut(host, action, resume));
   // The wardrobe shortcut comes as its own event (shortcuts.rs): it opens the
-  // wardrobe (day/wardrobe.ts, views/wardrobe.ts), or closes it again.
+  // wardrobe (mochi/wardrobe.ts, views/wardrobe.ts), or closes it again.
   void onEvent<null>("open-wardrobe", () => {
     resume();
     host.wardrobeAnywhere();
@@ -211,4 +211,3 @@ export function registerShortcutHandlers(host: ShortcutHost, resume: () => void)
     true,
   );
 }
-

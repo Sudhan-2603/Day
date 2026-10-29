@@ -122,4 +122,3 @@ export function buildChoose(actions: ViewActions): ViewHost {
     },
   };
 }
-

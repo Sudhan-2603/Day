@@ -35,7 +35,7 @@ function insidePill(x, y, w, h) {
   return (x - cx) ** 2 + (y - cy) ** 2 <= r * r;
 }
 
-function renderDay(size) {
+function renderMochi(size) {
   const px = new Uint8Array(size * size * 4);
   const R = size * 0.34;
   const rx = R * 1.14;
@@ -182,7 +182,7 @@ function encodeICO(entries) {
 
 mkdirSync(OUT, { recursive: true });
 
-const png = (size) => encodePNG(size, renderDay(size));
+const png = (size) => encodePNG(size, renderMochi(size));
 
 const files = {
   "32x32.png": png(32),

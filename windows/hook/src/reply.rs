@@ -278,4 +278,3 @@ mod tests {
         assert!(!ok(r#"{"answers":{"Which one?":"A","Extras?":["Tests","Tests"]}}"#));
     }
 }
-

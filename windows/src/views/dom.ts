@@ -143,4 +143,3 @@ export function dot(color: string, size = 7): HTMLElement {
     style: `width:${size}px;height:${size}px;background:${color}`,
   });
 }
-

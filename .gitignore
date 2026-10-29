@@ -1,25 +1,46 @@
-# Build artefacts
-*.exe
-!Day.exe
-!Day-hook.exe
-!Day-Setup.exe
-NotchBuddy/build/
-NotchBuddy/NotchBuddy.xcodeproj/project.xcworkspace/xcuserdata/
-NotchBuddy/NotchBuddy.xcodeproj/xcuserdata/
-NotchBuddy/NotchBuddy.xcodeproj/xcshareddata/
-*.xcuserstate
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# Xcode DerivedData (outside repo — listed for clarity)
-DerivedData/
+# Testing
+coverage/
 
-# macOS
+# Production / Builds
+dist/
+build/
+target/
+release/
+*.tsbuildinfo
+
+# Tauri
+**/src-tauri/target/
+**/src-tauri/gen/schemas/
+
+# Android
+.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+
+# OS files
 .DS_Store
-.AppleDouble
-.LSOverride
+Thumbs.db
+*.bak
+*.tmp
+*.temp
 
-# iCloud stubs
-*.icloud
+# IDE / Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Local only (never published)
-.claude/
-_prive/
+# Environment secrets
+.env
+.env.*
+!.env.example

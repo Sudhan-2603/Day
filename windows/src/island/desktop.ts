@@ -1,5 +1,5 @@
 // Day on the desktop, island side: runs his life cycle (the controller in
-// day/desktop-logic.ts) against the real app, tells the desktop window what
+// mochi/desktop-logic.ts) against the real app, tells the desktop window what
 // to show, and handles the drag out of the island. The window itself lives in
 // src-tauri/src/desktop.rs and draws him in src/desktop/main.ts.
 
@@ -9,12 +9,12 @@ import { Sound } from "../core/sound";
 import { State } from "../core/state";
 import { desktopDances } from "../core/spotify";
 import {
-  DESKTOP_EVENTS, DesktopDayController, alertActive, type DesktopSnapshot,
-} from "../day/desktop-logic";
-import { SeasonCache, parseOutfit } from "../day/wardrobe";
+  DESKTOP_EVENTS, DesktopMochiController, alertActive, type DesktopSnapshot,
+} from "../mochi/desktop-logic";
+import { SeasonCache, parseOutfit } from "../mochi/wardrobe";
 
 /** Label of the desktop Day's window (desktop.rs LABEL). */
-const WINDOW = "day";
+const WINDOW = "mochi";
 
 /** What the life cycle needs from the island. */
 export interface DesktopHost {
@@ -28,7 +28,7 @@ export interface DesktopHost {
 
 export class DesktopLink {
   mode: DesktopMode = "off";
-  readonly controller: DesktopDayController;
+  readonly controller: DesktopMochiController;
 
   /** The pointer is dragging Day out of the island. */
   carrying = false;
@@ -41,11 +41,11 @@ export class DesktopLink {
 
   constructor(host: DesktopHost) {
     this.host = host;
-    this.controller = new DesktopDayController({
+    this.controller = new DesktopMochiController({
       flyOut: async (anywhere) => (await Bridge.desktopFlyOut(anywhere)) ?? false,
       flyHome: async (forget) => (await Bridge.desktopFlyHome(forget)) ?? true,
       setAway: (away) => {
-        State.dayOnDesktop = away;
+        State.mochiOnDesktop = away;
         State.notify();
       },
       emote: (emote: BotEmoteName, duration = 1.8) =>
@@ -104,18 +104,18 @@ export class DesktopLink {
 
   /** Whether Day can be picked up from the island right now. */
   canPickUp(): boolean {
-    return this.supported && !State.paused && !State.dayOnDesktop && this.controller.phase === "home";
+    return this.supported && !State.paused && !State.mochiOnDesktop && this.controller.phase === "home";
   }
 
   /** (x, y): the pointer, island-window coordinates. */
   pickUp(x: number, y: number) {
     this.carrying = true;
-    State.dayOnDesktop = true;
+    State.mochiOnDesktop = true;
     State.notify();
     void Bridge.desktopPickUp(x, y).then((ok) => {
       if (ok) return;
       this.carrying = false;
-      State.dayOnDesktop = false;
+      State.mochiOnDesktop = false;
       State.notify();
     });
   }
@@ -146,7 +146,7 @@ export class DesktopLink {
       this.carrying = false;
       if (home) {
         // Dropped back on the island: he is simply there again.
-        State.dayOnDesktop = false;
+        State.mochiOnDesktop = false;
         State.notify();
       } else {
         this.controller.installed();
@@ -167,7 +167,7 @@ export class DesktopLink {
   private push() {
     const snapshot: DesktopSnapshot = {
       state: State.effectiveState,
-      outfit: State.wardrobePreview ?? this.seasons.get(parseOutfit(State.settings.dayOutfit)),
+      outfit: State.wardrobePreview ?? this.seasons.get(parseOutfit(State.settings.mochiOutfit)),
       soundEnabled: State.settings.soundEnabled,
       soundVolume: State.settings.soundVolume,
       paused: State.paused,
@@ -179,4 +179,3 @@ export class DesktopLink {
     void emitToWindow(WINDOW, DESKTOP_EVENTS.state, snapshot);
   }
 }
-

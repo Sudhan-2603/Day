@@ -19,9 +19,9 @@ import CloudKit
 final class CloudProbe {
     static let shared = CloudProbe()
 
-    static let containerID = "iCloud.fr.louisraille.Day"
-    static let zoneID = CKRecordZone.ID(zoneName: "Day", ownerName: CKCurrentUserDefaultName)
-    private static let subscriptionID = "day-zone-mac"
+    static let containerID = "iCloud.fr.louisraille.Coucou"
+    static let zoneID = CKRecordZone.ID(zoneName: "Coucou", ownerName: CKCurrentUserDefaultName)
+    private static let subscriptionID = "coucou-zone-mac"
 
     private let container = CKContainer(identifier: CloudProbe.containerID)
     private var database: CKDatabase { container.privateCloudDatabase }
@@ -32,14 +32,14 @@ final class CloudProbe {
     private var changeToken: CKServerChangeToken?
     private var seenPongs = Set<String>()
     private var fetching = false
-    private var lastPushAt: Date?
+    private(set) var lastPushAt: Date?
     private var started = false
     private var pingTask: Task<Void, Never>?
     private var pollTask: Task<Void, Never>?
 
     private var appLabel: String {
         #if APPSTORE
-        "DayAppStore"
+        "CoucouAppStore"
         #else
         "NotchBuddy"
         #endif
@@ -138,7 +138,7 @@ final class CloudProbe {
                 return false
             }
             _ = try await database.modifyRecordZones(saving: [CKRecordZone(zoneID: Self.zoneID)], deleting: [])
-            log("zone Day ready")
+            log("zone Coucou ready")
 
             let sub = CKDatabaseSubscription(subscriptionID: Self.subscriptionID)
             let info = CKSubscription.NotificationInfo()
@@ -186,6 +186,10 @@ final class CloudProbe {
         lastPushAt = Date()
         // A request from the iPhone (a service to read, an action) may be waiting.
         Task { await ServiceDetailRunner.shared.checkNow() }
+        #if !APPSTORE
+        // An instruction from the iPhone may be waiting too: no need to wait for the poll.
+        Task { await InstructionRunner.shared.checkNow() }
+        #endif
         guard pingTask != nil else { return }   // the Pong fetch is only for the ping test
         log("push received")
         Task { await fetchChanges(source: "push") }
@@ -208,7 +212,7 @@ final class CloudProbe {
         } catch let error as CKError where error.code == .changeTokenExpired {
             changeToken = nil
         } catch let error as CKError where error.code == .zoneNotFound {
-            log("zone Day missing, recreating")
+            log("zone Coucou missing, recreating")
             ready = false
         } catch {
             log("fetch (\(source)) failed: \(error.localizedDescription)")

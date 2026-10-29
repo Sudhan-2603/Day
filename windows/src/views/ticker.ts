@@ -219,4 +219,3 @@ export class Ticker {
     this.rest();
   }
 }
-

@@ -23,7 +23,9 @@ export type IslandViewName =
   | "settings"
   | "greeting"
   | "recap"
-  | "wardrobe";
+  | "wardrobe"
+  | "update"
+  | "whatsNew";
 
 export type BotStateName =
   | "idle"
@@ -38,7 +40,9 @@ export type BotStateName =
   | "sleeping"
   | "dizzy";
 
-export type BotEmoteName = "love" | "surprised" | "proud" | "wink" | "yawn" | "happy" | "annoyed";
+export type BotEmoteName =
+  | "love" | "surprised" | "proud" | "wink" | "yawn" | "happy" | "annoyed"
+  | "smile" | "sad" | "angry" | "sleep" | "confused" | "laughing" | "shy" | "idle";
 
 export type AgentLayoutMode = "none" | "grid" | "pills" | "column";
 
@@ -57,12 +61,12 @@ export const PANEL_H = 320;
 
 // No notch on a PC: these are the hidden/compact sizes from docs/SPEC.md.
 export const NOTCH_W = 184;
-export const NOTCH_H = 34;
+export const NOTCH_H = 32;
 export const COMPACT_W = 288; // NOTCH_W + 104
 export const EXPANDED_W = 640;
 
-export const ROUNDED_CORNER = 17; // hidden / compact: 34 / 2 = 17 (capsule pill)
-export const EXPANDED_CORNER = 28; // expanded capsule card
+export const ROUNDED_CORNER = 32; // capsule radius for compact/hidden
+export const EXPANDED_CORNER = 36; // sleek capsule card radius for expanded
 
 /** Invisible hover strip that wakes the island when hidden. */
 export const WAKE_STRIP_W = 240;
@@ -86,13 +90,18 @@ export const VIEW_LAYOUTS: Record<IslandViewName, ViewLayout> = {
   searching: { height: 160, botX: 52, botY: null, botDiameter: 44, agentMode: "column" },
   result: { height: 160, botX: 52, botY: null, botDiameter: 44, agentMode: "column" },
   note: { height: 160, botX: 60, botY: null, botDiameter: 50, agentMode: "column" },
-  settings: { height: 160, botX: 54, botY: null, botDiameter: 46, agentMode: "none" },
+  settings: { height: 260, botX: 54, botY: null, botDiameter: 46, agentMode: "none" },
   greeting: { height: 150, botX: 320, botY: 90, botDiameter: 0, agentMode: "none" },
   // Mac: 160. The extra 24 hold the two lines with top agent, project, busiest
   // day, longest session, permissions and questions, which the Mac card leaves
   // to the shared image.
   recap: { height: 184, botX: 62, botY: null, botDiameter: 58, agentMode: "column" },
   wardrobe: { height: 160, botX: 68, botY: null, botDiameter: 58, agentMode: "none" },
+  // New version: Day on the left, the version and Update now (Mac: .update).
+  update: { height: 160, botX: 62, botY: null, botDiameter: 58, agentMode: "none" },
+  // After an update: what the new version brings, then "Your Day so far".
+  // Taller than a card, for two rows of items with their line.
+  whatsNew: { height: 222, botX: 62, botY: null, botDiameter: 58, agentMode: "none" },
 };
 
 // The upload views above are only the fallback geometry. Once a file is actually
@@ -111,7 +120,6 @@ export function islandSize(
   mode: IslandMode,
   view: IslandViewName,
   chatCount = 0,
-  fullSettings = false,
 ): { w: number; h: number } {
   switch (mode) {
     case "hidden":
@@ -121,9 +129,7 @@ export function islandSize(
     case "compact":
       return { w: COMPACT_W, h: NOTCH_H };
     case "expanded": {
-      const h = view === "prompt"
-        ? chatPromptHeight(chatCount)
-        : (view === "settings" && fullSettings ? 300 : VIEW_LAYOUTS[view].height);
+      const h = view === "prompt" ? chatPromptHeight(chatCount) : VIEW_LAYOUTS[view].height;
       return { w: EXPANDED_W, h };
     }
   }
@@ -142,18 +148,14 @@ export function botPosition(
   view: IslandViewName,
   islandH: number,
   uploadProgress = 0,
-  fullSettings = false,
 ): BotPlacement {
   switch (mode) {
     case "hidden":
       return { cx: 46, cy: 16, diameter: 6, opacity: 0 };
     case "compact":
-      return { cx: 40, cy: 17, diameter: 20, opacity: 1 };
+      return { cx: 40, cy: 16, diameter: 20, opacity: 1 };
     case "expanded": {
       const layout = VIEW_LAYOUTS[view];
-      if (view === "settings" && fullSettings) {
-        return { cx: layout.botX, cy: 50, diameter: 0, opacity: 0 };
-      }
       if (view === "uploading") {
         return {
           cx: 36 + uploadProgress * 526,
@@ -258,4 +260,3 @@ export function washRGBA(wash: Wash): string {
       return "rgba(0,0,0,0)";
   }
 }
-

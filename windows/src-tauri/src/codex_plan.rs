@@ -27,7 +27,7 @@ const MAX_TOTAL: usize = 2 * 1024 * 1024;
 
 /// What the Mac sends: initialize, initialized, then the one question.
 const REQUESTS: &str = concat!(
-    r#"{"id":1,"method":"initialize","params":{"clientInfo":{"name":"Day","version":"1"}}}"#,
+    r#"{"id":1,"method":"initialize","params":{"clientInfo":{"name":"coucou","version":"1"}}}"#,
     "\n",
     r#"{"method":"initialized"}"#,
     "\n",
@@ -217,4 +217,3 @@ mod tests {
         assert_eq!(v, ["v20.11.1", "v20.1.0", "v18.20.4", "v9.12.0"]);
     }
 }
-

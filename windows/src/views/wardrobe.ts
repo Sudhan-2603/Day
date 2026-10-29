@@ -4,11 +4,11 @@
 
 import { h } from "./dom";
 import { State } from "../core/state";
-import { drawWardrobeIcon } from "../day/outfits";
+import { drawWardrobeIcon } from "../mochi/outfits";
 import {
   OUTFIT_KEYS, OUTFIT_SELECTIONS, WARDROBE_STRINGS, parseOutfit, resolveOutfit, seasonalOutfit,
   wardrobeHeader, type Outfit, type OutfitSelection,
-} from "../day/wardrobe";
+} from "../mochi/wardrobe";
 import type { ViewActions, ViewHost } from "./views";
 import { language, tl } from "../i18n/i18n";
 
@@ -35,10 +35,11 @@ export function buildWardrobe(actions: ViewActions): ViewHost {
   let hovered: OutfitSelection | null = null;
   let drawnSeason: Outfit | null = null;
   let drawnLanguage = language();
+  let drawnDpr = 0;
   const items = new Map<OutfitSelection, { button: HTMLButtonElement; canvas: HTMLCanvasElement }>();
 
   const updateNote = () => {
-    note.textContent = wardrobeHeader(hovered, parseOutfit(State.settings.dayOutfit), new Date());
+    note.textContent = wardrobeHeader(hovered, parseOutfit(State.settings.mochiOutfit), new Date());
   };
 
   for (const sel of OUTFIT_SELECTIONS) {
@@ -67,11 +68,13 @@ export function buildWardrobe(actions: ViewActions): ViewHost {
   /** Icons are drawn once; only "auto" changes, with the season and its badge's language. */
   const drawIcons = () => {
     const season = seasonalOutfit(new Date());
-    if (season === drawnSeason && drawnLanguage === language()) return;
-    const first = drawnSeason == null;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (season === drawnSeason && drawnLanguage === language() && drawnDpr === dpr) return;
+    // On a monitor of another scale every icon is drawn again, sharp and whole.
+    const first = drawnSeason == null || drawnDpr !== dpr;
     drawnSeason = season;
     drawnLanguage = language();
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    drawnDpr = dpr;
     for (const [sel, { canvas }] of items) {
       if (!first && sel !== "auto") continue;
       canvas.width = Math.round(ICON * dpr);
@@ -89,10 +92,9 @@ export function buildWardrobe(actions: ViewActions): ViewHost {
       drawIcons();
       // The island drops the preview when the view closes: so does the hover.
       if (State.wardrobePreview == null) hovered = null;
-      const current = parseOutfit(State.settings.dayOutfit);
+      const current = parseOutfit(State.settings.mochiOutfit);
       for (const [sel, { button }] of items) button.classList.toggle("on", sel === current);
       updateNote();
     },
   };
 }
-

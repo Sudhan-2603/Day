@@ -48,4 +48,3 @@ function loop(now: number) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-

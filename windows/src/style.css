@@ -63,68 +63,25 @@ body {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 260px;
-  height: 18px;
+  width: 240px;
+  height: 6px;
   background: transparent;
 }
 
-/* ── Island (Capsule layout) ─────────────────────────────────────────────── */
+/* ── Island (Capsule) ─────────────────────────────────────────────────────────────── */
 
 #island {
   position: absolute;
   top: 8px;
   left: 50%;
-  opacity: var(--island-opacity, 1);
-  background: rgba(10, 11, 14, var(--island-bg-opacity, 0.85));
-  backdrop-filter: blur(var(--island-blur, 24px)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--island-blur, 24px)) saturate(180%);
-  border-radius: 999px;
-  border: none;
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  background: rgba(12, 12, 14, 0.95);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.45);
+  border-radius: 9999px;
   overflow: visible;
   will-change: width, height, transform;
-  transition: box-shadow 0.25s ease, background 0.2s ease, opacity 0.2s ease;
-}
-
-#island:hover {
-  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(0, 0, 0, 0.45);
-}
-
-@keyframes island-shake {
-  0%, 100% { transform: translateX(-50%) rotate(0deg); }
-  25% { transform: translateX(calc(-50% - 2px)) rotate(-1.5deg); }
-  50% { transform: translateX(calc(-50% + 2px)) rotate(1.5deg); }
-  75% { transform: translateX(calc(-50% - 1.5px)) rotate(-1deg); }
-}
-
-#island.is-moving-shake {
-  animation: island-shake 0.16s infinite ease-in-out !important;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.75), 0 0 18px rgba(34, 197, 94, 0.5) !important;
-  cursor: grabbing !important;
-}
-
-#island.line-mode {
-  height: 4px !important;
-  width: 140px !important;
-  border-radius: 9999px !important;
-  opacity: 0.05 !important;
-  background: #ffffff !important;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  overflow: hidden !important;
-  cursor: pointer !important;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-#island.line-mode:hover {
-  opacity: 0.75 !important;
-  height: 8px !important;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.8), 0 0 4px #22c55e !important;
-  transform: translateX(-50%) scaleY(1.4) !important;
-}
-
-#island.line-mode > * {
-  display: none !important;
 }
 
 #island-clip {
@@ -134,19 +91,27 @@ body {
   border-radius: inherit;
 }
 
+#bot-circle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 175, 60, 0.35) 0%, rgba(35, 20, 16, 0.55) 60%, rgba(12, 14, 20, 0.90) 100%);
+  border: 2px solid rgba(255, 165, 50, 0.65);
+  box-shadow: 0 0 20px rgba(255, 120, 20, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.25);
+  transition: opacity 0.22s ease-out;
+  z-index: 1;
+}
+
 #bot-canvas {
   position: absolute;
   pointer-events: none;
-  border-radius: 50%;
-  overflow: hidden;
+  z-index: 2;
 }
 
 #greeting-canvas {
   position: absolute;
-  top: 0;
   pointer-events: none;
-  border-radius: 20px;
-  overflow: hidden;
+  z-index: 2;
 }
 
 /* The drop sequence. Sits under the header and takes over the island body; it
@@ -159,8 +124,6 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease-in-out;
-  border-radius: 20px;
-  overflow: hidden;
 }
 
 #upload-layer.on {
@@ -170,7 +133,6 @@ body {
 #upload-canvas {
   position: absolute;
   inset: 0;
-  border-radius: 20px;
 }
 
 #upload-overlay {
@@ -222,9 +184,34 @@ body {
   width: 0;
 }
 
-/* Compact 2×2 mini grid - removed for clean capsule design */
+/* Compact 2×2 mini grid, to the right of the notch. */
 #mini-grid {
-  display: none !important;
+  position: absolute;
+  width: 29px;
+  height: 29px;
+  display: grid;
+  grid-template-columns: 13px 13px;
+  grid-auto-rows: 13px;
+  gap: 3px;
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
+}
+
+/* Date and time in the middle of the compact island, between Day and the grid. */
+#island-clock {
+  position: absolute;
+  left: 50px;
+  right: 56px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  transition: opacity 0.25s ease-in-out;
 }
 
 /* A mini Day: the slot is the body, the canvas is larger and overflows it so
@@ -295,8 +282,8 @@ body {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-right: 14px;
+  gap: 8px;
+  padding-right: 16px;
 }
 
 .header-actions button {
@@ -306,33 +293,23 @@ body {
   display: grid;
   place-items: center;
   cursor: pointer;
-  padding: 3px;
+  padding: 4px;
   border-radius: 6px;
-  transition: color 0.18s ease, transform 0.15s ease, background 0.18s ease;
+  transition: all 0.18s ease;
 }
 
 .header-actions button:hover {
-  color: #ffffff;
+  color: var(--ink);
   background: rgba(255, 255, 255, 0.08);
-  transform: scale(1.08);
 }
 
-.header-actions .close-btn:hover {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.15);
-  transform: scale(1.12);
-}
-
-.header-actions .move-btn {
-  cursor: grab !important;
-}
-
-.header-actions .move-btn:active {
-  cursor: grabbing !important;
+.header-actions button:active {
+  transform: scale(0.92);
 }
 
 .header-actions button.on {
-  color: var(--ink);
+  color: #ffa734;
+  background: rgba(255, 167, 52, 0.16);
 }
 
 #views {
@@ -469,7 +446,6 @@ body {
 
 .overview {
   display: flex;
-  gap: 0;
   height: 100%;
   width: 100%;
 }
@@ -477,10 +453,58 @@ body {
 .overview > .left {
   flex: 1 1 100%;
   width: 100%;
+  height: 100%;
 }
 
-.overview > .right {
-  display: none !important;
+.day-assistant-card {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 32px 0 118px;
+  gap: 6px;
+}
+
+.day-assistant-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 999px;
+  padding: 2px 10px;
+  width: fit-content;
+}
+
+.day-assistant-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.day-assistant-badge-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4ade80;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.day-assistant-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.day-assistant-subtitle {
+  font-size: 12.5px;
+  color: #94a3b8;
+  line-height: 1.4;
 }
 
 .card-body {
@@ -773,7 +797,7 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 6px;
+  padding: 0 8px 0 34px;
   pointer-events: none;
 }
 
@@ -905,7 +929,51 @@ body {
 .settings-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 3px 0;
+}
+
+.settings-toggle-label {
+  font-size: 12.5px;
+  color: #e2e8f0;
+  font-weight: 500;
+  text-align: left;
+}
+
+.settings-toggle-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.settings-toggle-state {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  min-width: 24px;
+  text-align: right;
+  transition: color 0.16s ease;
+}
+
+.settings-toggle-state.on {
+  color: #22c55e;
+}
+
+.settings-toggle-state.off {
+  color: #64748b;
+}
+
+.full-settings-btn:hover {
+  text-decoration: underline;
+  color: #ffb85e !important;
 }
 
 .settings-row {
@@ -916,81 +984,20 @@ body {
   color: #c5c8cd;
 }
 
-.settings-expand-btn:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
-  transform: translateY(-0.5px);
-}
-
-.settings-back-btn:hover {
-  background: rgba(255, 255, 255, 0.16) !important;
-  color: #fff !important;
-}
-
-.settings-tab-btn:hover {
-  color: #fff !important;
-}
-
-.settings-tab-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.settings-tab-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.settings-tab-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 4px;
-}
-
-.settings-tab-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
 .switch {
   position: relative;
-  width: 38px;
-  height: 22px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), 0 2px 5px rgba(0, 0, 0, 0.2);
-  flex: 0 0 38px;
-  transition: background 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.switch:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.32);
-  transform: translateY(-0.5px) scale(1.04);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.switch:active {
-  transform: scale(0.95);
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.15);
+  flex: 0 0 32px;
+  transition: background 0.18s;
+  cursor: default;
+  border: 0;
 }
 
 .switch.on {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.95));
-  border-color: rgba(255, 255, 255, 0.45);
-  box-shadow: 0 0 14px rgba(34, 197, 94, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.6), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-  animation: switch-spring 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), switch-glow 0.45s ease-out;
-}
-
-.switch.on:hover {
-  box-shadow: 0 0 18px rgba(34, 197, 94, 0.75), inset 0 1px 2px rgba(255, 255, 255, 0.7), inset 0 -1px 2px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.55);
+  background: var(--green);
 }
 
 .switch::after {
@@ -998,198 +1005,15 @@ body {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f8fafc 55%, #e2e8f0 100%);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4), inset 0 1px 1px #ffffff;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-              width 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.3s ease,
-              background 0.3s ease;
+  background: #fff;
+  transition: transform 0.18s;
 }
 
 .switch.on::after {
-  transform: translateX(16px);
-  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f0fdf4 60%, #dcfce7 100%);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.35), 0 0 5px rgba(34, 197, 94, 0.45), inset 0 1px 1px #ffffff;
-}
-
-.switch:active::after {
-  width: 21px;
-}
-
-.switch.on:active::after {
-  transform: translateX(11px);
-  width: 21px;
-}
-
-@keyframes switch-spring {
-  0% { transform: scale(0.92); }
-  50% { transform: scale(1.07); }
-  100% { transform: scale(1); }
-}
-
-@keyframes switch-glow {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.6); }
-  60% { box-shadow: 0 0 16px 5px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.7); }
-  100% { box-shadow: 0 0 14px rgba(34, 197, 94, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.6), inset 0 -1px 2px rgba(0, 0, 0, 0.2); }
-}
-
-/* ── Settings Tab Bar & Moving Glass Slider ──────────────────────────────── */
-
-.settings-tab-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: rgba(0, 0, 0, 0.35);
-  padding: 3px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  isolation: isolate;
-}
-
-.glass-tab-slider {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.45);
-  pointer-events: none;
-  z-index: 0;
-  transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1), width 0.32s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.settings-tab-btn {
-  position: relative;
-  z-index: 1;
-  padding: 3px 9px;
-  border-radius: 11px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #94a3b8;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  white-space: nowrap;
-}
-
-.settings-tab-btn.active {
-  color: #ffffff;
-}
-
-/* ── Settings Horizontal Scroll Carousel ─────────────────────────────────── */
-
-.settings-sections-carousel {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  flex: 1 1 auto;
-  margin-top: 8px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.settings-sections-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.settings-section-slide {
-  flex: 0 0 100%;
-  min-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  overflow-y: auto;
-  max-height: 195px;
-  padding: 2px 6px 4px 2px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-}
-
-.settings-section-slide::-webkit-scrollbar {
-  width: 4px;
-}
-
-.settings-section-slide::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 4px;
-}
-
-/* ── Visual Outfit Previews in Settings ──────────────────────────────────── */
-
-.outfit-visual-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 4px 2px 8px 2px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-  max-width: 100%;
-}
-
-.outfit-visual-row::-webkit-scrollbar {
-  height: 4px;
-}
-
-.outfit-visual-row::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
-
-.outfit-visual-card {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-  outline: none;
-}
-
-.outfit-visual-card:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
-  transform: translateY(-1px);
-}
-
-.outfit-visual-card.active {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-}
-
-.outfit-visual-card canvas {
-  width: 26px;
-  height: 26px;
-  display: block;
-}
-
-.outfit-visual-card span {
-  font-size: 10px;
-  font-weight: 500;
-  color: #cbd5e1;
-  max-width: 65px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  transform: translateX(14px);
 }
 
 input[type="range"] {
@@ -1243,34 +1067,7 @@ input[type="range"]::-webkit-slider-thumb {
 /* ── Chat (prompt view) ─────────────────────────────────────────────────── */
 
 .chat-card {
-  position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      var(--avatar-glow-top, rgba(255, 255, 255, 0.04)) 0%,
-      transparent 65%
-    ),
-    radial-gradient(
-      320px 240px at 50% 120%,
-      var(--avatar-wash, rgba(99, 102, 241, 0.35)) 0%,
-      transparent 75%
-    ),
-    var(--card);
-  transition: background 0.35s ease;
-}
-
-.chat-card.wash::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    300px 300px at 50% 125%,
-    var(--wash, var(--avatar-wash, rgba(99, 102, 241, 0.35))) 0%,
-    rgba(0, 0, 0, 0) 75%
-  );
-  pointer-events: none;
-  transition: opacity 0.35s ease;
 }
 
 .chat-body {
@@ -1335,15 +1132,13 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .bubble {
-  background: var(--avatar-bubble-bg, rgba(255, 255, 255, 0.13));
-  border: none;
-  border-radius: 14px;
-  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  padding: 6px 10px;
   font: 400 12.5px var(--font);
   color: var(--ink-2);
   white-space: pre-wrap;
   user-select: text;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .reply {
@@ -1676,23 +1471,10 @@ input[type="range"]::-webkit-slider-thumb {
 .chat-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 5px 6px 5px 16px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 9999px; /* Capsule pill style */
-  border: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 10px rgba(0, 0, 0, 0.18);
-  transition: box-shadow 0.25s ease, background 0.25s ease;
-}
-
-.chat-bar:focus-within {
-  border: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 0 2px var(--avatar-ring, rgba(255, 255, 255, 0.1)),
-    0 4px 16px rgba(0, 0, 0, 0.25);
-  background: rgba(255, 255, 255, 0.12);
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
 }
 
 .chat-input {
@@ -1704,41 +1486,28 @@ input[type="range"]::-webkit-slider-thumb {
   font: 400 13px var(--font);
   outline: none;
   cursor: text;
-  padding: 4px 0;
 }
 
 .chat-input::placeholder {
   color: var(--dim-3);
-  transition: color 0.2s ease;
-}
-
-.chat-bar:focus-within .chat-input::placeholder {
-  color: var(--dim-2);
 }
 
 .send-btn {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
   border: 0;
   border-radius: 50%;
-  background: var(--avatar-accent, var(--ink));
-  color: var(--avatar-btn-color, #0b0c0e);
+  background: var(--ink);
+  color: #0b0c0e;
   display: grid;
   place-items: center;
-  cursor: pointer;
-  transition: transform 0.12s ease-out, filter 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-}
-
-.send-btn:hover {
-  filter: brightness(1.12);
-  transform: scale(1.04);
+  cursor: default;
+  transition: transform 0.08s ease-out;
 }
 
 .send-btn:active {
-  transform: scale(0.92);
-  filter: brightness(0.95);
+  transform: scale(0.94);
 }
 
 /* ── Drop zone ──────────────────────────────────────────────────────────── */
@@ -2706,6 +2475,119 @@ input[type="range"]::-webkit-slider-thumb {
   pointer-events: none;
 }
 
+/* ── New version (views/update.ts) — UpdateCardView on macOS ────────────────── */
+
+.update-line {
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The download's progress: the Mac's green, 260 px at most. */
+.update-bar {
+  width: 100%;
+  max-width: 260px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.update-bar .fill {
+  height: 100%;
+  width: 0;
+  background: #34d399;
+  transition: width 0.25s linear;
+}
+
+/* ── What's new after an update (views/whatsnew.ts) ─────────────────────────
+   Text from x = 116 like the other cards; the items in two columns, each an
+   icon in the update's blue, a title and its line. */
+
+.whatsnew-stack {
+  padding: 4px 16px 4px 116px;
+  gap: 7px;
+}
+
+.whatsnew-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.whatsnew-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-width: 0;
+}
+
+.whatsnew-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.whatsnew-text {
+  min-width: 0;
+}
+
+.whatsnew-item-title {
+  font: 600 12px var(--font);
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.whatsnew-item-detail {
+  font: 400 10.5px/1.3 var(--font);
+  color: var(--dim-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.whatsnew-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.whatsnew-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.whatsnew-stat-icon {
+  color: #93c5fd;
+  padding-top: 4px;
+}
+
+.whatsnew-stat .v {
+  font: 700 16px var(--font);
+  color: var(--ink-2);
+}
+
+.whatsnew-stat .l {
+  font: 400 9px var(--font);
+  color: var(--dim-2);
+}
+
+.whatsnew-thanks {
+  font-size: 11.5px;
+}
+
 /* ── Spotify: the pill's controls and the now-playing card ──────────────────
    SpotifyPill, MusicControlButton and SpotifyCardView (SpotifyViews.swift,
    NowPlayingViews.swift): sizes and colours are the Mac's. */
@@ -2980,6 +2862,274 @@ input[type="range"]::-webkit-slider-thumb {
   width: 44px;
 }
 
+/* ── WhatsApp (views/whatsapp.ts) — WhatsAppCardView on macOS ────────────────
+   Nothing here applies to a view that already ships: every class is the card's own. */
+
+.wa-card {
+  height: 100%;
+  box-sizing: border-box;
+  padding-top: 10px;
+}
+
+.wa-list,
+.wa-convo {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.wa-unread {
+  font: 600 10px var(--font);
+  color: #25d366;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(37, 211, 102, 0.14);
+}
+
+.wa-empty {
+  font: 400 11px var(--font);
+  color: var(--dim-3);
+  padding: 8px 0 0 8px;
+}
+
+.wa-status-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.wa-settings {
+  color: var(--dim-2);
+  padding: 0;
+}
+
+.wa-rows {
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 12px;
+  scrollbar-width: none;
+}
+
+.wa-row {
+  border: 0;
+  background: transparent;
+  text-align: start;
+  width: 100%;
+  gap: 6px;
+  padding: 3px 6px;
+  cursor: default;
+  flex: 0 0 auto;
+}
+
+.wa-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wa-row.unread {
+  background: rgba(37, 211, 102, 0.08);
+}
+
+.wa-row.unread:hover {
+  background: rgba(37, 211, 102, 0.14);
+}
+
+.wa-row-name {
+  max-width: 92px;
+  flex: 0 1 auto;
+}
+
+.wa-row.unread .wa-row-name {
+  font-weight: 600;
+  color: #e8e9ec;
+}
+
+.wa-row.unread .wa-preview {
+  color: var(--dim-2);
+}
+
+.wa-spacer {
+  flex: 1 1 0;
+}
+
+.wa-count {
+  font: 700 9px var(--font);
+  color: #0b0c0e;
+  background: #25d366;
+  border-radius: 999px;
+  padding: 1px 5px;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+.wa-ignore {
+  color: #f4505e;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.wa-avatar {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.22);
+  color: #25d366;
+  font-family: var(--font);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.wa-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding-right: 36px;
+  margin-left: -6px;
+}
+
+.wa-back {
+  width: 20px;
+  height: 20px;
+}
+
+.wa-name {
+  font: 600 11px var(--font);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.wa-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 12px 4px 0;
+  scrollbar-width: none;
+}
+
+.wa-line {
+  display: flex;
+  padding-right: 40px;
+}
+
+.wa-line.mine {
+  justify-content: flex-end;
+  padding-right: 0;
+  padding-left: 40px;
+}
+
+.wa-bubble {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  min-width: 0;
+  user-select: text;
+}
+
+.wa-bubble.mine {
+  background: rgba(37, 211, 102, 0.16);
+}
+
+.wa-sender {
+  font: 600 9px var(--font);
+  color: rgba(37, 211, 102, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-media {
+  font: 500 10px var(--font);
+  color: #9398a1;
+}
+
+.wa-text {
+  font: 400 10.5px/1.35 var(--font);
+  color: #c5c8cd;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.wa-bubble.mine .wa-text {
+  color: #e8e9ec;
+}
+
+.wa-reply {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 4px 8px;
+  margin-right: 12px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.06);
+  flex: 0 0 auto;
+}
+
+.wa-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  resize: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: 400 11px/1.35 var(--font);
+  max-height: 44px;
+  padding: 1px 0;
+  field-sizing: content;
+}
+
+.wa-field::placeholder {
+  color: var(--dim-3);
+}
+
+.wa-send {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.3);
+  display: grid;
+  place-items: center;
+  cursor: default;
+  flex: 0 0 auto;
+}
+
+.wa-send.ready {
+  background: #25d366;
+}
+
+.wa-note {
+  font: 400 9.5px var(--font);
+  min-height: 0;
+  padding: 2px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-note.warn {
+  color: #f5b83d;
+}
+
+.wa-note.err {
+  color: #f4505e;
+}
+
+html[data-dir="rtl"] #views :is(.wa-text, .wa-field, .wa-preview) {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
 /* ── Arabic: right to left ─────────────────────────────────────────────────────
    i18n.ts sets <html data-dir="rtl">. The text of the cards reads and aligns
    right to left; Day, the pills, the header and the cards themselves keep
@@ -3003,4 +3153,3 @@ html[data-dir="rtl"] #views :is(.bubble, .reply .md-p, .reply .md-h, .reply .md-
   unicode-bidi: plaintext;
   text-align: start;
 }
-

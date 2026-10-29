@@ -1,7 +1,7 @@
 #!/bin/bash
-# render-outfits.sh — compile and run the Day outfit planche renderer
+# render-outfits.sh — compile and run the Mochi outfit planche renderer
 # NOT in CI. Run manually: bash scripts/render-outfits.sh
-# Output: /tmp/day-outfits.png
+# Output: /tmp/coucou-outfits.png
 
 set -e
 cd "$(dirname "$0")/.."
@@ -13,18 +13,18 @@ swiftc \
   -parse-as-library \
   -sdk "$SDK" \
   -target arm64-apple-macosx15.0 \
-  NotchBuddy/Sources/DayKit/IslandScreenGeometry.swift \
-  NotchBuddy/Sources/DayKit/IslandTypes.swift \
-  NotchBuddy/Sources/DayKit/DayWardrobe.swift \
-  NotchBuddy/Sources/DayKit/BotEngine.swift \
-  NotchBuddy/Sources/DayKit/DayOutfitDrawing.swift \
+  NotchBuddy/Sources/CoucouKit/IslandScreenGeometry.swift \
+  NotchBuddy/Sources/CoucouKit/IslandTypes.swift \
+  NotchBuddy/Sources/CoucouKit/MochiWardrobe.swift \
+  NotchBuddy/Sources/CoucouKit/BotEngine.swift \
+  NotchBuddy/Sources/CoucouKit/MochiOutfitDrawing.swift \
   scripts/RenderOutfits.swift \
   -framework AppKit \
   -framework SwiftUI \
-  -o /tmp/day-render-outfits \
+  -o /tmp/coucou-render-outfits \
   2>&1
 
 echo "Running renderer..."
-/tmp/day-render-outfits
+/tmp/coucou-render-outfits
 echo "Opening..."
-open /tmp/day-outfits.png
+open /tmp/coucou-outfits.png
