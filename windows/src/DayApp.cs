@@ -14,7 +14,6 @@ namespace DayAssistant
     {
         public TrayApplicationContext()
         {
-            // Intentionally empty: manages lifetime via tray icon
         }
     }
 
@@ -253,12 +252,13 @@ namespace DayAssistant
 
                 if (File.Exists(edgePath))
                 {
-                    string dataDir = Path.Combine(Path.GetTempPath(), "DayAppProfile");
+                    string dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DayAppProfile");
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = edgePath,
                         Arguments = string.Format("--app=\"{0}\" --window-size=1200,800 --user-data-dir=\"{1}\"", url, dataDir),
-                        UseShellExecute = true
+                        UseShellExecute = false,
+                        CreateNoWindow = false
                     };
                     Process.Start(psi);
                 }
