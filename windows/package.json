@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "build": "tsc --noEmit && vite build --outDir Releases && node scripts/sync-dist.mjs",
+    "build:dist": "tsc --noEmit && vite build --outDir dist",
+    "build:releases": "tsc --noEmit && vite build --outDir Releases",
+    "preview": "vite preview --outDir Releases",
     "test": "node --import ./tests/setup.mjs --test \"tests/**/*.test.mjs\"",
     "icons": "node scripts/gen-icons.mjs",
     "tauri": "tauri",
-    "predev": "cargo build --release -p Day-hook",
-    "prebuild": "cargo build --release -p Day-hook",
+    "build:hook": "cargo build --release -p Day-hook",
+    "dev:hook": "cargo build --release -p Day-hook",
     "pack": "tauri build && node scripts/pack.mjs"
   },
   "devDependencies": {

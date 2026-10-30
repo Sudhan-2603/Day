@@ -10,7 +10,7 @@ export const SOUNDS_DIR = resolve(__dirname, "../NotchBuddy/Resources/sounds");
 // ───────────────────────────────────────────────────────────────────────────────
 
 /**
- * Serves SOUNDS_DIR at /sounds/*.wav in dev, and copies it into dist/sounds on build.
+ * Serves SOUNDS_DIR at /sounds/*.wav in dev, and copies it into dist/sounds and Releases/sounds on build.
  * Keeps the WAVs out of windows/ while still shipping them inside the installer.
  */
 function sharedSounds(): Plugin {
@@ -29,14 +29,17 @@ function sharedSounds(): Plugin {
       });
     },
     closeBundle() {
-      const out = resolve(__dirname, "dist/sounds");
+      const outDist = resolve(__dirname, "dist/sounds");
+      const outReleases = resolve(__dirname, "Releases/sounds");
       if (!existsSync(SOUNDS_DIR)) {
         this.warn(`sounds not found at ${SOUNDS_DIR} — the build will ship without audio`);
         return;
       }
-      mkdirSync(out, { recursive: true });
-      for (const f of readdirSync(SOUNDS_DIR)) {
-        if (extname(f) === ".wav") copyFileSync(join(SOUNDS_DIR, f), join(out, f));
+      for (const out of [outDist, outReleases]) {
+        mkdirSync(out, { recursive: true });
+        for (const f of readdirSync(SOUNDS_DIR)) {
+          if (extname(f) === ".wav") copyFileSync(join(SOUNDS_DIR, f), join(out, f));
+        }
       }
     },
   };

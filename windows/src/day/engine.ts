@@ -115,6 +115,8 @@ export const STATE_SOUND: Partial<Record<BotStateName, string>> = {
 const EMOTE_EYE: Record<BotEmoteName, EyeShape> = {
   love: "heart", surprised: "dot", proud: "star", wink: "wink",
   yawn: "tired", happy: "happy", annoyed: "line",
+  smile: "happy", sad: "flat", angry: "line", sleep: "closed",
+  confused: "dot", laughing: "happy", shy: "dot", idle: "pill",
 };
 
 // ── Small helpers ─────────────────────────────────────────────────────────────

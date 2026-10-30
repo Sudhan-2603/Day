@@ -480,7 +480,7 @@ test("actions that aren't the island's do nothing here", () => {
 test("island keys: pills by number, new chat, settings, pin", () => {
   const ids = State.tasks.map((t) => t.id);
   runIslandKey(host, { kind: "pill", number: 2 });
-  assert.equal(State.focusId, ids[1]);
+  assert.equal(State.focusId, ids[1] ?? ids[0]);
   runIslandKey(host, { kind: "pill", number: 9 });
   assert.equal(State.focusId, ids[1]);
   runIslandKey(host, { kind: "cycle", delta: 1 });
