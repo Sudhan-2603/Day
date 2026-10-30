@@ -54,7 +54,7 @@ export default defineConfig({
     host: "127.0.0.1",
     // Cargo writes and locks files under target/ while Vite starts; watching them
     // crashes Vite on Windows with EBUSY. Tauri watches src-tauri/ itself.
-    watch: { ignored: ["**/target/**", "**/src-tauri/**"] },
+    watch: { ignored: ["**/target/**", "**/src-tauri/**", "**/Releases/**", "**/dist/**"] },
   },
   envPrefix: ["VITE_", "TAURI_ENV_"],
   build: {

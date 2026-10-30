@@ -20,3 +20,4 @@ if exist "%~dp0Day.exe" (
 echo Setup binary not found! Please ensure Day-Setup.exe is in this folder.
 pause
 exit /b 1
+

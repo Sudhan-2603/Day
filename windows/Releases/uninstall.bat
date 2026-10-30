@@ -40,3 +40,4 @@ echo Day has been successfully uninstalled.
 echo ===================================================
 timeout /t 3 >nul
 exit /b 0
+
