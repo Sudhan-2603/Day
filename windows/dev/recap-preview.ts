@@ -21,4 +21,3 @@ if (summary) {
     images.append(figure);
   }
 }
-

@@ -1,4 +1,4 @@
-// Interface language — the same ten languages as the Mac (0.2.0).
+// Interface language — the Mac's languages except Thai and Traditional Chinese, Mac-only for now.
 //
 // Strings are looked up by their English text, like the Mac's catalog:
 // `t("Allow")`, `t("Uploading {name}", { name })`. Two tables, both keyed by
@@ -18,7 +18,7 @@
 import MAC from "./strings.json";
 import EXTRA from "./extra.json";
 
-export const LANGUAGE_CODES = ["en", "zh-Hans", "hi", "es", "ar", "fr", "bn", "pt-BR", "ru", "id"] as const;
+export const LANGUAGE_CODES = ["en", "zh-Hans", "hi", "es", "ar", "fr", "bn", "pt-BR", "ru", "id", "de", "tr"] as const;
 export type Language = (typeof LANGUAGE_CODES)[number];
 
 /** The picker's entries, each in its own language, in the Mac's order. */
@@ -33,6 +33,8 @@ export const LANGUAGES: readonly { code: Language; name: string }[] = [
   { code: "pt-BR", name: "Português (Brasil)" },
   { code: "ru", name: "Русский" },
   { code: "id", name: "Bahasa Indonesia" },
+  { code: "de", name: "Deutsch" },
+  { code: "tr", name: "Türkçe" },
 ];
 
 export type Vars = Record<string, string | number>;
@@ -145,6 +147,14 @@ export function lookup(key: string, lang: Language = current): string | Plural |
   return TABLE[key]?.[lang];
 }
 
+function replaceBrand(str: string): string {
+  return str
+    .replace(/\bCoucou\b/g, "Day")
+    .replace(/\bcoucou\b/g, "day")
+    .replace(/\bMochi\b/g, "Day")
+    .replace(/\bmochi\b/g, "day");
+}
+
 /**
  * `key` (English text) in the current language, its `{placeholders}` filled
  * from `vars`. Falls back to the English text.
@@ -155,8 +165,7 @@ export function t(key: string, vars?: Vars): string {
   if (typeof found === "string") text = found;
   else if (found) text = pickPlural(found, current, Number(vars?.count ?? 0)) ?? key;
   else text = key;
-  const res = interpolate(text, vars);
-  return res.replace(/\bDay\b/g, "Day").replace(/\bVS Code\b/g, "Day");
+  return replaceBrand(interpolate(text, vars));
 }
 
 /**
@@ -166,19 +175,26 @@ export function t(key: string, vars?: Vars): string {
  */
 export function tn(one: string, other: string, count: number, vars?: Vars): string {
   const all = { ...vars, count };
+  let res: string;
   const found = lookup(other);
   if (found && typeof found !== "string") {
     const text = pickPlural(found, current, count);
-    if (text) return interpolate(text, all);
+    if (text) res = interpolate(text, all);
+    else res = interpolate(count === 1 ? one : other, all);
+  } else if (typeof found === "string") {
+    res = interpolate(found, all);
+  } else {
+    // English, or a language without this string: the English forms.
+    const englishForms = TABLE[other]?.en;
+    if (englishForms && typeof englishForms !== "string") {
+      const text = pickPlural(englishForms, "en", count);
+      if (text) res = interpolate(text, all);
+      else res = interpolate(count === 1 ? one : other, all);
+    } else {
+      res = interpolate(count === 1 ? one : other, all);
+    }
   }
-  if (typeof found === "string") return interpolate(found, all);
-  // English, or a language without this string: the English forms.
-  const englishForms = TABLE[other]?.en;
-  if (englishForms && typeof englishForms !== "string") {
-    const text = pickPlural(englishForms, "en", count);
-    if (text) return interpolate(text, all);
-  }
-  return interpolate(count === 1 ? one : other, all);
+  return replaceBrand(res);
 }
 
 /**
@@ -267,4 +283,3 @@ export function isComplete(key: string): boolean {
   const entry = TABLE[key];
   return !!entry && LANGUAGE_CODES.every((l) => l === "en" || entry[l] !== undefined);
 }
-

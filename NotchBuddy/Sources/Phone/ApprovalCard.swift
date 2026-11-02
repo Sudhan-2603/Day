@@ -84,8 +84,16 @@ struct ReviewSheet: View {
     let link: PhoneLink
     let fingerprint: String
     @Environment(\.dismiss) private var dismiss
+    /// Set once the Mac's sessions were fetched again: until then, "already answered" may be wrong.
+    @State private var checked = false
 
     private var session: SessionItem? { link.sessions.first { $0.approvalFingerprint == fingerprint } }
+
+    /// The Mac waits 115 s for an answer, then hands the request back to the agent.
+    private var expired: Bool {
+        guard let since = link.reviewSince else { return false }
+        return Date().timeIntervalSince(since) > 115
+    }
 
     var body: some View {
         NavigationStack {
@@ -93,10 +101,10 @@ struct ReviewSheet: View {
                 VStack(alignment: .leading, spacing: 16) {
                     if let session {
                         HStack(spacing: 12) {
-                            DayLive(state: session.state)
+                            MochiLive(state: session.state)
                                 .padding(6)
                                 .frame(width: 52, height: 52)
-                                .background(Color.dayTile(hex: session.color), in: RoundedRectangle(cornerRadius: 14))
+                                .background(Color.mochiTile(hex: session.color), in: RoundedRectangle(cornerRadius: 14))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(session.pillName) · \(session.title)").font(.headline)
                                 if !session.macName.isEmpty {
@@ -105,11 +113,23 @@ struct ReviewSheet: View {
                             }
                         }
                         ApprovalCard(link: link, session: session)
-                    } else {
-                        Text("This request was already answered or has expired.")
-                            .foregroundStyle(.secondary)
+                    } else if !checked {
+                        ProgressView("Checking with your Mac…")
                             .frame(maxWidth: .infinity)
                             .padding(40)
+                    } else {
+                        VStack(spacing: 8) {
+                            Text(expired ? "This request expired." : "Already answered on your Mac.")
+                                .font(.headline)
+                            Text(expired
+                                 ? "Your Mac waits 2 minutes for an answer, then the agent asks again in its own window."
+                                 : "It was answered there (in the terminal or VS Code), or the command went ahead.")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(40)
                     }
                 }
                 .padding(16)
@@ -121,6 +141,10 @@ struct ReviewSheet: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
             .refreshable { await link.refresh() }
+            .task {
+                await link.refresh()
+                checked = true
+            }
         }
     }
 }
@@ -140,7 +164,7 @@ struct HistoryView: View {
         List {
             if link.history.isEmpty {
                 VStack(spacing: 10) {
-                    DayLive(state: .sleeping).frame(width: 56, height: 56)
+                    MochiLive(state: .sleeping).frame(width: 56, height: 56)
                     Text("No decision yet").font(.headline)
                     Text("Commands you allow or deny from your iPhone show up here. They stay on this iPhone.")
                         .font(.footnote)
@@ -163,7 +187,7 @@ struct HistoryView: View {
     private func row(_ log: DecisionLog) -> some View {
         let pill = PillCatalog.definition(for: log.pillId)
         return HStack(alignment: .top, spacing: 12) {
-            DayStill(state: log.decision == .allow ? .finished : .error, bodyHex: pill?.color ?? "#FFFFFF")
+            MochiStill(state: log.decision == .allow ? .finished : .error, bodyHex: pill?.color ?? "#FFFFFF")
                 .padding(3)
                 .frame(width: 34, height: 34)
                 .background(Color(white: 0.16), in: RoundedRectangle(cornerRadius: 9))

@@ -8,24 +8,10 @@ export interface KnownAgent {
 }
 
 export const KNOWN_AGENTS: Record<string, KnownAgent> = {
-  cursor: { name: "Cursor", color: "#C0C4CC" },
-  antigravity: { name: "Antigravity", color: "#E879F9" },
-  codex: { name: "Codex", color: "#2DD4BF" },
-  gemini: { name: "Gemini CLI", color: "#8AB4F8" },
-  copilot: { name: "Copilot CLI", color: "#818CF8" },
-  muse: { name: "Muse Code", color: "#38BDF8" },
-  opencode: { name: "OpenCode", color: "#4ADE80" },
-  amp: { name: "Amp", color: "#F59E0B" },
-  hermes: { name: "Hermes", color: "#C084FC" },
-  "claude-desktop": { name: "Claude Desktop", color: "#D97757" },
+  claude: { name: "Claude Code", color: "#F5F6F8" },
 };
 
-/**
- * Agents whose permission requests get an Allow / Deny card, as on the Mac.
- * Must match `takes_decisions` in the relay (hook/src/reply.rs): any other
- * agent's request is handed straight back to its terminal.
- */
-export const APPROVAL_AGENTS = new Set(["codex", "copilot", "muse"]);
+export const APPROVAL_AGENTS = new Set<string>();
 
 /** Same rule as HookServer.validateAgent on macOS. "claude" is reserved. */
 export function validateAgent(raw: string | undefined): string | null {
@@ -50,4 +36,3 @@ export function agentColor(id: string): string {
 export function agentName(id: string): string {
   return KNOWN_AGENTS[id]?.name ?? id;
 }
-

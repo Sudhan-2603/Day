@@ -199,63 +199,6 @@ function buildPicker(onChange: () => void): Picker {
   };
 }
 
-function applyAvatarTheme(card: HTMLElement, hex?: string) {
-  const color = hex && hex.trim() ? hex.trim() : "#818cf8";
-  let r = 129, g = 140, b = 248;
-  const clean = color.replace("#", "");
-  if (clean.length === 6) {
-    r = parseInt(clean.slice(0, 2), 16);
-    g = parseInt(clean.slice(2, 4), 16);
-    b = parseInt(clean.slice(4, 6), 16);
-  }
-
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  const isDark = luminance < 0.22;
-  const isLight = luminance > 0.72;
-
-  const washOpacity = isLight ? 0.32 : 0.46;
-  const wash = isDark
-    ? "rgba(65, 75, 105, 0.45)"
-    : `rgba(${r}, ${g}, ${b}, ${washOpacity})`;
-
-  const glowTop = isDark
-    ? "rgba(255, 255, 255, 0.03)"
-    : `rgba(${r}, ${g}, ${b}, 0.12)`;
-
-  const capsuleBorder = isDark
-    ? "rgba(255, 255, 255, 0.14)"
-    : `rgba(${r}, ${g}, ${b}, 0.28)`;
-
-  const capsuleRing = isDark
-    ? "rgba(255, 255, 255, 0.15)"
-    : `rgba(${r}, ${g}, ${b}, 0.24)`;
-
-  const btnBg = isDark
-    ? "#3a3f4d"
-    : (isLight && luminance > 0.85 ? color : `rgb(${r}, ${g}, ${b})`);
-
-  const btnColor = luminance > 0.6 ? "#0b0c0e" : "#ffffff";
-
-  const userBubbleBg = isDark
-    ? "rgba(255, 255, 255, 0.12)"
-    : `rgba(${r}, ${g}, ${b}, 0.22)`;
-
-  const userBubbleBorder = isDark
-    ? "rgba(255, 255, 255, 0.08)"
-    : `rgba(${r}, ${g}, ${b}, 0.3)`;
-
-  card.style.setProperty("--wash", wash);
-  card.style.setProperty("--avatar-wash", wash);
-  card.style.setProperty("--avatar-glow-top", glowTop);
-  card.style.setProperty("--chat-capsule-border", capsuleBorder);
-  card.style.setProperty("--avatar-ring", capsuleRing);
-  card.style.setProperty("--avatar-border", `rgba(${r}, ${g}, ${b}, 0.55)`);
-  card.style.setProperty("--avatar-accent", btnBg);
-  card.style.setProperty("--avatar-btn-color", btnColor);
-  card.style.setProperty("--avatar-bubble-bg", userBubbleBg);
-  card.style.setProperty("--avatar-bubble-border", userBubbleBorder);
-}
-
 // ── View ──────────────────────────────────────────────────────────────────────
 
 export function buildPrompt(onHeightChange: () => void): ViewHost {
@@ -288,9 +231,8 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
   });
   body.append(chipRow, log, picker.el, modelRow, bar);
 
-  const cardEl = h("div", { class: "card wash chat-card" }, body);
-  const el = h("div", { class: "view" }, cardEl);
-  applyAvatarTheme(cardEl, State.settings.avatarColor);
+  const el = h("div", { class: "view" }, h("div", { class: "card wash chat-card" }, body));
+  (el.querySelector(".card") as HTMLElement).style.setProperty("--wash", "rgba(99,102,241,0.5)");
 
   let sending = false;
   let renderedCount = -1;
@@ -341,52 +283,15 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
       State.chatHistory.length === 1 && file ? { kind: "file", name: file.name, path: file.path } : null;
 
     try {
-      const s = State.settings;
-      const lower = query.toLowerCase();
-      const isFileOp = lower.includes("delete") || (lower.includes("open") && lower.includes("file"));
-      const isEditorOp = lower.includes("editor") || lower.includes("vscode") || lower.includes("vs code") || lower.includes("write code");
-
-      // Check system permissions
-      if (s.systemPermissions === false || (isFileOp && s.systemPermFiles === false) || (isEditorOp && s.systemPermEditor === false)) {
-        throw new Error("Permission denied");
-      }
-
-      // Handle direct code editor open command if requested
-      if (lower.includes("open code editor") || lower.includes("open vs code") || lower.includes("open vscode") || lower.includes("open editor")) {
-        const ok = await Bridge.openInVSCode(null);
-        if (!ok) {
-          throw new Error("Could not open editor");
-        }
-        State.chatHistory.push({ id: nextId++, role: "assistant", content: "Opened code editor for you." });
-        State.stateOverride = "finished";
-        Sound.play("finish");
-        setTimeout(() => {
-          if (State.stateOverride === "finished") {
-            State.stateOverride = null;
-            State.notify();
-          }
-        }, 2500);
-        return;
-      }
-
       const reply = await Bridge.chatSend(query, context);
       State.chatHistory.push({ id: nextId++, role: "assistant", content: reply.text });
       State.stateOverride = null;
       Sound.play("finish");
-    } catch {
-      State.stateOverride = "error";
-      State.chatHistory.push({
-        id: nextId++,
-        role: "assistant",
-        content: "Sorry for that i can't ",
-      });
+    } catch (err) {
+      State.stateOverride = null;
+      State.noteMessage = String(err).replace(/^Error:\s*/, "");
+      State.view = "note";
       Sound.play("error");
-      setTimeout(() => {
-        if (State.stateOverride === "error") {
-          State.stateOverride = null;
-          State.notify();
-        }
-      }, 3500);
     } finally {
       sending = false;
       live = null;
@@ -394,7 +299,13 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
       drawModelButton();
       State.notify();
       onHeightChange();
-      input.focus();
+      // Back to typing without a click. The field was disabled while the
+      // answer came, which took the focus away, and the sync that enables it
+      // again is a frame away: a disabled field can't take the focus.
+      if (State.view === "prompt") {
+        input.disabled = false;
+        input.focus();
+      }
     }
   }
 
@@ -435,7 +346,6 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
       // Leaving the chat folds the picker away.
       if (State.view !== "prompt" && picker.isOpen) picker.close();
       drawModelButton();
-      applyAvatarTheme(cardEl, State.settings.avatarColor);
 
       input.placeholder = t(State.chatHistory.length === 0 ? STRINGS.placeholderFirst : STRINGS.placeholderNext);
       input.disabled = sending;
@@ -446,4 +356,3 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
     },
   };
 }
-

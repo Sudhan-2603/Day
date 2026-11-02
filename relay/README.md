@@ -27,8 +27,8 @@ message. It stores nothing and logs nothing.
    npx wrangler secret put APNS_KEY < ~/Downloads/AuthKey_XXXXXXXXXX.p8
    npx wrangler deploy
    ```
-   `deploy` prints the URL, like `https://day-relay.<you>.workers.dev`.
-3. Check it: `curl https://day-relay.<you>.workers.dev/` answers "Day relay".
+   `deploy` prints the URL, like `https://Day-relay.<you>.workers.dev`.
+3. Check it: `curl https://Day-relay.<you>.workers.dev/` answers "Day relay".
 
 ## API
 

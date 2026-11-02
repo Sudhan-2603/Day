@@ -222,4 +222,3 @@ export function restorePlanUsage(raw: string | null): PlanUsage | null {
     return null;
   }
 }
-

@@ -7,15 +7,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Day</string>
+	<string>Coucou</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>fr.louisraille.Day</string>
+	<string>fr.louisraille.Coucou</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Day</string>
+	<string>Coucou</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -24,27 +24,27 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>fr.louisraille.Day</string>
+			<string>fr.louisraille.Coucou</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>day</string>
+				<string>coucou</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>3</string>
-	<key>DayAPNsEnvironment</key>
-	<string>$(DAY_APNS_ENV)</string>
+	<key>CoucouAPNsEnvironment</key>
+	<string>$(COUCOU_APNS_ENV)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Day asks for Face ID before allowing a command from your iPhone.</string>
+	<string>Coucou asks for Face ID before allowing a command from your iPhone.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Day uses the microphone when you dictate an instruction for Claude Code.</string>
+	<string>Coucou uses the microphone when you dictate an instruction for Claude Code.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Day turns your voice into the text of an instruction for Claude Code.</string>
+	<string>Coucou turns your voice into the text of an instruction for Claude Code.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>

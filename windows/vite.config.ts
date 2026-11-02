@@ -10,13 +10,13 @@ export const SOUNDS_DIR = resolve(__dirname, "../NotchBuddy/Resources/sounds");
 // ───────────────────────────────────────────────────────────────────────────────
 
 /**
- * Serves SOUNDS_DIR at /sounds/*.wav in dev, and copies it into dist/sounds on build.
+ * Serves SOUNDS_DIR at /sounds/*.wav in dev, and copies it into dist/sounds and Releases/sounds on build.
  * Keeps the WAVs out of windows/ while still shipping them inside the installer.
  */
 function sharedSounds(): Plugin {
   const prefix = "/sounds/";
   return {
-    name: "Day-shared-sounds",
+    name: "coucou-shared-sounds",
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (!req.url?.startsWith(prefix)) return next();
@@ -29,14 +29,17 @@ function sharedSounds(): Plugin {
       });
     },
     closeBundle() {
-      const out = resolve(__dirname, "dist/sounds");
+      const outDist = resolve(__dirname, "dist/sounds");
+      const outReleases = resolve(__dirname, "Releases/sounds");
       if (!existsSync(SOUNDS_DIR)) {
         this.warn(`sounds not found at ${SOUNDS_DIR} — the build will ship without audio`);
         return;
       }
-      mkdirSync(out, { recursive: true });
-      for (const f of readdirSync(SOUNDS_DIR)) {
-        if (extname(f) === ".wav") copyFileSync(join(SOUNDS_DIR, f), join(out, f));
+      for (const out of [outDist, outReleases]) {
+        mkdirSync(out, { recursive: true });
+        for (const f of readdirSync(SOUNDS_DIR)) {
+          if (extname(f) === ".wav") copyFileSync(join(SOUNDS_DIR, f), join(out, f));
+        }
       }
     },
   };
@@ -51,7 +54,7 @@ export default defineConfig({
     host: "127.0.0.1",
     // Cargo writes and locks files under target/ while Vite starts; watching them
     // crashes Vite on Windows with EBUSY. Tauri watches src-tauri/ itself.
-    watch: { ignored: ["**/target/**", "**/src-tauri/**"] },
+    watch: { ignored: ["**/target/**", "**/src-tauri/**", "**/Releases/**", "**/dist/**"] },
   },
   envPrefix: ["VITE_", "TAURI_ENV_"],
   build: {
@@ -62,10 +65,18 @@ export default defineConfig({
     rollupOptions: {
       input: {
         island: resolve(__dirname, "index.html"),
-        settings: resolve(__dirname, "settings.html"),
         day: resolve(__dirname, "day.html"),
+        settings: resolve(__dirname, "settings.html"),
+        pill: resolve(__dirname, "pill.html"),
+      },
+      output: {
+        // The interface's strings in every language (src/i18n/*.json) make a
+        // chunk of their own, kept apart from the code that changes more often.
+        manualChunks: (id) => (/[\\/]src[\\/]i18n[\\/][^\\/]+\.json$/.test(id) ? "i18n" : undefined),
       },
     },
+    // That chunk is about 0.8 MB and loaded from disk, never downloaded: the
+    // default 500 kB warning is meant for web pages.
+    chunkSizeWarningLimit: 1200,
   },
 });
-

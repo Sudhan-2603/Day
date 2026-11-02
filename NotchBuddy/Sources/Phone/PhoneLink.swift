@@ -75,19 +75,19 @@ final class PhoneLink {
         case failed(String)
     }
 
-    static let containerID = "iCloud.fr.louisraille.Day"
-    static let zoneID = CKRecordZone.ID(zoneName: "Day", ownerName: CKCurrentUserDefaultName)
-    private static let subscriptionID = "day-zone-phone-silent"
+    static let containerID = "iCloud.fr.louisraille.Coucou"
+    static let zoneID = CKRecordZone.ID(zoneName: "Coucou", ownerName: CKCurrentUserDefaultName)
+    private static let subscriptionID = "coucou-zone-phone-silent"
     /// Step 1's subscription showed a "Ping from your Mac" banner. A saved
     /// subscription keeps its notification settings, so it is deleted rather than reused.
-    private static let oldSubscriptionID = "day-zone-phone"
+    private static let oldSubscriptionID = "coucou-zone-phone"
 
     var status: Status = .starting
     /// The first look at iCloud is over (whatever came of it): the intro can end.
     var firstSyncDone = false
     var pings: [PingItem] = []
     var sessions: [SessionItem] = []
-    /// Service Day (GitHub, Stripe…) the Mac publishes, by pill ID.
+    /// Service Mochi (GitHub, Stripe…) the Mac publishes, by pill ID.
     var services: [String: ServiceSnapshot] = [:]
     /// A service up close (figures, lists, actions), fetched by the Mac when its screen opens.
     var serviceDetails: [String: ServiceDetail] = [:]
@@ -170,22 +170,22 @@ final class PhoneLink {
     /// silent subscription so a failure here never stops the sessions.
     private func subscribeToApprovals() async {
         // A saved subscription keeps its sound: one ID per sound, the other one is deleted.
-        let day = PhoneSettings.daySounds
+        let mochi = PhoneSettings.mochiSounds
         let approvals = CKQuerySubscription(recordType: "ApprovalRequest", predicate: NSPredicate(value: true),
-                                            subscriptionID: day ? "day-approvals-day" : "day-approvals",
+                                            subscriptionID: mochi ? "coucou-approvals-mochi" : "coucou-approvals",
                                             options: [.firesOnRecordCreation])
         approvals.zoneID = Self.zoneID
         let alert = CKSubscription.NotificationInfo()
-        alert.title = "Day"
+        alert.title = "Coucou"
         alert.alertBody = "An agent is waiting for your OK"
-        alert.soundName = day ? "approval.wav" : "default"
+        alert.soundName = mochi ? "approval.wav" : "default"
         alert.category = NotificationActions.approvalCategory
         alert.shouldSendContentAvailable = true
         alert.desiredKeys = ["fingerprint", "pillId"]
         approvals.notificationInfo = alert
         do {
             _ = try await database.modifySubscriptions(saving: [approvals], deleting: [])
-            _ = try? await database.modifySubscriptions(saving: [], deleting: [day ? "day-approvals" : "day-approvals-day"])
+            _ = try? await database.modifySubscriptions(saving: [], deleting: [mochi ? "coucou-approvals" : "coucou-approvals-mochi"])
             approvalsSubscribed = true
             approvalsStatus = "On"
         } catch {
@@ -307,7 +307,7 @@ final class PhoneLink {
 
     // MARK: Approval notifications (step 7)
 
-    /// State of the "day-approvals" subscription, shown on the link test screen.
+    /// State of the "coucou-approvals" subscription, shown on the link test screen.
     var approvalsStatus = "Not set up yet"
     @ObservationIgnored private var notifiedFingerprints: Set<String> = []
 
@@ -504,6 +504,9 @@ final class PhoneLink {
 
     /// Set when the user taps "Review" on an approval notification.
     var reviewFingerprint: String?
+    /// When the notification of the request under review arrived: a request older than the
+    /// Mac's 2-minute wait has expired rather than been answered.
+    var reviewSince: Date?
 
     /// Sends allow / deny for one exact request. The Mac applies it only if the
     /// fingerprint still matches the request it is waiting on.

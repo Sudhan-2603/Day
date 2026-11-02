@@ -5,7 +5,7 @@
 // relay signs a token with the key (a Worker secret) and forwards the push to
 // Apple. Nothing is stored and nothing is logged: no database, observability
 // off. The state holds no project name, command or path (see
-// DayActivityState.swift), and the relay builds the push itself, so it can't
+// MochiActivityState.swift), and the relay builds the push itself, so it can't
 // be used to send arbitrary notifications.
 
 export interface Env {
@@ -120,7 +120,7 @@ function buildPayload(body: RelayRequest) {
     "stale-date": now + 15 * 60,
   };
   if (body.event === "start") {
-    aps["attributes-type"] = "DayActivityAttributes";
+    aps["attributes-type"] = "MochiActivityAttributes";
     aps["attributes"] = {};
     // iOS requires an alert to start a Live Activity from a push.
     aps["alert"] = { title: "Day", body: `${state.agent} · ${state.statusText}` };
@@ -180,4 +180,3 @@ function base64url(input: string | Uint8Array): string {
 function text(status: number, message: string): Response {
   return new Response(message, { status, headers: { "content-type": "text/plain" } });
 }
-

@@ -173,7 +173,7 @@ export class UploadCanvas {
   // ── Scene ─────────────────────────────────────────────────────────────────
 
   private drawScene(ctx: CanvasRenderingContext2D, f: UploadFrame, wallTime: number) {
-    // Upload layer background is always strictly black.
+    // Island background.
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, USC.W, USC.ISL_H);
 
@@ -214,7 +214,7 @@ export class UploadCanvas {
     if (f.barAlpha > 0 || f.barReveal > 0) this.drawProgressBar(ctx, f);
     if (f.chooseAlpha > 0) this.drawChoose(ctx, f);
 
-    this.drawDay(ctx, f);
+    this.drawMochi(ctx, f);
     if (f.fileVisible) this.drawFile(ctx, f);
   }
 
@@ -359,7 +359,7 @@ export class UploadCanvas {
 
   // ── Day ─────────────────────────────────────────────────────────────────
 
-  private drawDay(ctx: CanvasRenderingContext2D, f: UploadFrame) {
+  private drawMochi(ctx: CanvasRenderingContext2D, f: UploadFrame) {
     const R = f.d / 2 / 1.04;
     const mc = Math.max(0, Math.min(f.morph, 1));
 
@@ -600,4 +600,3 @@ function drawDoc(ctx: CanvasRenderingContext2D, cx: number, cy: number, wsc: num
   rr(ctx, x + w * 0.18, y + h * 0.58, w * 0.64, h * 0.16, 2);
   ctx.fill();
 }
-

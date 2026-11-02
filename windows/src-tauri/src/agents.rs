@@ -18,7 +18,7 @@ use crate::config_file::{self, FileEdit, Plan};
 use crate::{platform, settings};
 
 /// Marker that identifies a Day entry: the relay's file name.
-const MARKER: &str = "Day-hook";
+const MARKER: &str = "coucou-hook";
 
 // ── The relay command line ────────────────────────────────────────────────────
 
@@ -142,13 +142,13 @@ impl Agent {
             Agent::Antigravity => vec![home.join(".gemini").join("config").join("hooks.json")],
             Agent::Cursor => vec![home.join(".cursor").join("hooks.json")],
             Agent::Codex => vec![home.join(".codex").join("hooks.json")],
-            Agent::Copilot => vec![home.join(".copilot").join("hooks").join("Day.json")],
+            Agent::Copilot => vec![home.join(".copilot").join("hooks").join("coucou.json")],
             Agent::Muse => vec![home.join(".config").join("muse").join("settings.json")],
             // OpenCode and Amp read ~/.config on Windows too.
-            Agent::OpenCode => vec![home.join(".config").join("opencode").join("plugins").join("Day.js")],
-            Agent::Amp => vec![home.join(".config").join("amp").join("plugins").join("Day.ts")],
+            Agent::OpenCode => vec![home.join(".config").join("opencode").join("plugins").join("coucou.js")],
+            Agent::Amp => vec![home.join(".config").join("amp").join("plugins").join("coucou.ts")],
             Agent::Hermes => {
-                let dir = home.join(".hermes").join("plugins").join("Day");
+                let dir = home.join(".hermes").join("plugins").join("coucou");
                 vec![dir.join("__init__.py"), dir.join("plugin.yaml")]
             }
         }
@@ -252,7 +252,7 @@ impl Agent {
         };
         match self {
             Agent::Gemini => groups_have_ours(&json(), "gemini"),
-            Agent::Antigravity => json().get("Day").is_some_and(antigravity_is_ours),
+            Agent::Antigravity => json().get("coucou").is_some_and(antigravity_is_ours),
             Agent::Cursor => groups_have_ours(&json(), "cursor"),
             Agent::Codex => groups_have_ours(&json(), "codex"),
             Agent::Copilot => json()
@@ -302,7 +302,7 @@ impl Agent {
             Agent::Muse => t("Start a new Muse Code session to pick the hooks up."),
             Agent::OpenCode => t("Restart OpenCode to load the plugin."),
             Agent::Amp => t("Restart Amp to load the plugin."),
-            Agent::Hermes => t("Turn it on once with `hermes plugins enable Day`, then start a new Hermes session."),
+            Agent::Hermes => t("Turn it on once with `hermes plugins enable coucou`, then start a new Hermes session."),
         }
     }
 }
@@ -357,7 +357,7 @@ pub fn apply(id: &str, install: bool, fingerprint: &str) -> Result<String, Strin
 
 fn apply_in(agent: Agent, home: &Path, relay: &Relay, install: bool, fingerprint: &str) -> Result<String, String> {
     let backups = config_file::apply(&agent.edits(home, relay, install), fingerprint)?;
-    // Hermes loads every folder under plugins/: an empty `Day` one goes too.
+    // Hermes loads every folder under plugins/: an empty `coucou` one goes too.
     if agent == Agent::Hermes && !install {
         if let Some(dir) = agent.files(home)[0].parent() {
             let _ = std::fs::remove_dir(dir);
@@ -514,7 +514,7 @@ fn gemini_install(root: &Value, commands: &[(String, String, u64)]) -> Result<Va
 
 // ── Antigravity — ~/.gemini/config/hooks.json ─────────────────────────────────
 //
-// Hooks are named groups at the top level; Day's is `Day`. Tool events
+// Hooks are named groups at the top level; Day's is `coucou`. Tool events
 // take matcher groups, lifecycle events take handlers directly; timeouts are
 // in seconds. Merge and removal come from #298 (kobaltgit). The relay answers
 // PreToolUse with "{}" — no decision — never with an allow: Antigravity's own
@@ -541,7 +541,7 @@ fn antigravity_block(relay: &Relay) -> Value {
     Value::Object(block)
 }
 
-/// A `Day` group Day wrote (it runs the relay as `--agent antigravity`).
+/// A `coucou` group Day wrote (it runs the relay as `--agent antigravity`).
 fn antigravity_is_ours(group: &Value) -> bool {
     let text = group.to_string();
     text.contains(MARKER) && text.contains("--agent antigravity")
@@ -549,18 +549,18 @@ fn antigravity_is_ours(group: &Value) -> bool {
 
 fn antigravity_install(root: &Value, block: &Value) -> Result<Value, String> {
     let mut root = root.as_object().cloned().unwrap_or_default();
-    if root.get("Day").is_some_and(|g| !antigravity_is_ours(g)) {
-        return Err(crate::i18n::t("A hook group named \"Day\" that Day did not write is already there — Day has not touched it."));
+    if root.get("coucou").is_some_and(|g| !antigravity_is_ours(g)) {
+        return Err(crate::i18n::t("A hook group named \"coucou\" that Day did not write is already there — Day has not touched it."));
     }
-    root.insert("Day".into(), block.clone());
+    root.insert("coucou".into(), block.clone());
     Ok(Value::Object(root))
 }
 
 /// Removes Day's group, and only if it is Day's.
 fn antigravity_uninstall(root: &Value) -> Result<Value, String> {
     let mut root = root.as_object().cloned().unwrap_or_default();
-    if root.get("Day").is_some_and(antigravity_is_ours) {
-        root.remove("Day");
+    if root.get("coucou").is_some_and(antigravity_is_ours) {
+        root.remove("coucou");
     }
     Ok(Value::Object(root))
 }
@@ -625,7 +625,7 @@ fn codex_install(root: &Value, command: &str) -> Result<Value, String> {
     groups_install(root, "codex", events).map(Value::Object)
 }
 
-// ── GitHub Copilot CLI — ~/.copilot/hooks/Day.json ─────────────────────────
+// ── GitHub Copilot CLI — ~/.copilot/hooks/coucou.json ─────────────────────────
 //
 // A file of Day's own in Copilot's hooks folder: camelCase events, each
 // entry `{"type": "command", "bash": …, "timeoutSec": N}`, plus `powershell`
@@ -757,7 +757,7 @@ fn plugin_edit(path: PathBuf, content: String, install: bool) -> FileEdit<'stati
 }
 
 const OPENCODE_PLUGIN: &str = r#"// Day plugin for OpenCode — generated by Day.
-// Forwards OpenCode's events to Day's relay (Day-hook), fire-and-forget:
+// Forwards OpenCode's events to Day's relay (coucou-hook), fire-and-forget:
 // OpenCode never waits on it, and nothing happens when Day is closed.
 import { spawn } from 'node:child_process';
 
@@ -767,6 +767,10 @@ const EVENT_MAP = {
   'session.idle': 'Stop',
   'session.error': 'StopFailure',
   'session.deleted': 'SessionEnd',
+  // OpenCode 2 names a turn's start and end instead (#717).
+  'session.execution.started': 'UserPromptSubmit',
+  'session.execution.succeeded': 'Stop',
+  'session.execution.failed': 'StopFailure',
 };
 
 function forward(hook_event_name, payload) {
@@ -783,11 +787,11 @@ function forward(hook_event_name, payload) {
   } catch {}
 }
 
-export const DayPlugin = async ({ directory } = {}) => ({
+export const CoucouPlugin = async ({ directory } = {}) => ({
   event: async ({ event }) => {
     const hook_event_name = EVENT_MAP[event?.type];
     if (!hook_event_name) return;
-    const props = event.properties || {};
+    const props = event?.properties || {};
     forward(hook_event_name, {
       session_id: props.sessionID || props.info?.id || '',
       cwd: directory || '',
@@ -809,10 +813,53 @@ export const DayPlugin = async ({ directory } = {}) => ({
     });
   },
 });
+
+export default {
+  id: 'coucou',
+  setup: async (ctx = {}) => {
+    const dir = ctx.directory || ctx.location?.directory || '';
+    if (ctx.tool?.hook) {
+      try {
+        ctx.tool.hook('execute.before', async (input, output) => {
+          forward('PreToolUse', {
+            session_id: input?.sessionID || '',
+            cwd: dir,
+            tool_name: typeof input?.tool === 'string' ? input.tool : '',
+            tool_input: output?.args ?? input?.input ?? null,
+          });
+        });
+        ctx.tool.hook('execute.after', async (input) => {
+          forward('PostToolUse', {
+            session_id: input?.sessionID || '',
+            cwd: dir,
+            tool_name: typeof input?.tool === 'string' ? input.tool : '',
+          });
+        });
+      } catch {}
+    }
+    if (ctx.event?.subscribe) {
+      (async () => {
+        try {
+          for await (const event of ctx.event.subscribe()) {
+            const hook_event_name = EVENT_MAP[event?.type];
+            if (!hook_event_name) continue;
+            const props = event?.properties || {};
+            forward(hook_event_name, {
+              session_id: props.sessionID || props.info?.id || event?.data?.sessionID || event?.sessionID || '',
+              cwd: dir,
+            });
+          }
+        } catch {}
+      })();
+    }
+    return CoucouPlugin(ctx);
+  },
+  server: CoucouPlugin,
+};
 "#;
 
 const AMP_PLUGIN: &str = r#"// Day plugin for Amp — generated by Day.
-// Forwards Amp's events to Day's relay (Day-hook), fire-and-forget and
+// Forwards Amp's events to Day's relay (coucou-hook), fire-and-forget and
 // display only: Amp never waits on it, and it never decides anything for Amp.
 import { spawn } from 'node:child_process';
 
@@ -848,7 +895,7 @@ export default function (amp: any): void {
 "#;
 
 const HERMES_PLUGIN: &str = r#"# Day plugin for Hermes Agent — generated by Day.
-# Session and tool events go to Day's relay (Day-hook), fire-and-forget:
+# Session and tool events go to Day's relay (coucou-hook), fire-and-forget:
 # Hermes never waits on it, and keeps every approval decision to itself.
 import json, os, subprocess, threading
 
@@ -917,7 +964,7 @@ def register(ctx):
     ctx.register_hook('pre_approval_request', pre_approval_request)
 "#;
 
-const HERMES_PLUGIN_YAML: &str = r#"name: Day
+const HERMES_PLUGIN_YAML: &str = r#"name: coucou
 version: "1.0"
 description: Day island integration — generated by Day
 "#;
@@ -928,15 +975,15 @@ mod tests {
     use crate::config_file::tests::scratch;
 
     fn linux() -> Relay {
-        Relay { exe: "/home/me/.local/share/Day/bin/Day-hook".into(), windows: false }
+        Relay { exe: "/home/me/.local/share/coucou/bin/coucou-hook".into(), windows: false }
     }
 
     fn windows(exe: &str) -> Relay {
         Relay { exe: exe.into(), windows: true }
     }
 
-    const WIN: &str = r"C:\Users\me\AppData\Local\Day\bin\Day-hook.exe";
-    const WIN_SPACE: &str = r"C:\Users\Jane O'Neil\AppData\Local\Day\bin\Day-hook.exe";
+    const WIN: &str = r"C:\Users\me\AppData\Local\Day\bin\coucou-hook.exe";
+    const WIN_SPACE: &str = r"C:\Users\Jane O'Neil\AppData\Local\Day\bin\coucou-hook.exe";
 
     /// Installs then uninstalls `agent` in a fresh home holding `existing` in
     /// its first file, and returns (installed file, uninstalled file).
@@ -972,12 +1019,12 @@ mod tests {
     fn the_command_is_quoted_for_the_shell_that_runs_it() {
         assert_eq!(
             linux().command(Shell::Cmd, "--agent codex"),
-            "'/home/me/.local/share/Day/bin/Day-hook' --agent codex"
+            "'/home/me/.local/share/coucou/bin/coucou-hook' --agent codex"
         );
         let w = windows(WIN);
         assert_eq!(
             w.command(Shell::Sh, "Stop"),
-            "\"C:/Users/me/AppData/Local/Day/bin/Day-hook.exe\" Stop"
+            "\"C:/Users/me/AppData/Local/Day/bin/coucou-hook.exe\" Stop"
         );
         assert_eq!(
             w.command(Shell::PowerShell, "--agent gemini Stop"),
@@ -990,7 +1037,7 @@ mod tests {
         assert_eq!(spaced.command(Shell::Cmd, "x"), format!("\"{WIN_SPACE}\" x"));
         assert_eq!(
             spaced.command(Shell::PowerShell, "x"),
-            r"& 'C:\Users\Jane O''Neil\AppData\Local\Day\bin\Day-hook.exe' x"
+            r"& 'C:\Users\Jane O''Neil\AppData\Local\Day\bin\coucou-hook.exe' x"
         );
     }
 
@@ -1030,8 +1077,8 @@ mod tests {
 
     #[test]
     fn installing_twice_leaves_one_entry_per_event() {
-        let once = gemini_install(&json!({}), &[("BeforeTool".into(), "'x/Day-hook' --agent gemini PreToolUse".into(), 5000)]).unwrap();
-        let twice = gemini_install(&once, &[("BeforeTool".into(), "'y/Day-hook' --agent gemini PreToolUse".into(), 5000)]).unwrap();
+        let once = gemini_install(&json!({}), &[("BeforeTool".into(), "'x/coucou-hook' --agent gemini PreToolUse".into(), 5000)]).unwrap();
+        let twice = gemini_install(&once, &[("BeforeTool".into(), "'y/coucou-hook' --agent gemini PreToolUse".into(), 5000)]).unwrap();
         assert_eq!(twice["hooks"]["BeforeTool"].as_array().unwrap().len(), 1);
     }
 
@@ -1043,7 +1090,7 @@ mod tests {
             if file.extension().is_some_and(|e| e == "json") {
                 std::fs::create_dir_all(file.parent().unwrap()).unwrap();
                 let shaped: &[&str] = match agent {
-                    Agent::Antigravity => &[r#"{"Day":"nope"}"#],
+                    Agent::Antigravity => &[r#"{"coucou":"nope"}"#],
                     _ => &[r#"{"hooks":"nope"}"#, r#"{"hooks":[1]}"#],
                 };
                 for odd in shaped.iter().copied().chain(["[1,2]", "{ broken", "\"text\""]) {
@@ -1062,7 +1109,7 @@ mod tests {
         let existing = r#"{"my-guard":{"PreToolUse":[{"matcher":"run_command","hooks":[{"command":"/bin/guard"}]}]}}"#;
         let (home, installed, removed) = round_trip(Agent::Antigravity, Some(existing));
         assert_eq!(installed["my-guard"]["PreToolUse"][0]["matcher"], "run_command");
-        let ours = &installed["Day"];
+        let ours = &installed["coucou"];
         for event in ANTIGRAVITY_TOOL_EVENTS {
             assert_eq!(ours[event][0]["matcher"], "*");
             let cmd = ours[event][0]["hooks"][0]["command"].as_str().unwrap();
@@ -1077,8 +1124,8 @@ mod tests {
     }
 
     #[test]
-    fn a_Day_group_someone_else_wrote_is_neither_replaced_nor_removed() {
-        let theirs = json!({ "Day": { "Stop": [{ "command": "/bin/notify" }] } });
+    fn a_coucou_group_someone_else_wrote_is_neither_replaced_nor_removed() {
+        let theirs = json!({ "coucou": { "Stop": [{ "command": "/bin/notify" }] } });
         assert!(antigravity_install(&theirs, &antigravity_block(&linux())).is_err());
         assert_eq!(antigravity_uninstall(&theirs).unwrap(), theirs);
     }
@@ -1108,7 +1155,7 @@ mod tests {
 
     #[test]
     fn a_new_cursor_file_gets_its_version() {
-        let after = cursor_install(&json!({}), "'x/Day-hook' --agent cursor").unwrap();
+        let after = cursor_install(&json!({}), "'x/coucou-hook' --agent cursor").unwrap();
         assert_eq!(after["version"], 1);
         // A version the user set is theirs.
         let after = cursor_install(&json!({ "version": 2 }), "c").unwrap();
@@ -1139,7 +1186,7 @@ mod tests {
     }
 
     #[test]
-    fn copilot_gets_a_file_of_its_own_which_goes_when_Day_leaves() {
+    fn copilot_gets_a_file_of_its_own_which_goes_when_coucou_leaves() {
         let (home, installed, removed) = round_trip(Agent::Copilot, None);
         assert_eq!(installed["version"], 1);
         for (event, timeout) in COPILOT_EVENTS {
@@ -1168,7 +1215,7 @@ mod tests {
         assert_eq!(entry["powershell"], format!("& '{WIN}' --agent copilot preToolUse"));
         assert_eq!(
             entry["bash"],
-            "\"C:/Users/me/AppData/Local/Day/bin/Day-hook.exe\" --agent copilot preToolUse"
+            "\"C:/Users/me/AppData/Local/Day/bin/coucou-hook.exe\" --agent copilot preToolUse"
         );
     }
 
@@ -1207,7 +1254,7 @@ mod tests {
             let main = std::fs::read_to_string(&agent.files(&home)[0]).unwrap();
             // The relay itself, at this machine's path, as a string literal: no
             // shell, no macOS path.
-            assert!(main.contains(r#""/home/me/.local/share/Day/bin/Day-hook""#), "{agent:?}");
+            assert!(main.contains(r#""/home/me/.local/share/coucou/bin/coucou-hook""#), "{agent:?}");
             assert!(!main.contains("/bin/sh") && !main.contains("nb-hook"), "{agent:?}");
             assert!(main.contains(&format!("'--agent', '{}'", agent.id())), "{agent:?}");
             // Never a verdict for the agent.
@@ -1224,7 +1271,26 @@ mod tests {
     }
 
     #[test]
-    fn a_plugin_file_Day_did_not_write_is_left_alone() {
+    fn the_opencode_plugin_maps_opencode_2_turns() {
+        // OpenCode 2 never sends session.idle: a turn ends with
+        // session.execution.succeeded, its session id in `data` (#717).
+        let home = scratch("plugin-opencode-2");
+        let relay = linux();
+        let plan = config_file::preview(&Agent::OpenCode.edits(&home, &relay, true)).unwrap();
+        apply_in(Agent::OpenCode, &home, &relay, true, &plan.fingerprint).unwrap();
+        let main = std::fs::read_to_string(&Agent::OpenCode.files(&home)[0]).unwrap();
+        assert!(main.contains("'session.execution.started': 'UserPromptSubmit'"));
+        assert!(main.contains("'session.execution.succeeded': 'Stop'"));
+        assert!(main.contains("'session.execution.failed': 'StopFailure'"));
+        assert!(main.contains("event?.data?.sessionID"));
+        assert!(main.contains("ctx.location?.directory"));
+        // OpenCode 1 keeps its own names.
+        assert!(main.contains("'session.idle': 'Stop'"));
+        let _ = std::fs::remove_dir_all(home);
+    }
+
+    #[test]
+    fn a_plugin_file_coucou_did_not_write_is_left_alone() {
         let home = scratch("plugin-foreign");
         let file = Agent::OpenCode.files(&home)[0].clone();
         std::fs::create_dir_all(file.parent().unwrap()).unwrap();
@@ -1252,5 +1318,16 @@ mod tests {
         let odd = json!({ "hooks": { "BeforeTool": { "matcher": "x" } } });
         assert!(gemini_install(&odd, &[("BeforeTool".into(), "c".into(), 1)]).is_err());
     }
-}
 
+    #[test]
+    fn opencode_plugin_exports_v2_default_and_v1_named_plugin() {
+        let plugins = Agent::OpenCode.plugin(&windows(WIN_SPACE)).unwrap();
+        let plugin = &plugins[0];
+        assert!(plugin.contains("export const CoucouPlugin ="));
+        assert!(plugin.contains("export default {"));
+        assert!(plugin.contains("id: 'coucou'"));
+        assert!(plugin.contains("setup: async (ctx = {}) => {"));
+        assert!(plugin.contains("return CoucouPlugin(ctx);"));
+        assert!(is_our_plugin(plugin));
+    }
+}

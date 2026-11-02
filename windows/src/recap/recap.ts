@@ -85,4 +85,3 @@ class RecapController {
 }
 
 export const Recap = new RecapController();
-

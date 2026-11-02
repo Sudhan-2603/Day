@@ -1,4 +1,4 @@
-//! `Day-hook --statusline`: Claude Code's status line command, for the plan
+//! `coucou-hook --statusline`: Claude Code's status line command, for the plan
 //! usage pill.
 //!
 //! Claude Code hands its status line command the session's JSON on stdin, and
@@ -336,4 +336,3 @@ mod tests {
         assert_eq!(found, vec![PathBuf::from("/git/bin/bash.exe")]);
     }
 }
-

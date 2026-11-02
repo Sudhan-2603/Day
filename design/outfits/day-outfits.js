@@ -604,7 +604,7 @@ OUTFITS.bow = {
 };
 
 // ---------- composite draw ----------
-function drawDay(ctx, W, opts) {
+function drawday(ctx, W, opts) {
   const R = W * (opts.scale || 1) * 0.3;
   const H = { R, rx: R * 1.14, ry: R * 0.88, view: VIEW_TILT, yaw: opts.yaw || 0, pitch: opts.pitch || 0, phys: opts.phys || { dx: 0, dy: 0 } };
   const o = opts.outfit ? OUTFITS[opts.outfit] : null;
@@ -616,4 +616,3 @@ function drawDay(ctx, W, opts) {
   if (o && o.front) o.front(ctx, H, path);
   ctx.restore();
 }
-

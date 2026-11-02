@@ -15,7 +15,7 @@ final class StripePoller: @unchecked Sendable {
     func start() {
         guard timer == nil else { return }
         let t = DispatchSource.makeTimerSource(queue: .global(qos: .background))
-        t.schedule(deadline: .now() + 6, repeating: 30)
+        t.schedule(deadline: .now() + 6, repeating: 30, leeway: .seconds(5))
         t.setEventHandler { [weak self] in self?.poll() }
         t.resume()
         timer = t
@@ -49,30 +49,34 @@ final class StripePoller: @unchecked Sendable {
                 else if code == 403 { errMsg = "Use secret key (sk_live_… not pk_live_…)" }
                 else if code == 0   { errMsg = error?.localizedDescription ?? "No connection" }
                 else                { errMsg = "API error \(code)" }
-                DispatchQueue.main.async { AppState.shared.stripeError = errMsg }
+                DispatchQueue.main.async { AppState.shared.setIfChanged(\.stripeError, errMsg) }
                 return
             }
             guard let data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
 
-            // Sum available + pending so recent charges show up immediately
+            // Sum available + pending for the primary currency so recent charges show up immediately
             let available = json["available"] as? [[String: Any]] ?? []
             let pending   = json["pending"]   as? [[String: Any]] ?? []
             let allBuckets = available + pending
             guard let currency = (allBuckets.first)?["currency"] as? String else { return }
-            let amount = allBuckets.compactMap { $0["amount"] as? Int }.reduce(0, +)
+            let amount = allBuckets
+                .filter { ($0["currency"] as? String) == currency }
+                .compactMap { $0["amount"] as? Int }
+                .reduce(0, +)
 
             DispatchQueue.main.async {
                 let state = AppState.shared
-                state.stripeError    = nil
-                state.stripeCurrency = currency
-                state.stripeBalance  = amount
+                // Every @Published set redraws every island view: only on change.
+                state.setIfChanged(\.stripeError, nil)
+                state.setIfChanged(\.stripeCurrency, currency)
+                state.setIfChanged(\.stripeBalance, amount)
                 // Always sync display balance if not yet showing a real value
                 // (charges may have set stripeLoaded=true before balance arrived)
                 if state.stripeDisplayBalance == 0 {
                     state.stripeDisplayBalance = amount
                 }
-                state.stripeLoaded = true
+                state.setIfChanged(\.stripeLoaded, true)
             }
         }.resume()
     }

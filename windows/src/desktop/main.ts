@@ -1,6 +1,6 @@
-// The desktop Day's own window (day.html): draws him, and turns clicks and
+// The desktop Day's own window (mochi.html): draws him, and turns clicks and
 // drags on him into pokes, flights home, the wardrobe and a new spot. Port of
-// DesktopBotView + the mouse half of DesktopDayController (DesktopDay.swift).
+// DesktopBotView + the mouse half of DesktopMochiController (DesktopMochi.swift).
 //
 // What he shows comes from the island (DESKTOP_EVENTS.state), where he is from
 // Rust. The page draws only while the window is on screen, at 30 fps awake
@@ -10,12 +10,12 @@
 import { Bridge, emitToWindow, onEvent, type DesktopMode } from "../core/bridge";
 import type { BotEmoteName } from "../core/layout";
 import { Sound } from "../core/sound";
-import { BotEngine } from "../day/engine";
+import { BotEngine } from "../mochi/engine";
 import {
   DESKTOP_EVENTS, DOUBLE_CLICK_MS, DRAG_THRESHOLD, PANEL_SIZE, agentActive, gaze, isOverBody,
   layerDragTopLeft, lookOrigin, pointerDistance, shouldSleep, windowDragTopLeft,
   type DesktopSnapshot, type Point,
-} from "../day/desktop-logic";
+} from "../mochi/desktop-logic";
 
 const ISLAND = "island";
 
@@ -30,7 +30,7 @@ const SIDE = (PANEL_SIZE - DRAW_W) / 2;
 const AWAKE_FRAME_MS = 1000 / 30;
 const ASLEEP_FRAME_MS = 250;
 
-class DesktopDay {
+class DesktopMochi {
   private engine = new BotEngine();
   private canvas: HTMLCanvasElement;
   private mode: DesktopMode = "off";
@@ -206,10 +206,15 @@ class DesktopDay {
       engine.lookX = g.lookX;
       engine.lookY = g.lookY;
     }
-    // Dances while Spotify plays (Linux), by the compact island's rules.
+    // Dances while Spotify plays, by the compact island's rules.
     engine.setDancing(this.snap.dancing && !this.asleep);
     engine.update(dt);
     const dpr = this.dpr();
+    // Dragged onto a monitor of another scale, the bitmap follows the ratio.
+    if (this.canvas.width !== Math.round(PANEL_SIZE * dpr)) {
+      this.canvas.width = Math.round(PANEL_SIZE * dpr);
+      this.canvas.height = Math.round(PANEL_SIZE * dpr);
+    }
     ctx.setTransform(dpr, 0, 0, dpr, SIDE * dpr, 0);
     ctx.clearRect(-SIDE, 0, PANEL_SIZE, PANEL_SIZE);
     ctx.save();
@@ -356,6 +361,5 @@ class DesktopDay {
   }
 }
 
-const canvas = document.getElementById("day");
-if (canvas instanceof HTMLCanvasElement) void new DesktopDay(canvas).start();
-
+const canvas = document.getElementById("mochi");
+if (canvas instanceof HTMLCanvasElement) void new DesktopMochi(canvas).start();

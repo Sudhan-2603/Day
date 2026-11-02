@@ -88,4 +88,3 @@ pub enum MouseShape {
     /// A disc, in window-logical pixels: Day's body.
     Disc { cx: f64, cy: f64, r: f64 },
 }
-

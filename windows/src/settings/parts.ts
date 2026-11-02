@@ -14,4 +14,3 @@ export function renderDiff(text: string): HTMLElement {
   }
   return box;
 }
-

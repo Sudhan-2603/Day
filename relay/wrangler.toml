@@ -1,6 +1,6 @@
 # Day relay: forwards Live Activity pushes from the Mac app to Apple (APNs).
 # Deploy: see README.md. Secrets (never in git): APNS_KEY, APNS_KEY_ID.
-name = "Day-relay"
+name = "coucou-relay"
 main = "src/index.ts"
 compatibility_date = "2026-09-01"
 workers_dev = true
@@ -11,4 +11,3 @@ APNS_TOPIC = "fr.louisraille.Day.push-type.liveactivity"
 
 [observability]
 enabled = false
-

@@ -39,7 +39,7 @@ pub const HOOK_EVENTS: &[(&str, u64)] = &[
 ];
 
 /// Marker that identifies a Day entry inside settings.json.
-const MARKER: &str = "Day-hook";
+const MARKER: &str = "coucou-hook";
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -64,7 +64,17 @@ pub struct HookPreview {
 }
 
 pub fn settings_path() -> PathBuf {
-    platform::home_dir().join(".claude").join("settings.json")
+    claude_dir(std::env::var_os("CLAUDE_CONFIG_DIR"), &platform::home_dir()).join("settings.json")
+}
+
+/// Claude Code's own folder: `CLAUDE_CONFIG_DIR` when the user moved it there,
+/// as Claude Code itself reads it, otherwise `~/.claude`. Hooks written
+/// anywhere else are never run.
+fn claude_dir(config_dir: Option<std::ffi::OsString>, home: &std::path::Path) -> PathBuf {
+    match config_dir {
+        Some(dir) if !dir.is_empty() => PathBuf::from(dir),
+        _ => home.join(".claude"),
+    }
 }
 
 /// The settings as they are, or an empty object when we cannot tell. Only for
@@ -99,7 +109,7 @@ fn entry_is_ours(entry: &Value) -> bool {
 }
 
 /// The status line in settings.json is Day's relay (old installs wrote
-/// `Day-hook StatusLine`, new ones `Day-hook --statusline`; both match).
+/// `coucou-hook StatusLine`, new ones `coucou-hook --statusline`; both match).
 fn status_line_is_ours(v: &Value) -> bool {
     v.get("command").and_then(Value::as_str).is_some_and(|c| c.contains(MARKER))
 }
@@ -338,7 +348,7 @@ fn save_status_line_previous(status_line: &Value) -> std::io::Result<()> {
     config_file::write_like(&path, &path, config_file::pretty(status_line).as_bytes())
 }
 
-/// Copies the relay (Day-hook.exe / Day-hook) into the local data dir's
+/// Copies the relay (coucou-hook.exe / coucou-hook) into the local data dir's
 /// bin/ on launch. In a bundled install it comes from the app resources; in
 /// `tauri dev` it sits next to the app binary in the workspace target directory.
 ///
@@ -526,14 +536,24 @@ mod tests {
         assert_eq!(without_ours(&kept).unwrap(), kept);
     }
 
+    #[test]
+    fn a_moved_claude_folder_is_where_the_settings_are() {
+        let home = std::path::Path::new("C:/Users/me");
+        assert_eq!(claude_dir(None, home), home.join(".claude"));
+        assert_eq!(claude_dir(Some("".into()), home), home.join(".claude"));
+        assert_eq!(claude_dir(Some("E:/Claude/data".into()), home), PathBuf::from("E:/Claude/data"));
+    }
+
     /// Everything filesystem-shaped lives in one test on purpose: it points
     /// the home directory at a temp directory, and that is process-wide.
     #[test]
     fn writing_backs_up_preserves_and_refuses_a_changed_file() {
-        let tmp = std::env::temp_dir().join(format!("Day-hooks-{}", std::process::id()));
+        let tmp = std::env::temp_dir().join(format!("coucou-hooks-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&tmp);
         std::fs::create_dir_all(tmp.join(".claude")).unwrap();
         std::env::set_var(platform::HOME_VAR, &tmp);
+        // A moved Claude folder would point outside the temp directory.
+        std::env::remove_var("CLAUDE_CONFIG_DIR");
 
         let path = settings_path();
         assert!(path.starts_with(&tmp), "the test must not touch the real home");
@@ -546,7 +566,7 @@ mod tests {
 
         // Install.
         let plan = preview(true).expect("a BOM must not stop the preview");
-        assert!(plan.diff.contains("Day-hook"), "the diff must show what changes");
+        assert!(plan.diff.contains("coucou-hook"), "the diff must show what changes");
         let backup = write(true, &plan.fingerprint).expect("install should succeed");
 
         // The backup holds the original bytes, BOM and all.
@@ -578,4 +598,3 @@ mod tests {
         let _ = std::fs::remove_dir_all(&tmp);
     }
 }
-

@@ -11,7 +11,7 @@ import { Bridge } from "../core/bridge";
 import { isComingSoon, pillDefinition } from "../core/pills";
 import { refreshHookPills } from "../island/integrations";
 import { readActivity, readPulse, readStats } from "../core/github";
-import { githubDetail, githubPulseCard } from "./github";
+import { githubDetail, githubPulseCard, type ForgeCardOptions } from "./github";
 import { N_, language, t } from "../i18n/i18n";
 
 /** Same shape as the Swift `timeAgo` computed properties. */
@@ -64,7 +64,6 @@ export function idleStatus(
   info: { configured: boolean; error: string | null } | undefined,
   chatModel: string,
 ): { label: string; color: string } {
-  if (id === "integration_claude") return { label: "Day - Personal AI assistance", color: "#22C55E" };
   if (isComingSoon(id)) return { label: t("Coming soon"), color: "#6B7079" };
   if (info?.error) return { label: info.error, color: "#F4505E" };
   const configured = info?.configured ?? false;
@@ -84,31 +83,22 @@ export function idleStatus(
 }
 
 function idleCard(task: AgentTask, openSettings: () => void): HTMLElement {
-  if (task.id === "integration_claude") {
-    return h(
-      "div",
-      {
-        class: "int-card day-main-card",
-        style: "display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:100%;min-height:64px;padding:0 24px 0 96px;box-sizing:border-box;gap:4px;",
-      },
-      h("div", {
-        style: "font-size:13.5px;font-weight:600;color:#f1f5f9;letter-spacing:0.25px;line-height:1.2;",
-        text: "Day - Personal AI assistance",
-      }),
-      h("div", {
-        style: "font-size:11.5px;font-weight:400;color:#94a3b8;letter-spacing:0.15px;line-height:1.2;",
-        text: "What i can help you",
-      }),
-    );
-  }
-
   const info = State.integrations[task.id];
   const configured = info?.configured ?? false;
   const def = pillDefinition(task.id);
   const status = idleStatus(task.id, info, State.settings.model);
 
   const actions = h("div", { class: "int-actions" });
-  if (task.id === "agent_claude-desktop") {
+  if (task.id === "integration_claude") {
+    actions.append(
+      h("button", {
+        class: "link-btn",
+        style: `color:${task.color}b3`,
+        text: t("Open Visual Studio Code"),
+        onclick: () => void Bridge.openInVSCode(task.sessionCwd ?? null),
+      }),
+    );
+  } else if (task.id === "agent_claude-desktop") {
     actions.append(
       h("button", {
         class: "link-btn",
@@ -149,7 +139,7 @@ function idleCard(task: AgentTask, openSettings: () => void): HTMLElement {
         onclick: () => void (hookPill ? refreshHookPills() : Bridge.refreshIntegration(task.id)),
       }),
     );
-  } else if (!configured && task.id !== "integration_claude") {
+  } else if (!configured) {
     actions.append(
       h("button", { class: "link-btn", style: "color:#8e939c", text: t("Settings…"), onclick: openSettings }),
     );
@@ -160,8 +150,8 @@ function idleCard(task: AgentTask, openSettings: () => void): HTMLElement {
     { class: "int-card" },
     header(
       task.color,
-      task.id === "integration_claude" ? "Day" : task.name,
-      task.id === "integration_claude" ? "Personal AI Assistant" : t(def?.subtitle ?? N_("Integration")),
+      task.id === "integration_claude" ? def!.name : task.name,
+      t(def?.subtitle ?? N_("Integration")),
     ),
     h("div", { class: "int-status" }, dot(status.color, 5), h("span", { text: status.label })),
     actions,
@@ -279,6 +269,21 @@ function githubCard(): HTMLElement {
       statRow(ICONS.stack, "#6B7079", t("Repositories"), String(repos)),
     ),
   );
+}
+
+function gitlabCard(): HTMLElement {
+  const d = get("integration_gitlab");
+  return h("div", { class: "int-card" }, header("#FC6D26", "GitLab", t("Overview")), h("div", { class: "int-stats" },
+    statRow(ICONS.stack, "#6B7079", t("Projects"), String(d.projects ?? 0)),
+    statRow(ICONS.pull, "#FC6D26", t("My PRs"), String(d.myMergeRequests ?? 0)),
+    statRow(ICONS.eye, "#8AB4F8", t("To review"), String(d.reviewRequests ?? 0))));
+}
+
+function giteaCard(): HTMLElement {
+  const d = get("integration_gitea");
+  return h("div", { class: "int-card" }, header("#609926", "Gitea", t("Overview")),
+    h("div", { class: "int-stats" }, statRow(ICONS.star, "#F5A524", t("Total stars"), String(d.totalStars ?? 0)),
+      statRow(ICONS.stack, "#6B7079", t("Repositories"), String(d.totalRepos ?? 0))));
 }
 
 // ── Stripe ────────────────────────────────────────────────────────────────────
@@ -444,6 +449,9 @@ export function hasIntegrationData(id: string): boolean {
       return arr(id, "emails").length > 0;
     case "integration_github":
       return get(id).totalRepos != null || readPulse(get(id)) != null;
+    case "integration_gitlab": return get(id).projects != null;
+    case "integration_gitea":
+      return get(id).totalRepos != null;
     case "integration_stripe":
       return info.loaded;
     case "integration_notion":
@@ -477,12 +485,27 @@ export function renderIntegrationCard(task: AgentTask, hooks: IntegrationCardHoo
         : githubPulseCard(pulse, readStats(d), readActivity(d), hooks.openDetail);
     }
   }
+  if (task.id === "integration_gitlab") {
+    const d = get(task.id); const pulse = readPulse(d);
+    if (pulse) { const options: ForgeCardOptions = { title: "GitLab", color: "#FC6D26", provider: "gitlab", refreshId: "integration_gitlab", profileUrl: typeof d.profileUrl === "string" ? d.profileUrl : undefined };
+      return hooks.detailOpen ? githubDetail(pulse, readStats(d), readActivity(d), hooks.closeDetail, options) : githubPulseCard(pulse, readStats(d), readActivity(d), hooks.openDetail, options); }
+  }
+  if (task.id === "integration_gitea") {
+    const d = get(task.id); const pulse = readPulse(d);
+    if (pulse) {
+      const options: ForgeCardOptions = { title: "Gitea", color: "#609926", provider: "gitea", refreshId: "integration_gitea", profileUrl: typeof d.profileUrl === "string" ? d.profileUrl : undefined };
+      return hooks.detailOpen ? githubDetail(pulse, readStats(d), readActivity(d), hooks.closeDetail, options) : githubPulseCard(pulse, readStats(d), readActivity(d), hooks.openDetail, options);
+    }
+  }
 
   switch (task.id) {
     case "integration_resend":
       return resendCard();
     case "integration_github":
       return githubCard();
+    case "integration_gitlab": return gitlabCard();
+    case "integration_gitea":
+      return giteaCard();
     case "integration_stripe":
       return stripeCard();
     case "integration_notion":
@@ -495,4 +518,3 @@ export function renderIntegrationCard(task: AgentTask, hooks: IntegrationCardHoo
 }
 
 export { clear };
-
