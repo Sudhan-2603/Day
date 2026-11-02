@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Build Arch Linux .pkg.tar.zst package directly from the local built release binaries
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VERSION="0.3.0"
+VERSION="1.0.5"
 RELEASE="1"
 ARCH="x86_64"
 PKG_NAME="day"

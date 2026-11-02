@@ -628,6 +628,204 @@ fn open_settings_window(app: AppHandle) {
     show_settings_window(&app);
 }
 
+// ── Systematic Hardware & OS Data ─────────────────────────────────────────────
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadItem {
+    pub name: String,
+    pub size_mb: f64,
+    pub is_active: bool,
+}
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SystemStats {
+    pub cpu_usage: f64,
+    pub cpu_temp: f64,
+    pub ram_used_gb: f64,
+    pub ram_total_gb: f64,
+    pub ram_pct: f64,
+    pub net_rx_mb: f64,
+    pub net_tx_mb: f64,
+    pub battery_pct: Option<u8>,
+    pub battery_status: String,
+    pub downloads: Vec<DownloadItem>,
+}
+
+static LAST_CPU: Mutex<Option<(u64, u64)>> = Mutex::new(None);
+
+#[tauri::command]
+fn get_system_stats() -> SystemStats {
+    let mut cpu_usage = 0.0;
+    let mut cpu_temp = 0.0;
+    let mut ram_used_gb = 0.0;
+    let mut ram_total_gb = 0.0;
+    let mut ram_pct = 0.0;
+    let mut net_rx_mb = 0.0;
+    let mut net_tx_mb = 0.0;
+    let mut battery_pct: Option<u8> = None;
+    let mut battery_status = "Not Connected".to_string();
+    let mut downloads = Vec::new();
+
+    #[cfg(target_os = "linux")]
+    {
+        // 1. CPU Usage via /proc/stat
+        if let Ok(content) = std::fs::read_to_string("/proc/stat") {
+            if let Some(first_line) = content.lines().next() {
+                let parts: Vec<u64> = first_line
+                    .split_whitespace()
+                    .skip(1)
+                    .filter_map(|s| s.parse::<u64>().ok())
+                    .collect();
+                if parts.len() >= 4 {
+                    let idle = parts[3] + parts.get(4).copied().unwrap_or(0);
+                    let total: u64 = parts.iter().sum();
+                    let mut lock = LAST_CPU.lock().unwrap();
+                    if let Some((prev_idle, prev_total)) = *lock {
+                        let diff_idle = idle.saturating_sub(prev_idle);
+                        let diff_total = total.saturating_sub(prev_total);
+                        if diff_total > 0 {
+                            let usage = (1.0 - (diff_idle as f64 / diff_total as f64)) * 100.0;
+                            cpu_usage = (usage.clamp(0.0, 100.0) * 10.0).round() / 10.0;
+                        }
+                    }
+                    *lock = Some((idle, total));
+                }
+            }
+        }
+
+        // 2. CPU / System Temp via /sys/class/thermal/thermal_zone*/temp
+        if let Ok(entries) = std::fs::read_dir("/sys/class/thermal") {
+            for entry in entries.flatten() {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if name.starts_with("thermal_zone") {
+                    let temp_file = entry.path().join("temp");
+                    if let Ok(txt) = std::fs::read_to_string(temp_file) {
+                        if let Ok(val) = txt.trim().parse::<f64>() {
+                            let c = val / 1000.0;
+                            if c > cpu_temp && c < 120.0 {
+                                cpu_temp = (c * 10.0).round() / 10.0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. RAM via /proc/meminfo
+        if let Ok(content) = std::fs::read_to_string("/proc/meminfo") {
+            let mut total_kb: f64 = 0.0;
+            let mut avail_kb: f64 = 0.0;
+            for line in content.lines() {
+                if line.starts_with("MemTotal:") {
+                    total_kb = line.split_whitespace().nth(1).and_then(|s| s.parse::<f64>().ok()).unwrap_or(0.0);
+                } else if line.starts_with("MemAvailable:") {
+                    avail_kb = line.split_whitespace().nth(1).and_then(|s| s.parse::<f64>().ok()).unwrap_or(0.0);
+                }
+            }
+            if total_kb > 0.0 {
+                let used_kb = total_kb - avail_kb;
+                ram_total_gb = ((total_kb / 1024.0 / 1024.0) * 10.0).round() / 10.0;
+                ram_used_gb = ((used_kb / 1024.0 / 1024.0) * 10.0).round() / 10.0;
+                ram_pct = ((used_kb / total_kb * 100.0) * 10.0).round() / 10.0;
+            }
+        }
+
+        // 4. Battery via /sys/class/power_supply/BAT*
+        if let Ok(entries) = std::fs::read_dir("/sys/class/power_supply") {
+            for entry in entries.flatten() {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if name.starts_with("BAT") {
+                    let cap_file = entry.path().join("capacity");
+                    let stat_file = entry.path().join("status");
+                    if let Ok(txt) = std::fs::read_to_string(cap_file) {
+                        if let Ok(num) = txt.trim().parse::<u8>() {
+                            battery_pct = Some(num);
+                        }
+                    }
+                    if let Ok(txt) = std::fs::read_to_string(stat_file) {
+                        battery_status = txt.trim().to_string();
+                    }
+                    if battery_pct.is_some() {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 5. Network activity via /proc/net/dev
+        if let Ok(content) = std::fs::read_to_string("/proc/net/dev") {
+            let mut total_rx: u64 = 0;
+            let mut total_tx: u64 = 0;
+            for line in content.lines() {
+                if let Some((iface, data)) = line.split_once(':') {
+                    if iface.trim() != "lo" {
+                        let parts: Vec<&str> = data.split_whitespace().collect();
+                        if parts.len() >= 9 {
+                            if let (Ok(rx), Ok(tx)) = (parts[0].parse::<u64>(), parts[8].parse::<u64>()) {
+                                total_rx = total_rx.saturating_add(rx);
+                                total_tx = total_tx.saturating_add(tx);
+                            }
+                        }
+                    }
+                }
+            }
+            net_rx_mb = ((total_rx as f64 / 1024.0 / 1024.0) * 10.0).round() / 10.0;
+            net_tx_mb = ((total_tx as f64 / 1024.0 / 1024.0) * 10.0).round() / 10.0;
+        }
+
+        // 6. Real Downloads status in ~/Downloads
+        if let Some(home) = std::env::var_os("HOME") {
+            let dl_dir = std::path::PathBuf::from(home).join("Downloads");
+            if let Ok(entries) = std::fs::read_dir(dl_dir) {
+                let mut files: Vec<(std::fs::Metadata, String)> = entries
+                    .filter_map(|e| e.ok())
+                    .filter_map(|e| {
+                        let meta = e.metadata().ok()?;
+                        let name = e.file_name().to_string_lossy().to_string();
+                        Some((meta, name))
+                    })
+                    .collect();
+                files.sort_by(|a, b| {
+                    let time_a = a.0.modified().ok();
+                    let time_b = b.0.modified().ok();
+                    time_b.cmp(&time_a)
+                });
+                for (meta, name) in files.into_iter().take(5) {
+                    let size_mb = if meta.is_file() {
+                        ((meta.len() as f64 / 1024.0 / 1024.0) * 10.0).round() / 10.0
+                    } else {
+                        0.0
+                    };
+                    let is_active = name.ends_with(".part")
+                        || name.ends_with(".crdownload")
+                        || name.ends_with(".tmp")
+                        || name.ends_with(".downloading");
+                    downloads.push(DownloadItem {
+                        name,
+                        size_mb,
+                        is_active,
+                    });
+                }
+            }
+        }
+    }
+
+    SystemStats {
+        cpu_usage,
+        cpu_temp,
+        ram_used_gb,
+        ram_total_gb,
+        ram_pct,
+        net_rx_mb,
+        net_tx_mb,
+        battery_pct,
+        battery_status,
+        downloads,
+    }
+}
+
 pub fn run() {
     platform::prepare_environment();
     let loaded = settings::load();
@@ -732,6 +930,7 @@ pub fn run() {
             spotify::spotify_control,
             spotify::spotify_open,
             spotify::spotify_installed,
+            get_system_stats,
         ])
         .setup(move |app| {
             let handle = app.handle().clone();

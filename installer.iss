@@ -1,6 +1,6 @@
 ; Script generated for Day Windows Installer
 #define MyAppName "Day"
-#define MyAppVersion "0.4.0"
+#define MyAppVersion "1.0.5"
 #define MyAppPublisher "Day"
 #define MyAppURL "https://github.com/Sudhan-2603/Day"
 #define MyAppExeName "Day.exe"

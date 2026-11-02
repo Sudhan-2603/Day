@@ -123,6 +123,18 @@ export interface Settings {
   systemPermEditor?: boolean;
   /** Allow interactive questions / prompts. */
   systemPermQuestions?: boolean;
+  /** System capability toggle: Music Player & Media integration */
+  showMusicPlayer?: boolean;
+  /** System capability toggle: Battery Status & Charging telemetry */
+  showBatteryStatus?: boolean;
+  /** System capability toggle: System Notifications & Alerts */
+  showNotifications?: boolean;
+  /** System capability toggle: Timer, Stopwatch & Focus sessions */
+  showTimerProductivity?: boolean;
+  /** System capability toggle: Real download & background activity */
+  showDownloadActivity?: boolean;
+  /** System capability toggle: Real hardware & network resource telemetry */
+  showHardwareMonitoring?: boolean;
   /** Hovering the island opens it all the way (off: hovering only peeks). */
   openOnHover: boolean;
   /** If true, the island stays enabled from System ON and only stops on System OFF (always visible). */
@@ -196,6 +208,12 @@ export const DEFAULT_SETTINGS: Settings = {
   systemPermFiles: true,
   systemPermEditor: true,
   systemPermQuestions: true,
+  showMusicPlayer: true,
+  showBatteryStatus: true,
+  showNotifications: true,
+  showTimerProductivity: true,
+  showDownloadActivity: true,
+  showHardwareMonitoring: true,
   openOnHover: false,
   absenceInterval: 180,
   activeIntegrations: [

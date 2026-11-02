@@ -23,6 +23,25 @@ async function call<T>(cmd: string, args?: Record<string, unknown>): Promise<T |
   }
 }
 
+export interface DownloadItem {
+  name: string;
+  sizeMb: number;
+  isActive: boolean;
+}
+
+export interface SystemStats {
+  cpuUsage: number;
+  cpuTemp: number;
+  ramUsedGb: number;
+  ramTotalGb: number;
+  ramPct: number;
+  netRxMb: number;
+  netTxMb: number;
+  batteryPct: number | null;
+  batteryStatus: string;
+  downloads: DownloadItem[];
+}
+
 export interface BootInfo {
   settings: Settings;
   /** Logical screen rect of the monitor the island lives on. */
@@ -43,6 +62,9 @@ export const Bridge = {
     }
     return call<BootInfo>("boot");
   },
+
+  /** Reads real systematic hardware and OS telemetry (CPU, RAM, Temp, Network, Battery, Downloads). */
+  getSystemStats: () => call<SystemStats>("get_system_stats"),
   /** The system's languages as the webview sees them, for Rust's own texts (i18n.rs). */
   setSystemLanguages: (languages: string[]) => call<void>("set_system_languages", { languages }),
 

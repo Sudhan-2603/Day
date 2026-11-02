@@ -262,6 +262,9 @@ export class Island {
         State.wardrobePreview = outfit;
         State.notify();
       },
+      triggerEmote: (emote, duration) => {
+        this.engine.triggerEmote(emote, duration);
+      },
     };
 
     this.wakeStrip = h("div", { id: "wake-strip" });

@@ -1,9 +1,9 @@
 Package: day
-Version: 0.3.0
+Version: 1.0.5
 Section: utils
 Priority: optional
 Architecture: amd64
-Installed-Size: 11492
+Installed-Size: 11520
 Maintainer: Sudhan <sudhan@example.com>
 Depends: libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37, libgtk-3-0, libayatana-appindicator3-1, dbus, xdg-utils, hicolor-icon-theme
 Description: Day lives at the top of your screen and keeps an eye on your Claude Code sessions.

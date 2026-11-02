@@ -22,11 +22,11 @@ import { Bridge } from "../core/bridge";
 import { buildRecap } from "./recap";
 import { buildWardrobe } from "./wardrobe";
 import { buildSpotifyCard, buildSpotifyPill, type SpotifyPillHost } from "./spotify";
-import { SPOTIFY_ID } from "../core/spotify";
+import { SPOTIFY_ID, Spotify, musicPlaying } from "../core/spotify";
 import {
   type Outfit, type OutfitSelection, OUTFIT_SELECTIONS, OUTFIT_KEYS, seasonalOutfit, parseOutfit,
 } from "../day/wardrobe";
-import { drawWardrobeIcon } from "../day/outfits";
+import { drawWardrobeIcon, drawExpressionIcon, EXPRESSIONS, type ExpressionKey } from "../day/outfits";
 import { language, t, tl, type Msg } from "../i18n/i18n";
 import type { ViewCommand } from "../island/shortcuts";
 
@@ -59,6 +59,8 @@ export interface ViewActions {
   chooseOutfit(selection: OutfitSelection): void;
   /** Wardrobe hover: shows an outfit on Day without keeping it; null ends it. */
   previewOutfit(outfit: Outfit | null): void;
+  /** Trigger Day emote / expression reaction. */
+  triggerEmote?(emote: import("../core/layout").BotEmoteName, duration?: number): void;
 }
 
 export interface ViewHost {
@@ -882,30 +884,31 @@ function buildSettings(actions: ViewActions): ViewHost {
     h("div", { class: "settings-row" }, soundSwitch, h("span", { text: tl("Sound") }), volume),
     h(
       "div",
-      { class: "settings-row", style: "gap:4px;align-items:center;" },
-      h("span", { text: "Avatar", style: "font-size:11px;color:#8e939c;margin-right:2px;" }),
-      ...avatarSwatches,
-    ),
-    h(
-      "div",
-      { class: "settings-row", style: "margin-top:2px;justify-content:flex-end;" },
+      { class: "settings-row", style: "justify-content:space-between;align-items:center;" },
+      h(
+        "div",
+        { style: "display:flex;gap:4px;align-items:center;" },
+        h("span", { text: "Avatar", style: "font-size:11px;color:#8e939c;margin-right:2px;" }),
+        ...avatarSwatches,
+      ),
       h(
         "button",
         {
           class: "btn secondary settings-expand-btn",
-          style: "padding:5px 13px;border-radius:14px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);",
+          style: "padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px;cursor:pointer;background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12);",
           onclick: () => actions.toggleFullSettings?.(true),
         },
-        svg(ICONS.gearFill, 13),
+        svg(ICONS.gearFill, 11),
         h("span", { text: tl("Settings") }),
       ),
     ),
   );
 
-  const miniCard = card(null, h("div", { class: "stack", style: "padding:14px 16px 14px 84px" }, miniRows));
+  const miniCard = card(null, h("div", { class: "stack", style: "padding:10px 16px 10px 84px" }, miniRows));
 
-  // ── In-Island Full Settings Elements ───────────────────────────────────────
-  let activeTab: "general" | "appearance" | "shortcuts" | "ai" = "general";
+  // ── In-Island Full Settings Dashboard Layout ───────────────────────────────
+  type DashboardTab = "general" | "system" | "appearance" | "shortcuts" | "ai";
+  let activeTab: DashboardTab = "general";
 
   const backBtn = h(
     "button",
@@ -918,33 +921,42 @@ function buildSettings(actions: ViewActions): ViewHost {
     h("span", { text: tl("Back") }),
   );
 
-  const titleEl = h("span", { text: tl("Settings"), style: "font-size:13px;font-weight:700;color:#fff;" });
+  const titleEl = h("span", { text: "Settings Dashboard", style: "font-size:13px;font-weight:700;color:#fff;" });
 
-  const tabs = [
-    { id: "general", label: tl("General") },
-    { id: "appearance", label: "Appearance" },
-    { id: "shortcuts", label: tl("Shortcuts") },
-    { id: "ai", label: "AI & Keys" },
-  ] as const;
+  const tabs: { id: DashboardTab; label: string | Msg; icon: string }[] = [
+    { id: "general", label: tl("General"), icon: ICONS.gearFill },
+    { id: "system", label: tl("System"), icon: ICONS.chevronUpDown },
+    { id: "appearance", label: "Appearance", icon: ICONS.eye },
+    { id: "shortcuts", label: tl("Shortcuts"), icon: ICONS.copy },
+    { id: "ai", label: "AI & Keys", icon: ICONS.star },
+  ];
 
-  const glassSlider = h("div", { class: "glass-tab-slider" });
-  const tabContainer = h("div", {
-    class: "settings-tab-bar",
-  }, glassSlider);
+  const sidebarEl = h("div", { class: "settings-sidebar" });
+  const contentAreaEl = h("div", { class: "settings-dashboard-content" });
 
-  const tabBtns: HTMLElement[] = [];
+  const panelGeneral = h("div", { class: "dash-panel active", "data-tab": "general" });
+  const panelSystem = h("div", { class: "dash-panel", "data-tab": "system" });
+  const panelAppearance = h("div", { class: "dash-panel", "data-tab": "appearance" });
+  const panelShortcuts = h("div", { class: "dash-panel", "data-tab": "shortcuts" });
+  const panelAi = h("div", { class: "dash-panel", "data-tab": "ai" });
 
-  tabs.forEach((tab, index) => {
+  contentAreaEl.append(panelGeneral, panelSystem, panelAppearance, panelShortcuts, panelAi);
+
+  const sidebarBtns: { btn: HTMLElement; id: DashboardTab }[] = [];
+
+  tabs.forEach((tab) => {
     const btn = h(
       "button",
       {
-        class: "settings-tab-btn" + (index === 0 ? " active" : ""),
-        onclick: () => selectTab(index, true),
+        type: "button",
+        class: "settings-sidebar-btn" + (tab.id === activeTab ? " active" : ""),
+        onclick: () => selectTab(tab.id),
       },
-      tab.label,
+      svg(tab.icon, 13),
+      h("span", { text: tab.label }),
     );
-    tabBtns.push(btn);
-    tabContainer.append(btn);
+    sidebarBtns.push({ btn, id: tab.id });
+    sidebarEl.append(btn);
   });
 
   const fullHeader = h(
@@ -953,72 +965,36 @@ function buildSettings(actions: ViewActions): ViewHost {
       style: "display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);",
     },
     h("div", { style: "display:flex;align-items:center;gap:8px;" }, backBtn, titleEl),
-    tabContainer,
+    h("div", { style: "font-size:11px;color:#64748b;font-weight:500;" }, "Dynamic Island Hub"),
   );
 
-  const carousel = h("div", { class: "settings-sections-carousel" });
-  const slideGeneral = h("div", { class: "settings-section-slide", "data-tab": "general" });
-  const slideAppearance = h("div", { class: "settings-section-slide", "data-tab": "appearance" });
-  const slideShortcuts = h("div", { class: "settings-section-slide", "data-tab": "shortcuts" });
-  const slideAi = h("div", { class: "settings-section-slide", "data-tab": "ai" });
-  const slides = [slideGeneral, slideAppearance, slideShortcuts, slideAi];
-  carousel.append(slideGeneral, slideAppearance, slideShortcuts, slideAi);
+  const dashboardContainer = h("div", { class: "settings-dashboard-layout" }, sidebarEl, contentAreaEl);
 
-  function updateGlassSlider(index: number) {
-    const activeBtn = tabBtns[index];
-    if (activeBtn) {
-      glassSlider.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
-      glassSlider.style.width = `${activeBtn.offsetWidth}px`;
-    }
-  }
-
-  function selectTab(index: number, smoothScroll = true) {
-    activeTab = tabs[index].id;
-    tabBtns.forEach((btn, i) => {
-      btn.classList.toggle("active", i === index);
+  function selectTab(id: DashboardTab) {
+    activeTab = id;
+    sidebarBtns.forEach((item) => item.btn.classList.toggle("active", item.id === id));
+    [panelGeneral, panelSystem, panelAppearance, panelShortcuts, panelAi].forEach((p) => {
+      p.classList.toggle("active", p.getAttribute("data-tab") === id);
     });
-    updateGlassSlider(index);
-
-    if (smoothScroll && slides[index]) {
-      carousel.scrollTo({
-        left: slides[index].offsetLeft,
-        behavior: "smooth",
-      });
-    }
   }
-
-  let scrollTimeout: any = null;
-  carousel.addEventListener("scroll", () => {
-    if (scrollTimeout) clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      const scrollLeft = carousel.scrollLeft;
-      const width = carousel.clientWidth || 1;
-      const index = Math.min(tabs.length - 1, Math.max(0, Math.round(scrollLeft / width)));
-      if (tabs[index] && tabs[index].id !== activeTab) {
-        activeTab = tabs[index].id;
-        tabBtns.forEach((btn, i) => btn.classList.toggle("active", i === index));
-        updateGlassSlider(index);
-      }
-    }, 40);
-  });
-
   const fullCardContent = h(
     "div",
     {
       class: "stack",
-      style: "display:flex;flex-direction:column;height:100%;padding:12px 18px;box-sizing:border-box;",
+      style: "display:flex;flex-direction:column;height:100%;padding:10px 14px;box-sizing:border-box;",
     },
     fullHeader,
-    carousel,
+    dashboardContainer,
   );
 
   const fullCard = card(null, fullCardContent);
 
   function renderSections() {
-    clear(slideGeneral);
-    clear(slideAppearance);
-    clear(slideShortcuts);
-    clear(slideAi);
+    clear(panelGeneral);
+    clear(panelSystem);
+    clear(panelAppearance);
+    clear(panelShortcuts);
+    clear(panelAi);
 
     const s = State.settings;
 
@@ -1133,7 +1109,7 @@ function buildSettings(actions: ViewActions): ViewHost {
         : null,
     );
 
-    slideGeneral.append(
+    panelGeneral.append(
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
         h("span", { text: "Interface Language" }), langSelect),
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
@@ -1142,9 +1118,268 @@ function buildSettings(actions: ViewActions): ViewHost {
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
         h("div", {}, h("span", { text: "Autostart with Windows" }), h("div", { style: "font-size:10px;color:#64748b;" }, "Launch Day on system startup")),
         autostartSwitch),
-      permissionsCard,
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:6px;" },
         h("span", { text: "More Preferences", style: "font-size:11.5px;color:#94a3b8;" }), standaloneBtn),
+    );
+
+    // ── System & Dynamic Island Features Panel ───────────────────────────────
+    // Interactive capability toggle buttons
+    const musicSwitch = h("button", {
+      class: s.showMusicPlayer !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showMusicPlayer = !(s.showMusicPlayer !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const batterySwitch = h("button", {
+      class: s.showBatteryStatus !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showBatteryStatus = !(s.showBatteryStatus !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const notifSwitch = h("button", {
+      class: s.showNotifications !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showNotifications = !(s.showNotifications !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const timerSwitch = h("button", {
+      class: s.showTimerProductivity !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showTimerProductivity = !(s.showTimerProductivity !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const downloadSwitch = h("button", {
+      class: s.showDownloadActivity !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showDownloadActivity = !(s.showDownloadActivity !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    const hwSwitch = h("button", {
+      class: s.showHardwareMonitoring !== false ? "switch on" : "switch",
+      onclick: () => {
+        s.showHardwareMonitoring = !(s.showHardwareMonitoring !== false);
+        void Bridge.saveSettings(s);
+        State.notify();
+      },
+    });
+
+    // 1. Music Player Card
+    const spotifyState = Spotify.state;
+    const isPlaying = musicPlaying(spotifyState, s.activeIntegrations || []);
+    const musicTrackTitle = isPlaying && spotifyState.track ? `${spotifyState.track.title} · ${spotifyState.track.artist}` : "MPRIS & Spotify Media Engine Ready";
+    const musicStatusBadge = isPlaying
+      ? h("span", { style: "font-size:10px;font-weight:600;color:#22C55E;background:rgba(34,197,94,0.15);padding:2px 6px;border-radius:5px;", text: "Playing" })
+      : h("span", { style: "font-size:10px;font-weight:600;color:#94a3b8;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:5px;", text: "Idle" });
+
+    const musicFeatureCard = h("div", { class: "feature-card" },
+      h("div", { class: "feature-card-info" },
+        h("div", { class: "feature-card-title" },
+          svg(ICONS.speakerOn, 13),
+          h("span", { text: "Music Player & Media" }),
+          musicStatusBadge,
+        ),
+        h("div", { class: "feature-card-desc", text: musicTrackTitle }),
+      ),
+      musicSwitch,
+    );
+
+    // 2. Battery Status Card Elements
+    const batteryStatBadge = h("span", {
+      style: "font-size:10px;font-weight:600;color:#22C55E;background:rgba(34,197,94,0.15);padding:2px 6px;border-radius:5px;",
+      text: "Scanning...",
+    });
+    const batteryDescEl = h("div", {
+      class: "feature-card-desc",
+      text: "Real battery percentage, charging telemetry, and power alerts",
+    });
+
+    const batteryFeatureCard = h("div", { class: "feature-card" },
+      h("div", { class: "feature-card-info" },
+        h("div", { class: "feature-card-title" },
+          svg(ICONS.star, 13),
+          h("span", { text: "Battery Status & Charging" }),
+          batteryStatBadge,
+        ),
+        batteryDescEl,
+      ),
+      batterySwitch,
+    );
+
+    // 3. Notifications & Completion Alerts Card
+    const notifFeatureCard = h("div", { class: "feature-card" },
+      h("div", { class: "feature-card-info" },
+        h("div", { class: "feature-card-title" },
+          svg(ICONS.bang, 13),
+          h("span", { text: "Notifications & Completion Alerts" }),
+          h("span", { style: "font-size:10px;font-weight:600;color:#38BDF8;background:rgba(56,189,248,0.15);padding:2px 6px;border-radius:5px;", text: "D-Bus / Portal" }),
+        ),
+        h("div", { class: "feature-card-desc", text: "Desktop notifications, build alerts, and command completion popups" }),
+      ),
+      notifSwitch,
+    );
+
+    // 4. Timer & Productivity Card
+    const timerFeatureCard = h("div", { class: "feature-card" },
+      h("div", { class: "feature-card-info" },
+        h("div", { class: "feature-card-title" },
+          svg(ICONS.timer, 13),
+          h("span", { text: "Timer, Stopwatch & Focus Session" }),
+          h("span", { style: "font-size:10px;font-weight:600;color:#F5A524;background:rgba(245,165,36,0.15);padding:2px 6px;border-radius:5px;", text: "Productivity" }),
+        ),
+        h("div", { class: "feature-card-desc", text: "Countdown timer, stopwatch, clock/date pill, and Pomodoro focus sessions in island" }),
+      ),
+      timerSwitch,
+    );
+
+    // 5. System Resource Monitoring Grid Elements
+    const cpuValEl = h("div", { class: "sys-stat-val" }, "--%", h("small", { text: " · Sys" }));
+    const cpuTempEl = h("span", { text: "--°C" });
+    const cpuBarEl = h("div", { class: "sys-bar-fill", style: "width:0%;background:#38BDF8;" });
+
+    const ramValEl = h("div", { class: "sys-stat-val" }, "--", h("small", { text: " / -- GB" }));
+    const ramPctEl = h("span", { text: "RAM" });
+    const ramBarEl = h("div", { class: "sys-bar-fill", style: "width:0%;background:#A855F7;" });
+
+    const batCardValEl = h("div", { class: "sys-stat-val" }, "--%", h("small", { text: " · Battery" }));
+    const batCardStatEl = h("span", { text: "Power" });
+    const batBarEl = h("div", { class: "sys-bar-fill", style: "width:0%;background:#22C55E;" });
+
+    const netValEl = h("div", { class: "sys-stat-val" }, "--", h("small", { text: " MB" }));
+    const netBarEl = h("div", { class: "sys-bar-fill", style: "width:0%;background:#F5A524;" });
+
+    const sysGrid = h("div", { class: "sys-stat-grid" },
+      h("div", { class: "sys-stat-card" },
+        h("div", { class: "sys-stat-header" }, h("span", { text: "CPU Usage" }), cpuTempEl),
+        cpuValEl,
+        h("div", { class: "sys-bar-track" }, cpuBarEl),
+      ),
+      h("div", { class: "sys-stat-card" },
+        h("div", { class: "sys-stat-header" }, h("span", { text: "RAM Memory" }), ramPctEl),
+        ramValEl,
+        h("div", { class: "sys-bar-track" }, ramBarEl),
+      ),
+      h("div", { class: "sys-stat-card" },
+        h("div", { class: "sys-stat-header" }, h("span", { text: "Battery Level" }), batCardStatEl),
+        batCardValEl,
+        h("div", { class: "sys-bar-track" }, batBarEl),
+      ),
+      h("div", { class: "sys-stat-card" },
+        h("div", { class: "sys-stat-header" }, h("span", { text: "Network I/O" }), h("span", { text: "Net" })),
+        netValEl,
+        h("div", { class: "sys-bar-track" }, netBarEl),
+      ),
+    );
+
+    // 6. Download & Task Activity Status Card
+    const downloadDescEl = h("div", {
+      class: "feature-card-desc",
+      text: "Real downloads, file transfer status, build progress, and background tasks",
+    });
+    const downloadBadgeEl = h("span", {
+      style: "font-size:10px;font-weight:600;color:#A855F7;background:rgba(168,85,247,0.15);padding:2px 6px;border-radius:5px;",
+      text: "Checking...",
+    });
+
+    const taskFeatureCard = h("div", { class: "feature-card" },
+      h("div", { class: "feature-card-info" },
+        h("div", { class: "feature-card-title" },
+          svg(ICONS.move, 13),
+          h("span", { text: "Download & Application Activity" }),
+          downloadBadgeEl,
+        ),
+        downloadDescEl,
+      ),
+      downloadSwitch,
+    );
+
+    // Fetch live systematic stats immediately and update elements
+    const refreshLiveStats = () => {
+      void Bridge.getSystemStats().then((stats) => {
+        if (!stats) return;
+
+        // CPU
+        cpuValEl.innerHTML = `${stats.cpuUsage.toFixed(1)}% <small>· Active</small>`;
+        cpuTempEl.textContent = stats.cpuTemp > 0 ? `${stats.cpuTemp.toFixed(0)}°C` : "Normal";
+        cpuBarEl.style.width = `${Math.min(100, Math.max(5, stats.cpuUsage))}%`;
+
+        // RAM
+        ramValEl.innerHTML = `${stats.ramUsedGb.toFixed(1)} <small>/ ${stats.ramTotalGb.toFixed(1)} GB</small>`;
+        ramPctEl.textContent = `${stats.ramPct.toFixed(0)}% Used`;
+        ramBarEl.style.width = `${Math.min(100, Math.max(5, stats.ramPct))}%`;
+
+        // Battery
+        if (stats.batteryPct != null) {
+          batteryStatBadge.textContent = `${stats.batteryPct}% · ${stats.batteryStatus}`;
+          batteryStatBadge.style.color = stats.batteryStatus.toLowerCase().includes("charg") ? "#22C55E" : (stats.batteryPct < 20 ? "#EF4444" : "#38BDF8");
+          batteryDescEl.textContent = `Battery Level: ${stats.batteryPct}%, Status: ${stats.batteryStatus} (Real Linux Power Supply)`;
+          batCardValEl.innerHTML = `${stats.batteryPct}% <small>· ${stats.batteryStatus}</small>`;
+          batCardStatEl.textContent = stats.batteryStatus;
+          batBarEl.style.width = `${stats.batteryPct}%`;
+        } else {
+          batteryStatBadge.textContent = "AC Connected";
+          batteryDescEl.textContent = "No physical battery detected — Running on AC Power Supply";
+          batCardValEl.innerHTML = `100% <small>· AC Power</small>`;
+          batCardStatEl.textContent = "AC";
+          batBarEl.style.width = "100%";
+        }
+
+        // Network
+        const totalNet = stats.netRxMb + stats.netTxMb;
+        netValEl.innerHTML = `${totalNet.toFixed(1)} <small>MB (↓${stats.netRxMb.toFixed(0)} ↑${stats.netTxMb.toFixed(0)})</small>`;
+        netBarEl.style.width = `${Math.min(100, Math.max(10, totalNet % 100))}%`;
+
+        // Downloads
+        const activeCount = stats.downloads.filter((d) => d.isActive).length;
+        if (activeCount > 0) {
+          downloadBadgeEl.textContent = `${activeCount} Active Download`;
+          downloadBadgeEl.style.color = "#22C55E";
+          downloadBadgeEl.style.background = "rgba(34,197,94,0.15)";
+        } else if (stats.downloads.length > 0) {
+          downloadBadgeEl.textContent = `${stats.downloads.length} Recent Files`;
+          downloadBadgeEl.style.color = "#A855F7";
+          downloadBadgeEl.style.background = "rgba(168,85,247,0.15)";
+        } else {
+          downloadBadgeEl.textContent = "Folder Ready";
+        }
+        if (stats.downloads.length > 0) {
+          downloadDescEl.textContent = `Latest: ${stats.downloads[0].name} (${stats.downloads[0].sizeMb.toFixed(1)} MB)`;
+        }
+      });
+    };
+
+    refreshLiveStats();
+
+    panelSystem.append(
+      h("div", { style: "display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;" },
+        h("div", { style: "font-size:11px;font-weight:600;color:#94a3b8;" }, "Hardware & Network Monitoring"),
+        h("div", { style: "display:flex;align-items:center;gap:6px;" },
+          h("span", { style: "font-size:10px;color:#64748b;" }, "Show in Island"),
+          hwSwitch,
+        ),
+      ),
+      sysGrid,
+      h("div", { style: "font-size:11px;font-weight:600;color:#94a3b8;margin:8px 0 3px 0;" }, "System Capabilities & Island Toggles"),
+      musicFeatureCard,
+      batteryFeatureCard,
+      notifFeatureCard,
+      timerFeatureCard,
+      taskFeatureCard,
+      permissionsCard,
     );
 
     // ── Appearance Slide ─────────────────────────────────────────────────────
@@ -1183,7 +1418,7 @@ function buildSettings(actions: ViewActions): ViewHost {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        drawWardrobeIcon(ctx, ICON_SIZE, sel, season, "AUTO");
+        drawWardrobeIcon(ctx, ICON_SIZE, sel, season, "AUTO", s.avatarColor || "#F29B38");
       }
 
       const label = tl(OUTFIT_KEYS[sel]);
@@ -1278,10 +1513,64 @@ function buildSettings(actions: ViewActions): ViewHost {
       },
     });
 
-    slideAppearance.append(
+    // Expressions & Reactions Visual Grid
+    const exprCardsRow = h("div", { class: "outfit-visual-row expression-row" });
+    const exprCards: { btn: HTMLElement; expr: (typeof EXPRESSIONS)[number] }[] = [];
+
+    for (const item of EXPRESSIONS) {
+      const canvas = h("canvas", {
+        width: String(Math.round(ICON_SIZE * dpr)),
+        height: String(Math.round(ICON_SIZE * dpr)),
+      }) as HTMLCanvasElement;
+
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drawExpressionIcon(ctx, ICON_SIZE, item.key, s.avatarColor || "#F29B38");
+      }
+
+      const btn = h(
+        "button",
+        {
+          type: "button",
+          class: "outfit-visual-card expression-card",
+          title: `${item.label} (${item.desc})`,
+          onclick: () => {
+            exprCards.forEach((c) => c.btn.classList.toggle("active", c.expr.key === item.key));
+            actions.blip();
+            if (actions.triggerEmote) {
+              const emoteMap: Record<ExpressionKey, import("../core/layout").BotEmoteName> = {
+                error: "annoyed",
+                uploading: "surprised",
+                thinking: "proud",
+                approval: "surprised",
+                question: "confused",
+                finished: "happy",
+                working: "proud",
+                sleeping: "sleep",
+                idle: "happy",
+              };
+              actions.triggerEmote(emoteMap[item.key] || "happy", 2.2);
+            }
+          },
+        },
+        canvas,
+        h("span", { text: item.label }),
+      );
+
+      exprCards.push({ btn, expr: item });
+      exprCardsRow.append(btn);
+    }
+
+    panelAppearance.append(
       h("div", { class: "settings-row", style: "flex-direction:column;align-items:flex-start;gap:6px;padding:4px 0;" },
         h("span", { text: "Avatar Aura Color" }),
         h("div", { style: "display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;" }, ...appearanceSwatches)),
+      h("div", { class: "settings-row", style: "flex-direction:column;align-items:flex-start;gap:6px;padding:6px 0;margin-top:4px;" },
+        h("div", { style: "display:flex;justify-content:space-between;width:100%;align-items:center;" },
+          h("span", { text: "Situational Expressions" }),
+          h("span", { style: "font-size:10px;color:#94a3b8;", text: "Test Status Reactions" })),
+        exprCardsRow),
       h("div", { class: "settings-row", style: "flex-direction:column;align-items:flex-start;gap:6px;padding:6px 0;margin-top:4px;" },
         h("div", { style: "display:flex;justify-content:space-between;width:100%;align-items:center;" },
           h("span", { text: "Day's Outfit" }),
@@ -1342,7 +1631,7 @@ function buildSettings(actions: ViewActions): ViewHost {
         h("div", { style: "display:flex;align-items:center;gap:8px;" }, opacityInput, opacityPctText)),
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
         h("span", { text: "Sound Effects & Volume" }),
-        h("div", { style: "display:flex;align-items:center;gap:8px;" }, tabSoundSwitch, tabVolume)),
+        h("div", { style: "display:flex;align-items:center;gap:8px;" }, tabVolume, tabSoundSwitch)),
       h("div", { style: "border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;padding-top:6px;" },
         h("div", { style: "font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:4px;" }, "Island Right-Side Action Buttons"),
         h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
@@ -1357,12 +1646,12 @@ function buildSettings(actions: ViewActions): ViewHost {
           h("span", { text: "Undo Button" }), undoSwitch)),
     );
 
-    // ── Shortcuts Slide ──────────────────────────────────────────────────────
+    // ── Shortcuts Panel ──────────────────────────────────────────────────────
     const kbd = (key: string) => h("span", {
       style: "background:#22252c;border:1px solid rgba(255,255,255,0.18);border-radius:5px;padding:2px 7px;font-size:11px;font-weight:600;color:#e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,0.4);",
     }, key);
 
-    slideShortcuts.append(
+    panelShortcuts.append(
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
         h("span", { text: "Toggle / Open Island" }), kbd("Alt + Space")),
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
@@ -1376,7 +1665,7 @@ function buildSettings(actions: ViewActions): ViewHost {
       }, "💡 Long press or drag anywhere on the island to move it to your own custom screen position."),
     );
 
-    // ── AI Slide ─────────────────────────────────────────────────────────────
+    // ── AI Panel ─────────────────────────────────────────────────────────────
     const providerSelect = h(
       "select",
       {
@@ -1395,15 +1684,9 @@ function buildSettings(actions: ViewActions): ViewHost {
       h("option", { value: "custom", text: "Custom Server", selected: s.chatProvider === "custom" }),
     );
 
-    const hookBadge = dot(s.hooksInstalled ? "#22C55E" : "#F4505E", 7);
-    const hookText = h("span", { text: s.hooksInstalled ? "Hooks Connected" : "Not Configured" });
-
-    slideAi.append(
+    panelAi.append(
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:4px 0;" },
         h("span", { text: "Chat Provider" }), providerSelect),
-      h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
-        h("span", { text: "Claude Code Integration" }),
-        h("div", { style: "display:flex;align-items:center;gap:6px;font-size:11.5px;" }, hookBadge, hookText)),
       h("div", { class: "settings-row", style: "justify-content:space-between;padding:6px 0;" },
         h("span", { text: "Manage API Keys" }),
         h("button", {
@@ -1440,10 +1723,7 @@ function buildSettings(actions: ViewActions): ViewHost {
 
       if (isFull) {
         renderSections();
-        requestAnimationFrame(() => {
-          const idx = tabs.findIndex((t) => t.id === activeTab);
-          updateGlassSlider(idx >= 0 ? idx : 0);
-        });
+        selectTab(activeTab);
       }
     },
   };

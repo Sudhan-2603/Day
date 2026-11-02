@@ -1,11 +1,11 @@
 pkgname = day
 pkgbase = day
-pkgver = 0.3.0-1
+pkgver = 1.0.5-1
 pkgdesc = Day lives at the top of your screen and keeps an eye on your Claude Code sessions
 url = https://github.com/Sudhan-2603/day
-builddate = 1793080392
+builddate = 1793634999
 packager = Sudhan <sudhan@local>
-size = 11701313
+size = 11729297
 arch = x86_64
 license = MIT
 depend = webkit2gtk-4.1

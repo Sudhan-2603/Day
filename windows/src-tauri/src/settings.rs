@@ -71,6 +71,13 @@ pub struct Settings {
     /// Day on the desktop: whether he lives there, and his spot. Owned by
     /// the Rust side (desktop.rs) — what a webview sends back is ignored.
     pub desktop_day: DesktopDayPref,
+    /// System & Island capabilities toggles
+    pub show_music_player: bool,
+    pub show_battery_status: bool,
+    pub show_notifications: bool,
+    pub show_timer_productivity: bool,
+    pub show_download_activity: bool,
+    pub show_hardware_monitoring: bool,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -127,6 +134,12 @@ impl Default for Settings {
             pill_colors: BTreeMap::new(),
             language: String::new(),
             desktop_day: DesktopDayPref::default(),
+            show_music_player: true,
+            show_battery_status: true,
+            show_notifications: true,
+            show_timer_productivity: true,
+            show_download_activity: true,
+            show_hardware_monitoring: true,
         }
     }
 }
@@ -404,7 +417,13 @@ mod tests {
   "dayOutfit": "witchHat",
   "pillColors": { "integration_claude": "#2DD4BF" },
   "language": "pt-BR",
-  "desktopDay": { "onDesktop": true, "spot": { "x": 1500.5, "y": -300.0, "space": "screen" } }
+  "desktopDay": { "onDesktop": true, "spot": { "x": 1500.5, "y": -300.0, "space": "screen" } },
+  "showMusicPlayer": false,
+  "showBatteryStatus": false,
+  "showNotifications": false,
+  "showTimerProductivity": false,
+  "showDownloadActivity": false,
+  "showHardwareMonitoring": false
 }"##;
 
     fn custom() -> Value {
@@ -809,6 +828,12 @@ mod tests {
                 "pillColors",
                 "language",
                 "desktopDay",
+                "showMusicPlayer",
+                "showBatteryStatus",
+                "showNotifications",
+                "showTimerProductivity",
+                "showDownloadActivity",
+                "showHardwareMonitoring",
             ]
         );
         let _ = std::fs::remove_dir_all(&dir);

@@ -38,7 +38,21 @@ export type BotStateName =
   | "sleeping"
   | "dizzy";
 
-export type BotEmoteName = "love" | "surprised" | "proud" | "wink" | "yawn" | "happy" | "annoyed";
+export type BotEmoteName =
+  | "love"
+  | "surprised"
+  | "proud"
+  | "wink"
+  | "yawn"
+  | "happy"
+  | "annoyed"
+  | "smile"
+  | "sad"
+  | "angry"
+  | "sleep"
+  | "confused"
+  | "laughing"
+  | "shy";
 
 export type AgentLayoutMode = "none" | "grid" | "pills" | "column";
 

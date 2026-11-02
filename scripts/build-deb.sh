@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Build and package Day as a Debian .deb package
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VERSION="0.3.0"
+VERSION="1.0.5"
 ARCH="amd64"
 PKG_NAME="day"
 PKG_FULL_NAME="${PKG_NAME}_${VERSION}_${ARCH}"

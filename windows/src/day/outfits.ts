@@ -1076,7 +1076,7 @@ export function drawOutfitFront(ctx: Ctx, outfit: Outfit, H: Head, st: OutfitSta
 const INK = "rgb(26,20,18)";
 
 /** A little Day wearing `outfit`, centred in a `size`×`size` icon. */
-function iconDay(ctx: Ctx, size: number, outfit: Outfit) {
+function iconDay(ctx: Ctx, size: number, outfit: Outfit, bodyColor?: string) {
   const R = 10;
   const H = makeHead(R);
   const cx = size / 2;
@@ -1086,9 +1086,14 @@ function iconDay(ctx: Ctx, size: number, outfit: Outfit) {
   ctx.translate(cx, cy);
   drawOutfitBehind(ctx, outfit, H, st);
   const body = bodyOutline(H.rx, H.ry);
-  const [top, bottom] = outfit === "pumpkin" ? PUMPKIN_BODY : ["rgb(237,237,239)", "rgb(196,197,202)"];
-  ctx.fillStyle = lin(ctx, H.rx * 0.7, -H.ry * 0.85, -H.rx * 0.8, H.ry * 0.9, [[0, top], [1, bottom]]);
-  ctx.fill(body);
+  if (bodyColor) {
+    ctx.fillStyle = bodyColor;
+    ctx.fill(body);
+  } else {
+    const [top, bottom] = outfit === "pumpkin" ? PUMPKIN_BODY : ["rgb(237,237,239)", "rgb(196,197,202)"];
+    ctx.fillStyle = lin(ctx, H.rx * 0.7, -H.ry * 0.85, -H.rx * 0.8, H.ry * 0.9, [[0, top], [1, bottom]]);
+    ctx.fill(body);
+  }
   ctx.fillStyle = rad(ctx, 0, 0, R * 0.15, R * 1.25, [[0, "rgba(0,0,0,0)"], [0.6, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0.2)"]]);
   ctx.fill(body);
   ctx.fillStyle = rad(ctx, H.rx * 0.34, -H.ry * 0.46, 0, R * 0.42, [[0, "rgba(255,255,255,0.55)"], [1, "rgba(255,255,255,0)"]]);
@@ -1115,7 +1120,7 @@ function iconDay(ctx: Ctx, size: number, outfit: Outfit) {
  * One wardrobe button's picture — drawOutfitIcon on macOS. "auto" shows the
  * season's outfit with an AUTO tag, "none" a crossed-out circle.
  */
-export function drawWardrobeIcon(ctx: Ctx, size: number, selection: OutfitSelection, seasonal: Outfit, autoLabel: string) {
+export function drawWardrobeIcon(ctx: Ctx, size: number, selection: OutfitSelection, seasonal: Outfit, autoLabel: string, bodyColor?: string) {
   ctx.clearRect(0, 0, size, size);
   if (selection === "none") {
     const r = 6.5;
@@ -1132,7 +1137,7 @@ export function drawWardrobeIcon(ctx: Ctx, size: number, selection: OutfitSelect
     ctx.restore();
     return;
   }
-  iconDay(ctx, size, selection === "auto" ? seasonal : selection);
+  iconDay(ctx, size, selection === "auto" ? seasonal : selection, bodyColor);
   if (selection !== "auto") return;
   const R = 10;
   const by = size / 2 + R * 0.62 + R * 0.88 * 0.72;
@@ -1154,6 +1159,251 @@ export function drawWardrobeIcon(ctx: Ctx, size: number, selection: OutfitSelect
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(autoLabel, 0, 0.2);
+  ctx.restore();
+}
+
+export type ExpressionKey =
+  | "error"
+  | "uploading"
+  | "thinking"
+  | "approval"
+  | "question"
+  | "finished"
+  | "working"
+  | "sleeping"
+  | "idle";
+
+export const EXPRESSIONS: { key: ExpressionKey; label: string; desc: string }[] = [
+  { key: "error", label: "Error", desc: "Session stopped or fatal error" },
+  { key: "uploading", label: "Uploading", desc: "File transfer & drop progress" },
+  { key: "thinking", label: "Thinking", desc: "Claude processing prompt" },
+  { key: "approval", label: "Approval", desc: "Permission requested" },
+  { key: "question", label: "Question", desc: "Interactive prompt inquiry" },
+  { key: "finished", label: "Finished", desc: "Task completed successfully" },
+  { key: "working", label: "Working", desc: "Active tool execution" },
+  { key: "sleeping", label: "Sleeping", desc: "Idle battery saver state" },
+  { key: "idle", label: "Ready", desc: "Standing by on screen" },
+];
+
+/**
+ * Draw an Expression / Emote icon for Day matching the catalog matrix.
+ */
+export function drawExpressionIcon(ctx: Ctx, size: number, expr: ExpressionKey, bodyColor?: string) {
+  ctx.clearRect(0, 0, size, size);
+  const R = 10;
+  const H = makeHead(R);
+  const cx = size / 2;
+  const cy = size / 2 + R * 0.62;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  const body = bodyOutline(H.rx, H.ry);
+  if (bodyColor) {
+    ctx.fillStyle = bodyColor;
+    ctx.fill(body);
+  } else {
+    const [top, bottom] = ["rgb(237,237,239)", "rgb(196,197,202)"];
+    ctx.fillStyle = lin(ctx, H.rx * 0.7, -H.ry * 0.85, -H.rx * 0.8, H.ry * 0.9, [[0, top], [1, bottom]]);
+    ctx.fill(body);
+  }
+  ctx.fillStyle = rad(ctx, 0, 0, R * 0.15, R * 1.25, [[0, "rgba(0,0,0,0)"], [0.6, "rgba(0,0,0,0)"], [1, "rgba(0,0,0,0.2)"]]);
+  ctx.fill(body);
+  ctx.fillStyle = rad(ctx, H.rx * 0.34, -H.ry * 0.46, 0, R * 0.42, [[0, "rgba(255,255,255,0.55)"], [1, "rgba(255,255,255,0)"]]);
+  ctx.fill(body);
+
+  // Draw eyes based on expression
+  ctx.save();
+  ctx.clip(body);
+  ctx.fillStyle = INK;
+  ctx.strokeStyle = INK;
+
+  const frames = eyeFrames(H);
+
+  switch (expr) {
+    case "error":
+      // Red tinted body badge/flat eyes with stern tilt
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        roundRect(ctx, -e.w * 0.72, -e.w * 0.2, e.w * 1.44, e.w * 0.4, e.w * 0.2);
+        ctx.fill();
+        ctx.restore();
+      }
+      // Red status dot in center-bottom
+      ctx.fillStyle = "#F4505E";
+      ctx.beginPath();
+      ctx.arc(0, -H.ry * 0.12, H.R * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+
+    case "uploading":
+      // Focused eyes looking slightly up
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y - e.h * 0.15);
+        ctx.scale(e.fx, e.fy);
+        roundRect(ctx, -e.w / 2, -e.h / 2, e.w, e.h, Math.min(e.w / 2, e.h / 2));
+        ctx.fill();
+        ctx.restore();
+      }
+      // Upload arrow upwards
+      ctx.strokeStyle = "#38BDF8";
+      ctx.lineWidth = 1.3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(0, -H.ry * 0.04);
+      ctx.lineTo(0, -H.ry * 0.22);
+      ctx.moveTo(-H.rx * 0.14, -H.ry * 0.14);
+      ctx.lineTo(0, -H.ry * 0.24);
+      ctx.lineTo(H.rx * 0.14, -H.ry * 0.14);
+      ctx.stroke();
+      break;
+
+    case "thinking":
+      // Glancing to upper right corner
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x + e.w * 0.2, e.y - e.h * 0.2);
+        ctx.scale(e.fx, e.fy);
+        roundRect(ctx, -e.w / 2, -e.h / 2, e.w, e.h, Math.min(e.w / 2, e.h / 2));
+        ctx.fill();
+        ctx.restore();
+      }
+      // Thinking dots badge
+      ctx.fillStyle = "#38BDF8";
+      [-H.rx * 0.12, 0, H.rx * 0.12].forEach((dx) => {
+        ctx.beginPath();
+        ctx.arc(dx, -H.ry * 0.12, H.R * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      break;
+
+    case "approval":
+      // Wide expectant pill eyes
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        roundRect(ctx, -e.w * 0.58, -e.h * 0.56, e.w * 1.16, e.h * 1.12, Math.min(e.w / 2, e.h / 2));
+        ctx.fill();
+        ctx.restore();
+      }
+      // Amber bang exclamation mark
+      ctx.fillStyle = "#F5A524";
+      ctx.beginPath();
+      roundRect(ctx, -H.R * 0.07, -H.ry * 0.24, H.R * 0.14, H.R * 0.22, H.R * 0.07);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, 0, H.R * 0.07, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+
+    case "question":
+      // Tilted head curious expression
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        if (e.sd < 0) {
+          roundRect(ctx, -e.w * 0.6, -e.h * 0.6, e.w * 1.2, e.h * 1.2, Math.min(e.w / 2, e.h / 2));
+        } else {
+          roundRect(ctx, -e.w / 2, -e.h / 2, e.w, e.h, Math.min(e.w / 2, e.h / 2));
+        }
+        ctx.fill();
+        ctx.restore();
+      }
+      // Cyan question mark
+      ctx.fillStyle = "#22D3EE";
+      ctx.font = `bold ${Math.round(H.R * 0.52)}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("?", 0, -H.ry * 0.12);
+      break;
+
+    case "finished":
+      // Happy satisfied arc eyes with green dot
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        ctx.lineWidth = e.w * 0.48;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.arc(0, e.h * 0.2, e.w * 0.75, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // Green check/dot
+      ctx.fillStyle = "#22C55E";
+      ctx.beginPath();
+      ctx.arc(0, -H.ry * 0.12, H.R * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+
+    case "working":
+      // Pill eyes with active working dots
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        roundRect(ctx, -e.w / 2, -e.h / 2, e.w, e.h, Math.min(e.w / 2, e.h / 2));
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.fillStyle = "#A855F7";
+      [-H.rx * 0.14, 0, H.rx * 0.14].forEach((dx, i) => {
+        ctx.beginPath();
+        ctx.arc(dx, -H.ry * 0.12, H.R * (i === 1 ? 0.11 : 0.07), 0, Math.PI * 2);
+        ctx.fill();
+      });
+      break;
+
+    case "sleeping":
+      // Closed arcs with z particles
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        ctx.lineWidth = e.w * 0.4;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.arc(0, -e.h * 0.05, e.w * 0.72, Math.PI * 0.12, Math.PI * 0.88);
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.fillStyle = "#94A3B8";
+      ctx.font = `bold ${Math.round(H.R * 0.45)}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("z", H.rx * 0.2, -H.ry * 0.2);
+      break;
+
+    case "idle":
+    default:
+      for (const e of frames) {
+        if (!e.visible) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.scale(e.fx, e.fy);
+        roundRect(ctx, -e.w / 2, -e.h / 2, e.w, e.h, Math.min(e.w / 2, e.h / 2));
+        ctx.fill();
+        ctx.restore();
+      }
+      break;
+  }
+
+  ctx.restore();
   ctx.restore();
 }
 

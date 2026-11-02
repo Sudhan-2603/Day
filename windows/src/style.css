@@ -1086,7 +1086,195 @@ body {
   color: #ffffff;
 }
 
-/* ── Settings Horizontal Scroll Carousel ─────────────────────────────────── */
+/* ── Settings Dashboard with Sidebar Layout ────────────────────────────── */
+
+.settings-dashboard-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.settings-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 130px;
+  flex-shrink: 0;
+  gap: 3px;
+  padding: 4px 6px 4px 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.settings-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.settings-sidebar-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+}
+
+.settings-sidebar-btn.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-weight: 600;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.settings-sidebar-btn svg {
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.settings-sidebar-btn.active svg {
+  opacity: 1;
+}
+
+.settings-dashboard-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2px 4px 4px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+.settings-dashboard-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.settings-dashboard-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+}
+
+.dash-panel {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.dash-panel.active {
+  display: flex;
+}
+
+/* System cards in dashboard style */
+.sys-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.sys-stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color 0.15s;
+}
+
+.sys-stat-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.sys-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.sys-stat-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.sys-stat-val small {
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.sys-bar-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  width: 100%;
+}
+
+.sys-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Dynamic Island features list styling */
+.feature-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.feature-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feature-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feature-card-desc {
+  font-size: 10px;
+  color: #64748b;
+}
+
+/* ── Settings Horizontal Scroll Carousel (legacy fallback) ───────────────── */
 
 .settings-sections-carousel {
   display: flex;
@@ -1190,6 +1378,38 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.outfit-visual-row.mini {
+  gap: 5px;
+  padding: 2px 0 4px 0;
+}
+
+.outfit-visual-card.mini {
+  padding: 3px 5px;
+  border-radius: 9px;
+  gap: 2px;
+}
+
+.outfit-visual-card.mini canvas {
+  width: 20px;
+  height: 20px;
+}
+
+.outfit-visual-card.mini span {
+  font-size: 8.5px;
+  max-width: 44px;
+}
+
+.expression-card:hover {
+  border-color: rgba(255, 105, 140, 0.5);
+  box-shadow: 0 0 10px rgba(255, 105, 140, 0.2);
+}
+
+.expression-card.active {
+  background: rgba(255, 105, 140, 0.2);
+  border-color: rgba(255, 105, 140, 0.8);
+  box-shadow: 0 0 14px rgba(255, 105, 140, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
 input[type="range"] {

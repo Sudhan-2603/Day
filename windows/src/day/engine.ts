@@ -14,7 +14,8 @@ import type { Outfit } from "./wardrobe";
 
 export type EyeShape =
   | "pill" | "wide" | "dot" | "line" | "flat" | "happy" | "closed"
-  | "spiral" | "heart" | "star" | "tired" | "wink" | "cup";
+  | "spiral" | "heart" | "star" | "tired" | "wink" | "cup"
+  | "sad" | "angry" | "laughing" | "shy";
 
 export type BadgeKind = "dots" | "bang" | "question" | "dot";
 
@@ -115,6 +116,8 @@ export const STATE_SOUND: Partial<Record<BotStateName, string>> = {
 const EMOTE_EYE: Record<BotEmoteName, EyeShape> = {
   love: "heart", surprised: "dot", proud: "star", wink: "wink",
   yawn: "tired", happy: "happy", annoyed: "line",
+  smile: "happy", sad: "sad", angry: "angry", sleep: "closed",
+  confused: "tired", laughing: "laughing", shy: "shy",
 };
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
@@ -468,12 +471,35 @@ export class BotEngine {
         setTimeout(() => { this.eyeOverride = "closed"; this.emit("z", 2); }, 700);
         break;
       case "happy":
+      case "smile":
         this.anim("blush", [[0.6, 200, Ease.out], [0, 600, Ease.inOut]]);
+        this.anim("oy", [[-0.08, 150, Ease.out], [0, 250, Ease.back]]);
         break;
       case "annoyed":
-        this.eyeOverride = "line";
-        this.eyeOverrideUntil = t + 0.8;
+      case "angry":
+        this.eyeOverride = "angry";
+        this.eyeOverrideUntil = t + duration;
+        this.anim("tilt", [[-0.08, 100, Ease.out], [0.08, 100, Ease.inOut], [0, 150, Ease.inOut]]);
         setTimeout(() => Sound.play("annoyed"), 60);
+        break;
+      case "sad":
+        this.anim("oy", [[0.12, 350, Ease.out], [0, 500, Ease.inOut]]);
+        this.anim("tilt", [[-0.06, 300, Ease.out], [0, 400, Ease.inOut]]);
+        break;
+      case "sleep":
+        this.anim("sy", [[1.08, 500, Ease.inOut], [1, 500, Ease.inOut]]);
+        this.emit("z", 3);
+        break;
+      case "confused":
+        this.anim("tilt", [[0.16, 200, Ease.out], [0.16, (duration - 0.5) * 1000, Ease.lin], [0, 250, Ease.inOut]]);
+        break;
+      case "laughing":
+        this.anim("oy", [[-0.12, 100, Ease.out], [0.05, 100, Ease.inOut], [-0.1, 100, Ease.inOut], [0, 200, Ease.back]]);
+        this.emit("spark", 4);
+        break;
+      case "shy":
+        this.anim("blush", [[0.85, 250, Ease.out], [0.85, (duration - 0.5) * 1000, Ease.lin], [0, 350, Ease.inOut]]);
+        this.anim("oy", [[0.08, 250, Ease.out], [0, 300, Ease.inOut]]);
         break;
     }
   }
@@ -1059,6 +1085,38 @@ export class BotEngine {
         x.fill();
         break;
       }
+      case "sad":
+        x.lineWidth = w * 0.44;
+        x.lineCap = "round";
+        x.beginPath();
+        x.arc(0, -h * 0.1, w * 0.72, Math.PI * 0.18, Math.PI * 0.82);
+        x.stroke();
+        break;
+      case "angry":
+        x.rotate(-sd * 0.35);
+        roundRectPath(x, -w * 0.8, -w * 0.22, w * 1.6, w * 0.44, w * 0.22);
+        x.fill();
+        break;
+      case "laughing":
+        x.lineWidth = w * 0.42;
+        x.lineCap = "round";
+        x.beginPath();
+        if (sd < 0) {
+          x.moveTo(w * 0.45, -h * 0.4);
+          x.lineTo(-w * 0.45, 0);
+          x.lineTo(w * 0.45, h * 0.4);
+        } else {
+          x.moveTo(-w * 0.45, -h * 0.4);
+          x.lineTo(w * 0.45, 0);
+          x.lineTo(-w * 0.45, h * 0.4);
+        }
+        x.stroke();
+        break;
+      case "shy":
+        x.beginPath();
+        x.arc(0, h * 0.1, w * 0.36, 0, Math.PI * 2);
+        x.fill();
+        break;
     }
   }
 
