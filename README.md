@@ -139,4 +139,4 @@ Click the **Settings ⚙** button to open the full dashboard layout:
 
 ## 📜 License
 
-MIT License © 2026 Day Contributors.
+Sudhan License © 2026 Day Contributors.
