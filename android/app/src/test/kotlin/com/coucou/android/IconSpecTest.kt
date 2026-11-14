@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.IconShape
-import com.coucou.android.core.IconSpec
+import com.Day.android.core.IconKind
+import com.Day.android.core.IconShape
+import com.Day.android.core.IconSpec
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -43,9 +43,9 @@ class IconSpecTest {
     }
 
     @Test fun onlyTheIconsThatPointAlongTheReadingDirectionAreMirroredForArabic() {
-        val mirrored = com.coucou.android.core.IconKind.values().filter { com.coucou.android.core.IconSpec.mirrorsInRtl(it) }
-        org.junit.Assert.assertEquals(listOf(com.coucou.android.core.IconKind.BACK, com.coucou.android.core.IconKind.SEND, com.coucou.android.core.IconKind.CHEVRON), mirrored)
+        val mirrored = com.Day.android.core.IconKind.values().filter { com.Day.android.core.IconSpec.mirrorsInRtl(it) }
+        org.junit.Assert.assertEquals(listOf(com.Day.android.core.IconKind.BACK, com.Day.android.core.IconKind.SEND, com.Day.android.core.IconKind.CHEVRON), mirrored)
         // A chevron turned to point down is not mirrored by its caller.
-        org.junit.Assert.assertTrue(java.io.File("src/main/kotlin/com/coucou/android/ui/ChatScreen.kt").readText().contains("rotate(90f), mirror = false"))
+        org.junit.Assert.assertTrue(java.io.File("src/main/kotlin/com/Day/android/ui/ChatScreen.kt").readText().contains("rotate(90f), mirror = false"))
     }
 }

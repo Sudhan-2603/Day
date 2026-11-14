@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.DiffAssembler
-import com.coucou.android.link.DiffRow
-import com.coucou.android.link.ServerMsg
+import com.Day.android.core.DiffAssembler
+import com.Day.android.link.DiffRow
+import com.Day.android.link.ServerMsg
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull

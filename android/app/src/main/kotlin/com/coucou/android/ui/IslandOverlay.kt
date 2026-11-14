@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.content.ComponentCallbacks
 import android.content.Context
@@ -21,13 +21,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.MotionPolicy
-import com.coucou.android.core.MotionSpec
-import com.coucou.android.core.MotionState
-import com.coucou.android.core.IslandSurface
-import com.coucou.android.core.Tokens
-import com.coucou.android.core.TypeScale
+import com.Day.android.core.IconKind
+import com.Day.android.core.MotionPolicy
+import com.Day.android.core.MotionSpec
+import com.Day.android.core.MotionState
+import com.Day.android.core.IslandSurface
+import com.Day.android.core.Tokens
+import com.Day.android.core.TypeScale
 import kotlin.math.max
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -88,17 +88,17 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.coucou.android.R
-import com.coucou.android.core.IslandBox
-import com.coucou.android.core.IslandGeometry
-import com.coucou.android.core.IslandSpec
-import com.coucou.android.core.IslandTimeline
-import com.coucou.android.core.OverlayPolicy
-import com.coucou.android.core.PxRect
-import com.coucou.android.core.Tracked
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
+import com.Day.android.R
+import com.Day.android.core.IslandBox
+import com.Day.android.core.IslandGeometry
+import com.Day.android.core.IslandSpec
+import com.Day.android.core.IslandTimeline
+import com.Day.android.core.OverlayPolicy
+import com.Day.android.core.PxRect
+import com.Day.android.core.Tracked
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
 
 /**
  * The notch of the desktop, for the phone: a black island hanging from the top of the screen,
@@ -170,7 +170,7 @@ class IslandOverlay(
         shown?.let(onSwiped)
     }
 
-    /** Close at once, without animation (Coucou came to the front, the switch went off, the link dropped). */
+    /** Close at once, without animation (Day came to the front, the switch went off, the link dropped). */
     fun hide() = safely {
         timeline.dismiss()
         removeView()
@@ -423,12 +423,12 @@ class IslandOverlay(
 
     @Composable
     private fun WorkingStrip(s: IslandSpec) {
-        val engine = remember(s.state) { MochiEngine(clock).apply { setState(s.state, force = true) } }
+        val engine = remember(s.state) { DayEngine(clock).apply { setState(s.state, force = true) } }
         Row(
             Modifier.fillMaxWidth().clickable { tap("the working strip") { onOpen() } }.padding(horizontal = 18.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            MochiView(engine, Modifier.size(34.dp))
+            DayView(engine, Modifier.size(34.dp))
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(s.agent, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -439,7 +439,7 @@ class IslandOverlay(
 
     @Composable
     private fun ResultCard(s: IslandSpec) {
-        val engine = remember(s.state) { MochiEngine(clock).apply { setState(s.state, force = true) } }
+        val engine = remember(s.state) { DayEngine(clock).apply { setState(s.state, force = true) } }
         val label = when (s.kind) {
             IslandSpec.Kind.ERROR -> R.string.notif_error
             IslandSpec.Kind.RATELIMIT -> R.string.notif_ratelimit
@@ -450,7 +450,7 @@ class IslandOverlay(
             Modifier.fillMaxWidth().clickable { tap("the result card") { onOpen() } }.padding(horizontal = 18.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            MochiView(engine, Modifier.size(52.dp))
+            DayView(engine, Modifier.size(52.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -466,11 +466,11 @@ class IslandOverlay(
 
     @Composable
     private fun RequestCard(s: IslandSpec) {
-        val engine = remember { MochiEngine(clock).apply { setState(BotState.APPROVAL, force = true) } }
+        val engine = remember { DayEngine(clock).apply { setState(BotState.APPROVAL, force = true) } }
         val fingerprint = s.fingerprint ?: return
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.clickable { tap("the request header") { onOpen() } }, verticalAlignment = Alignment.CenterVertically) {
-                MochiView(engine, Modifier.size(40.dp))
+                DayView(engine, Modifier.size(40.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(s.agent, style = TypeScale.SECONDARY.style(dim), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -483,7 +483,7 @@ class IslandOverlay(
                 if (s.canAllow) {
                     PillButton(
                         stringResource(R.string.action_allow), { tap("Allow") { onAllow(fingerprint) } }, Modifier.weight(1f), PillKind.PRIMARY, onDark = true,
-                        icon = { CoucouIcon(IconKind.LOCK, tint = Color(IslandSurface.ON_PRIMARY), size = 18.dp) },
+                        icon = { DayIcon(IconKind.LOCK, tint = Color(IslandSurface.ON_PRIMARY), size = 18.dp) },
                     )
                 }
             }
@@ -512,7 +512,7 @@ class IslandOverlay(
     }
 
     private companion object {
-        const val TAG = "CoucouIsland"
+        const val TAG = "DayIsland"
         /** How far up the finger must travel for a swipe to count (a little over a tap's wobble). */
         const val SWIPE_UP_DP = 40
     }

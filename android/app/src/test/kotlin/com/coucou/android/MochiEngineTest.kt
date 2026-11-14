@@ -1,15 +1,15 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Ease
-import com.coucou.android.mochi.BotEmote
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.EyeShape
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiGeometry
-import com.coucou.android.mochi.ParticleType
-import com.coucou.android.mochi.Prop
-import com.coucou.android.mochi.SoundSink
-import com.coucou.android.mochi.TweenKey
+import com.Day.android.core.Ease
+import com.Day.android.Day.BotEmote
+import com.Day.android.Day.BotState
+import com.Day.android.Day.EyeShape
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayGeometry
+import com.Day.android.Day.ParticleType
+import com.Day.android.Day.Prop
+import com.Day.android.Day.SoundSink
+import com.Day.android.Day.TweenKey
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
@@ -19,14 +19,14 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class MochiEngineTest {
+class DayEngineTest {
     private class Clock { var ms = 10_000.0 }
 
     private fun engine(clock: Clock, sounds: MutableList<String> = mutableListOf()) =
-        MochiEngine({ clock.ms }, Random(1), SoundSink { sounds.add(it) })
+        DayEngine({ clock.ms }, Random(1), SoundSink { sounds.add(it) })
 
     /** Advances the clock in 16 ms frames, as a 60 fps host would. */
-    private fun MochiEngine.run(clock: Clock, ms: Int) {
+    private fun DayEngine.run(clock: Clock, ms: Int) {
         repeat(ms / 16) { clock.ms += 16; update(0.016) }
     }
 
@@ -42,18 +42,18 @@ class MochiEngineTest {
     @Test fun bodyIsASuperellipseOfExponent2_7() {
         val rx = 1.14
         val ry = 0.88
-        for (p in MochiGeometry.bodyPoints(rx, ry, 1.0, 0.0)) {
+        for (p in DayGeometry.bodyPoints(rx, ry, 1.0, 0.0)) {
             val v = abs(p.x / rx).pow(2.7) + abs(p.y / ry).pow(2.7)
             assertEquals(1.0, v, 1e-6)
         }
-        val first = MochiGeometry.bodyPoints(rx, ry, 1.0, 0.0).first()
+        val first = DayGeometry.bodyPoints(rx, ry, 1.0, 0.0).first()
         assertEquals(rx, first.x, 1e-9)
         assertEquals(0.0, first.y, 1e-9)
     }
 
     @Test fun fullMorphGivesTheMailboxOutline() {
-        val pts = MochiGeometry.bodyPoints(1.14, 0.88, 1.0, 1.0)
-        assertEquals(MochiGeometry.BODY_SEGMENTS + 1, pts.size)
+        val pts = DayGeometry.bodyPoints(1.14, 0.88, 1.0, 1.0)
+        assertEquals(DayGeometry.BODY_SEGMENTS + 1, pts.size)
         // The box is 1.0 wide and 0.94 tall (tw, th in engine.ts).
         assertTrue(pts.all { abs(it.x) <= 1.0 + 1e-6 && abs(it.y) <= 0.94 + 1e-6 })
         assertEquals(1.0, pts.first().x, 1e-9)
@@ -81,7 +81,7 @@ class MochiEngineTest {
         assertEquals(0.78, e.tint, 1e-9)
         e.run(clock, 600)
         assertEquals(1.0, e.badgeS, 0.01)
-        assertEquals(com.coucou.android.mochi.BadgeKind.BANG, e.badge?.kind)
+        assertEquals(com.Day.android.Day.BadgeKind.BANG, e.badge?.kind)
     }
 
     @Test fun colourEasesTowardsTheStateColour() {
@@ -114,7 +114,7 @@ class MochiEngineTest {
         assertNull(e.eyeOverride)
     }
 
-    @Test fun threeSlapsWithin1_7sMakeMochiDizzy() {
+    @Test fun threeSlapsWithin1_7sMakeDayDizzy() {
         val clock = Clock()
         val sounds = mutableListOf<String>()
         val e = engine(clock, sounds)
@@ -171,7 +171,7 @@ class MochiEngineTest {
         val clock = Clock()
         val e = engine(clock)
         e.run(clock, 10_000)
-        assertFalse("idle Mochi should let the frame loop sleep", e.busy)
+        assertFalse("idle Day should let the frame loop sleep", e.busy)
     }
 
     @Test fun gulpOpensThenClosesTheSlot() {

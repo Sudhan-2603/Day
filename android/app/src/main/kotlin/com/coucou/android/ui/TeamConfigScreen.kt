@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,10 +23,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.TeamChoice
-import com.coucou.android.core.TypeScale
+import com.Day.android.R
+import com.Day.android.core.Spacing
+import com.Day.android.core.TeamChoice
+import com.Day.android.core.TypeScale
 
 /**
  * The Team widget's choice screen: a checkbox per agent, up to [TeamChoice.MAX], then Save. [initial] is what the widget shows now

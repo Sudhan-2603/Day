@@ -43,7 +43,7 @@ struct AskClaudeIntent: AppIntent {
         guard let session = link.sessions
             .filter({ $0.acceptsInstructions })
             .max(by: { $0.updatedAt < $1.updatedAt }) else {
-            return .result(dialog: "No Claude Code session takes instructions. Turn it on in Coucou's Settings on your Mac.")
+            return .result(dialog: "No Claude Code session takes instructions. Turn it on in Day's Settings on your Mac.")
         }
         guard await link.sendInstruction(text, pillId: session.id) else {
             return .result(dialog: "Couldn't reach iCloud. Nothing was sent.")
@@ -52,7 +52,7 @@ struct AskClaudeIntent: AppIntent {
     }
 }
 
-struct CoucouShortcuts: AppShortcutsProvider {
+struct DayShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: AskClaudeIntent(),
                     phrases: ["Ask Claude in \(.applicationName)",
@@ -69,12 +69,12 @@ struct CoucouShortcuts: AppShortcutsProvider {
     }
 }
 
-/// A Focus filter: in a Focus (Sleep, Work…), Coucou can keep quiet about
+/// A Focus filter: in a Focus (Sleep, Work…), Day can keep quiet about
 /// finished and failed agents and only notify what waits on you.
-struct CoucouFocusFilter: SetFocusFilterIntent {
-    static let title: LocalizedStringResource = "Coucou"
+struct DayFocusFilter: SetFocusFilterIntent {
+    static let title: LocalizedStringResource = "Day"
     static var description: IntentDescription {
-        IntentDescription("Choose what Coucou notifies during this Focus.")
+        IntentDescription("Choose what Day notifies during this Focus.")
     }
 
     @Parameter(title: "Only approvals and questions", default: false)

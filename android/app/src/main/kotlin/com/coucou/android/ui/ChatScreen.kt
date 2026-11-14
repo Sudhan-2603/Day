@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -24,9 +24,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.TypeScale
+import com.Day.android.core.IconKind
+import com.Day.android.core.Spacing
+import com.Day.android.core.TypeScale
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -62,24 +62,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.core.ChatMessage
-import com.coucou.android.core.ChatReasons
-import com.coucou.android.core.ChatTab
-import com.coucou.android.core.ChatTabState
-import com.coucou.android.core.Screen
-import com.coucou.android.core.ShareDraft
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
-import com.coucou.android.core.ChatRole
-import com.coucou.android.core.ChatSession
-import com.coucou.android.core.ChatStatus
-import com.coucou.android.core.MarkdownLite
-import com.coucou.android.core.MdBlock
-import com.coucou.android.core.MdSpan
-import com.coucou.android.link.Protocol
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.core.ChatMessage
+import com.Day.android.core.ChatReasons
+import com.Day.android.core.ChatTab
+import com.Day.android.core.ChatTabState
+import com.Day.android.core.Screen
+import com.Day.android.core.ShareDraft
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
+import com.Day.android.core.ChatRole
+import com.Day.android.core.ChatSession
+import com.Day.android.core.ChatStatus
+import com.Day.android.core.MarkdownLite
+import com.Day.android.core.MdBlock
+import com.Day.android.core.MdSpan
+import com.Day.android.link.Protocol
 
 /** The words for a code the computer (or this app) gives when an answer did not complete. */
 @Composable
@@ -117,18 +117,18 @@ internal fun chatStateBody(state: ChatTabState): Int = when (state) {
     ChatTabState.READY -> R.string.chat_title
 }
 
-/** The Chat tab with nothing to chat with: a sleeping Mochi, what is wrong in plain words, and the one button that helps (if any). */
+/** The Chat tab with nothing to chat with: a sleeping Day, what is wrong in plain words, and the one button that helps (if any). */
 @Composable
 private fun ChatEmpty(state: ChatTabState, onHome: () -> Unit, onSettings: () -> Unit) {
     val t = tokens()
-    val engine = remember { MochiEngine({ android.os.SystemClock.elapsedRealtimeNanos() / 1e6 }).apply { setState(BotState.SLEEPING, force = true) } }
+    val engine = remember { DayEngine({ android.os.SystemClock.elapsedRealtimeNanos() / 1e6 }).apply { setState(BotState.SLEEPING, force = true) } }
     Column(Modifier.fillMaxSize().padding(horizontal = Gutter)) {
         ScreenTitle(stringResource(R.string.chat_title), null)
         Column(
             Modifier.weight(1f).fillMaxWidth().padding(horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
         ) {
-            MochiView(engine, Modifier.size(120.dp))
+            DayView(engine, Modifier.size(120.dp))
             Text(
                 stringResource(chatStateTitle(state)), Modifier.padding(top = 16.dp),
                 style = TypeScale.TITLE.style(t.text.c()).copy(textAlign = TextAlign.Center),
@@ -355,7 +355,7 @@ private fun Composer(model: AppModel, text: String, refusal: ChatSession.Refusal
                         .clickable(enabled = model.chatAvailable && length in 1..limit, role = Role.Button, onClick = onSend)
                         .semantics { contentDescription = send },
                     contentAlignment = Alignment.Center,
-                ) { CoucouIcon(IconKind.SEND, tint = t.onPrimaryButton.c(), size = 22.dp) }
+                ) { DayIcon(IconKind.SEND, tint = t.onPrimaryButton.c(), size = 22.dp) }
             }
         }
         val note = when {
@@ -386,7 +386,7 @@ private fun ModelChip(model: AppModel) {
             horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(stringResource(R.string.chat_model, current?.label ?: "—"), style = TypeScale.LABEL.style(t.text.c()), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (models.size > 1) CoucouIcon(IconKind.CHEVRON, tint = t.textDim.c(), size = 16.dp, modifier = Modifier.rotate(90f), mirror = false)
+            if (models.size > 1) DayIcon(IconKind.CHEVRON, tint = t.textDim.c(), size = 16.dp, modifier = Modifier.rotate(90f), mirror = false)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (m in models) {

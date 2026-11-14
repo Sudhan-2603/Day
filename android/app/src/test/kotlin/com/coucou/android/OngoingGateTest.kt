@@ -1,10 +1,10 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Glance
-import com.coucou.android.core.GlanceLine
-import com.coucou.android.core.GlanceTone
-import com.coucou.android.core.OngoingGate
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.Glance
+import com.Day.android.core.GlanceLine
+import com.Day.android.core.GlanceTone
+import com.Day.android.core.OngoingGate
+import com.Day.android.Day.BotState
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

@@ -1,13 +1,13 @@
-package com.coucou.android.core
+package com.Day.android.core
 
-import com.coucou.android.mochi.BotState
+import com.Day.android.Day.BotState
 
 /**
  * What TalkBack says for a Widget: whole sentences for the parts that are tapped, built from the same words the Widget shows (agent
  * names, state words, counts), so the spoken text can never say more than the screen does. Pure.
  */
 object WidgetSpoken {
-    /** Mochi's mood in plain words ("waiting for you"), not the engine's key ("approval"). */
+    /** Day's mood in plain words ("waiting for you"), not the engine's key ("approval"). */
     fun mood(state: BotState): String = when (state) {
         BotState.IDLE -> Texts.t("mood_calm", "calm")
         BotState.WORKING -> Texts.t("mood_working", "working")

@@ -1,4 +1,4 @@
-// Mochi — direct port of NotchBuddy/Sources/App/BotEngine.swift to Canvas 2D.
+// Day — direct port of NotchBuddy/Sources/App/BotEngine.swift to Canvas 2D.
 // Same constants, same tweens, same easings, same particles. The only intentional
 // difference is the `happy`/`wink` eye arc, which follows the prototype
 // (design/prototype/notch-buddy.html, the visual source of truth) — the Swift
@@ -61,7 +61,7 @@ interface Particle {
   age: number; life: number; rot: number; size: number;
 }
 
-// ── Constants (MochiConst / PISTES.mochi) ─────────────────────────────────────
+// ── Constants (DayConst / PISTES.Day) ─────────────────────────────────────
 
 const EYE_W = 0.25;
 const EYE_H = 0.27;
@@ -196,10 +196,10 @@ export function danceTransform(seconds: number, level: number, R: number) {
 
 export class BotEngine {
   isMini = false;
-  /** Solid body colour for mini bots / integration pills (null = Mochi gradient). */
+  /** Solid body colour for mini bots / integration pills (null = Day gradient). */
   bodyColor: RGB | null = null;
   /**
-   * A new Coucou waits (whats-new/whats-new.ts): while Mochi is idle or asleep
+   * A new Day waits (whats-new/whats-new.ts): while Day is idle or asleep
    * he wears the up-arrow badge. The island turns his body blue alongside.
    */
   private updateHint: RGB | null = null;
@@ -209,7 +209,7 @@ export class BotEngine {
   sx = 1; sy = 1; oy = 0; ox = 0;
   tint = 0; morph = 0; hands = 0; blush = 0; es = 1; badgeS = 0;
 
-  // Outfit (the main Mochi only — minis never wear one). `outfit` is what is
+  // Outfit (the main Day only — minis never wear one). `outfit` is what is
   // drawn; it changes only once the previous one has left.
   outfit: Outfit = "none";
   /** 0 = gone, 1 = fully on. */
@@ -324,7 +324,7 @@ export class BotEngine {
     this.setBadge(this.stateBadge());
   }
 
-  /** Whether the update hint shows now: only over an idle or sleeping Mochi. */
+  /** Whether the update hint shows now: only over an idle or sleeping Day. */
   get showsUpdateHint(): boolean {
     return this.updateHint != null && (this.state === "idle" || this.state === "sleeping");
   }
@@ -396,7 +396,7 @@ export class BotEngine {
     this.anim("roll", [[Math.PI * 2 * turns, durationMs, Ease.inOut]], () => { this.roll = 0; });
   }
 
-  /** Peek wave — the "coucou". Timings from BotEngine.greet(). */
+  /** Peek wave — the "Day". Timings from BotEngine.greet(). */
   greet() {
     const t = now();
     const tok = ++this.greetToken;
@@ -531,8 +531,8 @@ export class BotEngine {
   }
 
   /**
-   * Dresses Mochi. Animated: the old outfit leaves (180 ms), the new one drops
-   * in (350 ms) and Mochi does a little squash — BotEngine.setOutfit on macOS.
+   * Dresses Day. Animated: the old outfit leaves (180 ms), the new one drops
+   * in (350 ms) and Day does a little squash — BotEngine.setOutfit on macOS.
    */
   setOutfit(next: Outfit, animated = true) {
     if (next === this.outfitTarget) return;
@@ -1236,7 +1236,7 @@ export class BotEngine {
         }
       }
     } else if (badge.kind === "arrow") {
-      // The "!" badge's ring and disc, with a white up-arrow: a new Coucou is out.
+      // The "!" badge's ring and disc, with a white up-arrow: a new Day is out.
       x.fillStyle = "#000";
       x.beginPath();
       x.arc(0, 0, R * 0.3, 0, Math.PI * 2);

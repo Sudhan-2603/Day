@@ -1,15 +1,15 @@
-package com.coucou.android.core
+package com.Day.android.core
 
-import com.coucou.android.link.ApprovalRequest
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
+import com.Day.android.link.ApprovalRequest
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
 
 /**
  * Which session the island is about, and whether it may show at all. Pure: the same inputs always
  * give the same answer, so every rule is unit-tested.
  */
 object IslandPlan {
-    /** The switch, the system permission and Coucou not being on screen. */
+    /** The switch, the system permission and Day not being on screen. */
     fun allowed(overlayOn: Boolean, permitted: Boolean, appInForeground: Boolean) =
         OverlayPolicy.shouldShow(overlayOn, permitted, appInForeground)
 

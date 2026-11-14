@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -7,12 +7,12 @@ import android.util.SizeF
 import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
-import com.coucou.android.R
-import com.coucou.android.core.WidgetContent
-import com.coucou.android.core.WidgetSpoken
+import com.Day.android.R
+import com.Day.android.core.WidgetContent
+import com.Day.android.core.WidgetSpoken
 
 /**
- * The Solo widget: Mochi with a glow in the state's colour, the name of the most urgent agent with a dot and one state
+ * The Solo widget: Day with a glow in the state's colour, the name of the most urgent agent with a dot and one state
  * word. Drawn by [WidgetHub] when something changes (updatePeriodMillis = 0). A tap opens that agent, or the app when none
  * is running. It only opens things: nothing is changed from here.
  */
@@ -34,9 +34,9 @@ class SoloWidget : AppWidgetProvider() {
             val large = size == WidgetHub.Size.LARGE
             val small = size == WidgetHub.Size.SMALL
 
-            v.setImageViewBitmap(R.id.solo_mochi, MochiBitmap.of(c.mood, WidgetHub.px(context, if (large) 150 else if (small) 72 else 104), glow = true, tone = c.look))
+            v.setImageViewBitmap(R.id.solo_Day, DayBitmap.of(c.mood, WidgetHub.px(context, if (large) 150 else if (small) 72 else 104), glow = true, tone = c.look))
             val word = top?.stateWord ?: c.headline
-            v.setContentDescription(R.id.solo_mochi, context.getString(R.string.widget_mochi_description, word.lowercase()))
+            v.setContentDescription(R.id.solo_Day, context.getString(R.string.widget_Day_description, word.lowercase()))
             // The tapped card says who and what, in one sentence.
             v.setContentDescription(R.id.solo_root, WidgetSpoken.top(c))
 

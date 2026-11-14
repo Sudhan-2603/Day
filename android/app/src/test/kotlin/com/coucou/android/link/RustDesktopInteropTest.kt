@@ -1,6 +1,6 @@
-package com.coucou.android.link
+package com.Day.android.link
 
-import com.coucou.android.ReferenceFiles
+import com.Day.android.ReferenceFiles
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
@@ -22,7 +22,7 @@ import org.junit.Test
  * with its own TLS stack (rustls) and its own certificate.
  *
  * The server is the ignored cargo test `phone_link::interop::interop_server`, started here and
- * driven over stdin. Compiling it takes minutes, so this only runs when COUCOU_RUST_INTEROP=1
+ * driven over stdin. Compiling it takes minutes, so this only runs when Day_RUST_INTEROP=1
  * (the `interop` job in .github/workflows/android.yml sets it) and cargo is installed.
  */
 class RustDesktopInteropTest {
@@ -38,11 +38,11 @@ class RustDesktopInteropTest {
     }
 
     private fun startDesktop(): JSONObject {
-        assumeTrue("set COUCOU_RUST_INTEROP=1 to run against the Rust desktop", System.getenv("COUCOU_RUST_INTEROP") == "1")
+        assumeTrue("set Day_RUST_INTEROP=1 to run against the Rust desktop", System.getenv("Day_RUST_INTEROP") == "1")
         val manifest = ReferenceFiles.file("windows/Cargo.toml").absolutePath
         proc = try {
             ProcessBuilder(
-                "cargo", "test", "--manifest-path", manifest, "-p", "coucou", "--lib", "--locked", "--",
+                "cargo", "test", "--manifest-path", manifest, "-p", "Day", "--lib", "--locked", "--",
                 "--ignored", "--nocapture", "phone_link::interop::interop_server",
             ).redirectErrorStream(true).start()
         } catch (_: Exception) {
@@ -184,7 +184,7 @@ class RustDesktopInteropTest {
             val req = rec.approvals.poll(10, TimeUnit.SECONDS)!!
             assertTrue(req.truncated)
             assertEquals(500, req.command.length)
-            assertFalse(com.coucou.android.core.ApprovalSheetPlan.canAllowHere(req))
+            assertFalse(com.Day.android.core.ApprovalSheetPlan.canAllowHere(req))
             // Even a phone that asks anyway is not obeyed.
             client.decide(req.fingerprint, allow = true)
             assertFalse("the desktop must not apply Allow for a cut command", sawLine("DECISION allow req-long", 2))
@@ -409,7 +409,7 @@ class RustDesktopInteropTest {
         }
     }
 
-    // ── Mochi's outfit (cap prefs) ─────────────────────────────────────────────────
+    // ── Day's outfit (cap prefs) ─────────────────────────────────────────────────
 
     @Test fun theOutfitReachesAnAppThatAsksAndNobodyElse() {
         val info = startDesktop()

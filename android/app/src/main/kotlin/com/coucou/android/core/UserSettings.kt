@@ -1,6 +1,6 @@
-package com.coucou.android.core
+package com.Day.android.core
 
-import com.coucou.android.mochi.BotState
+import com.Day.android.Day.BotState
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -31,11 +31,11 @@ data class QuietHours(val enabled: Boolean, val fromMin: Int, val toMin: Int) {
 /** What the user chose in Settings. Defaults keep the app as it was before the settings existed. */
 data class UserSettings(
     val soundOn: Boolean = true,
-    val volume: Float = com.coucou.android.sound.SoundVolume.DEFAULT,
+    val volume: Float = com.Day.android.sound.SoundVolume.DEFAULT,
     val notifyDone: Boolean = true,
     val quiet: QuietHours = QuietHours(false, 22 * 60, 8 * 60),
-    /** Mochi's outfit on this phone: "computer" (follow the one chosen on the computer), "auto", "none" or an outfit. */
-    val outfit: String = com.coucou.android.mochi.outfit.Wardrobe.FOLLOW,
+    /** Day's outfit on this phone: "computer" (follow the one chosen on the computer), "auto", "none" or an outfit. */
+    val outfit: String = com.Day.android.Day.outfit.Wardrobe.FOLLOW,
     /** Use the relay when the computer is not reachable on this network (only matters when the pairing includes one). */
     val useRelay: Boolean = true,
     /** Do not light the screen when a request arrives on a sleeping phone (the notification is still posted). Off = today's behaviour. */
@@ -74,14 +74,14 @@ data class UserSettings(
             val d = UserSettings()
             return UserSettings(
                 soundOn = store.getBoolean(SOUND, d.soundOn),
-                volume = com.coucou.android.sound.SoundVolume.clamp(store.getFloat(VOLUME, d.volume)),
+                volume = com.Day.android.sound.SoundVolume.clamp(store.getFloat(VOLUME, d.volume)),
                 notifyDone = store.getBoolean(DONE, d.notifyDone),
                 quiet = QuietHours(
                     store.getBoolean(Q_ON, d.quiet.enabled),
                     QuietHours.wrap(store.getInt(Q_FROM, d.quiet.fromMin)),
                     QuietHours.wrap(store.getInt(Q_TO, d.quiet.toMin)),
                 ),
-                outfit = com.coucou.android.mochi.outfit.Wardrobe.parseLocal(store.getString(OUTFIT, d.outfit)),
+                outfit = com.Day.android.Day.outfit.Wardrobe.parseLocal(store.getString(OUTFIT, d.outfit)),
                 useRelay = store.getBoolean(RELAY, d.useRelay),
                 keepScreenOff = store.getBoolean(NO_WAKE, d.keepScreenOff),
                 vibration = VibrationChoice.parse(store.getString(VIBRATION, d.vibration.key)),
@@ -95,12 +95,12 @@ data class UserSettings(
 
         fun save(store: KeyValueStore, s: UserSettings) {
             store.put(SOUND, s.soundOn)
-            store.put(VOLUME, com.coucou.android.sound.SoundVolume.clamp(s.volume))
+            store.put(VOLUME, com.Day.android.sound.SoundVolume.clamp(s.volume))
             store.put(DONE, s.notifyDone)
             store.put(Q_ON, s.quiet.enabled)
             store.put(Q_FROM, QuietHours.wrap(s.quiet.fromMin))
             store.put(Q_TO, QuietHours.wrap(s.quiet.toMin))
-            store.put(OUTFIT, com.coucou.android.mochi.outfit.Wardrobe.parseLocal(s.outfit))
+            store.put(OUTFIT, com.Day.android.Day.outfit.Wardrobe.parseLocal(s.outfit))
             store.put(RELAY, s.useRelay)
             store.put(NO_WAKE, s.keepScreenOff)
             store.put(VIBRATION, s.vibration.key)
@@ -130,8 +130,8 @@ object StatusPolicy {
      * - Quiet hours silence those too (no sound, no pill) but the notice stays in the shade.
      *   A question is never silenced: like a permission request it needs the user.
      * - A muted agent ([UserSettings.mutedAgents]) is silent for those too, but never for a question.
-     * - Inside Coucou the screen already shows everything: no notification, no pill. The sound stays.
-     * - The notification is always posted quietly (shade only): the sound is Mochi's own and the pill
+     * - Inside Day the screen already shows everything: no notification, no pill. The sound stays.
+     * - The notification is always posted quietly (shade only): the sound is Day's own and the pill
      *   is the on-screen alert, so nothing overlaps or rings twice.
      */
     fun announce(previous: BotState?, now: BotState, s: UserSettings, minuteOfDay: Int, appInForeground: Boolean, pillId: String? = null): Announce {

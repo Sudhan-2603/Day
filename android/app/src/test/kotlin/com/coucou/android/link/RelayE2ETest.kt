@@ -1,4 +1,4 @@
-package com.coucou.android.link
+package com.Day.android.link
 
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
@@ -13,10 +13,10 @@ import org.junit.Test
 /**
  * The phone's half of the end-to-end check. The computer's half is the Rust test `e2e_the_computer_side_for_the_phone_test`,
  * and between them is a real relay (the Cloudflare Worker under `wrangler dev`, or the Node twin). Both halves use the same
- * fixed credentials. Run by android/relay/tools/e2e.sh; skipped everywhere else (it needs COUCOU_E2E_RELAY_URL).
+ * fixed credentials. Run by android/relay/tools/e2e.sh; skipped everywhere else (it needs Day_E2E_RELAY_URL).
  */
 class RelayE2ETest {
-    private val url = System.getenv("COUCOU_E2E_RELAY_URL")
+    private val url = System.getenv("Day_E2E_RELAY_URL")
     private val room = RelayCrypto.base64UrlEncode(ByteArray(16) { 0x11 })
     private val key = RelayCrypto.base64UrlEncode(ByteArray(32) { 0x22 })
     private val access = RelayCrypto.base64UrlEncode(ByteArray(32) { 0x33 })
@@ -24,14 +24,14 @@ class RelayE2ETest {
     private fun pairing(accessKey: String = access) = RelayPairing(url, room, key, accessKey)
 
     @Test fun aWrongAccessKeyIsRefusedByTheRealRelay() {
-        assumeTrue("needs COUCOU_E2E_RELAY_URL", url != null)
+        assumeTrue("needs Day_E2E_RELAY_URL", url != null)
         val c = RelayConnector(pairing(RelayCrypto.base64UrlEncode(ByteArray(32) { 0x44 })))
         try { c.connect(5_000); fail() } catch (e: WsHandshakeException) { assertEquals(401, e.status) }
         assertEquals(RelayIssue.ACCESS_REFUSED, c.issue)
     }
 
     @Test fun theRustComputerAndTheKotlinPhoneTalkThroughTheRealRelayAndAnApprovalIsDecided() {
-        assumeTrue("needs COUCOU_E2E_RELAY_URL", url != null)
+        assumeTrue("needs Day_E2E_RELAY_URL", url != null)
         val welcomed = CountDownLatch(1)
         val approvals = LinkedBlockingQueue<ApprovalRequest>()
         val resolved = LinkedBlockingQueue<String>()

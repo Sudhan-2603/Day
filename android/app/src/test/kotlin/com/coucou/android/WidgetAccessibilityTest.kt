@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
@@ -13,7 +13,7 @@ class WidgetAccessibilityTest {
     private val main = "src/main/"
     private val ns = "http://schemas.android.com/apk/res/android"
     private val widgets = listOf(
-        "SoloWidget", "ListWidget", "MochiBigWidget", "StatusPillWidget", "WaitingAlertWidget", "UsageRingWidget", "TodayWidget", "MoodWidget", "TeamWidget", "GlanceWidget",
+        "SoloWidget", "ListWidget", "DayBigWidget", "StatusPillWidget", "WaitingAlertWidget", "UsageRingWidget", "TodayWidget", "MoodWidget", "TeamWidget", "GlanceWidget",
     )
 
     private fun layouts() = File(main + "res/layout").listFiles { f -> f.name.startsWith("widget_") && !f.name.startsWith("widget_preview_") }!!.sortedBy { it.name }
@@ -35,7 +35,7 @@ class WidgetAccessibilityTest {
 
     @Test fun everyTappedAreaIsDescribedByLayoutOrCode() {
         for (name in widgets) {
-            val src = File(main + "kotlin/com/coucou/android/app/$name.kt").readText()
+            val src = File(main + "kotlin/com/Day/android/app/$name.kt").readText()
             val layoutText = layouts().joinToString("\n") { it.readText() }
             // Areas named in the code; those in a loop (the buttons) are described in the layout, which the first test covers.
             val tapped = Regex("""setOnClickPendingIntent\(\s*R\.id\.(\w+),""").findAll(src).map { it.groupValues[1] }.toSet()
@@ -57,16 +57,16 @@ class WidgetAccessibilityTest {
 
     @Test fun spokenTextIsWordsNotEngineKeys() {
         for (name in widgets) {
-            val src = File(main + "kotlin/com/coucou/android/app/$name.kt").readText()
-            assertFalse("$name speaks a raw key", Regex("""widget_mochi_description,\s*[\w.]*mood\.key""").containsMatchIn(src))
-            assertFalse("$name speaks a raw key", Regex("""widget_mochi_description,\s*[\w.]*Mood\.key""").containsMatchIn(src))
+            val src = File(main + "kotlin/com/Day/android/app/$name.kt").readText()
+            assertFalse("$name speaks a raw key", Regex("""widget_Day_description,\s*[\w.]*mood\.key""").containsMatchIn(src))
+            assertFalse("$name speaks a raw key", Regex("""widget_Day_description,\s*[\w.]*Mood\.key""").containsMatchIn(src))
         }
     }
 
     @Test fun theTappedCardsSpeakOneSentence() {
         for (name in listOf("SoloWidget", "ListWidget", "WaitingAlertWidget", "MoodWidget")) {
-            assertTrue(name, File(main + "kotlin/com/coucou/android/app/$name.kt").readText().contains("WidgetSpoken."))
+            assertTrue(name, File(main + "kotlin/com/Day/android/app/$name.kt").readText().contains("WidgetSpoken."))
         }
-        assertEquals(1, Regex("WidgetSpoken\\.alert").findAll(File(main + "kotlin/com/coucou/android/app/WaitingAlertWidget.kt").readText()).count())
+        assertEquals(1, Regex("WidgetSpoken\\.alert").findAll(File(main + "kotlin/com/Day/android/app/WaitingAlertWidget.kt").readText()).count())
     }
 }

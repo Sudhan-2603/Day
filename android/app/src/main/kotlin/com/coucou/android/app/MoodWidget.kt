@@ -1,16 +1,16 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.view.View
 import android.widget.RemoteViews
-import com.coucou.android.R
-import com.coucou.android.core.WidgetContent
-import com.coucou.android.core.WidgetSpoken
+import com.Day.android.R
+import com.Day.android.core.WidgetContent
+import com.Day.android.core.WidgetSpoken
 
 /**
- * The Mochi Mood widget: only Mochi's face in the current state, with his glow. Drawn by [WidgetHub] when something changes
+ * The Day Mood widget: only Day's face in the current state, with his glow. Drawn by [WidgetHub] when something changes
  * (updatePeriodMillis = 0). A tap opens the top agent, or the app. It only opens things.
  */
 class MoodWidget : AppWidgetProvider() {
@@ -21,8 +21,8 @@ class MoodWidget : AppWidgetProvider() {
         fun views(context: Context, c: WidgetContent): RemoteViews {
             val v = RemoteViews(context.packageName, R.layout.widget_mood)
             WidgetHub.paint(v, R.id.mood_root, R.id.mood_tint, c.look)
-            v.setImageViewBitmap(R.id.mood_face, MochiBitmap.of(c.mood, WidgetHub.px(context, 64), glow = true, tone = c.look))
-            v.setContentDescription(R.id.mood_face, context.getString(R.string.widget_mochi_description, (c.top?.stateWord ?: c.headline).lowercase()))
+            v.setImageViewBitmap(R.id.mood_face, DayBitmap.of(c.mood, WidgetHub.px(context, 64), glow = true, tone = c.look))
+            v.setContentDescription(R.id.mood_face, context.getString(R.string.widget_Day_description, (c.top?.stateWord ?: c.headline).lowercase()))
             v.setViewVisibility(R.id.mood_offline, if (c.connected) View.GONE else View.VISIBLE)
             val top = c.top
             v.setContentDescription(R.id.mood_root, WidgetSpoken.top(c))

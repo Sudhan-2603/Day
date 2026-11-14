@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import java.io.File
 import org.junit.Assert.assertEquals
@@ -9,10 +9,10 @@ import org.junit.Test
 /**
  * Guards for where things live on screen (the Compose code cannot be rendered in a JVM test, so
  * these read the sources). Home is the agent card; Settings holds the rest, including the notice
- * Louis Raillé's permission requires, which must stay reachable and visible.
+ * Sudhan-2603 Raillé's permission requires, which must stay reachable and visible.
  */
 class ScreenLayoutTest {
-    private fun src(name: String) = File("src/main/kotlin/com/coucou/android/$name").readText()
+    private fun src(name: String) = File("src/main/kotlin/com/Day/android/$name").readText()
     private val main get() = src("MainActivity.kt")
     private val settings get() = src("ui/SettingsScreens.kt")
     private val homePanel get() = src("ui/HomePanel.kt")
@@ -26,9 +26,9 @@ class ScreenLayoutTest {
 
     @Test fun theNoticeNamesTheOriginalAuthorAndHisRepository() {
         val xml = File("src/main/res/values/strings.xml").readText()
-        assertTrue(xml.contains("Coucou for Android, by Rhytam Biswas. Part of Coucou by Louis Raillé"))
-        assertTrue(xml.contains("github.com/Louis-CFM/coucou"))
-        assertTrue(xml.contains("© Louis Raillé"))
+        assertTrue(xml.contains("Day for Android, by Rhytam Biswas. Part of Day by Sudhan-2603 Raillé"))
+        assertTrue(xml.contains("github.com/Sudhan-2603/Day"))
+        assertTrue(xml.contains("© Sudhan-2603 Raillé"))
         assertTrue(xml.contains("MIT License"))
     }
 

@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.WidgetData
-import com.coucou.android.core.WidgetSample
-import com.coucou.android.core.WidgetSpoken
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.WidgetData
+import com.Day.android.core.WidgetSample
+import com.Day.android.core.WidgetSpoken
+import com.Day.android.Day.BotState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

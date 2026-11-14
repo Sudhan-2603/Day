@@ -1,10 +1,10 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import com.coucou.android.MainActivity
-import com.coucou.android.core.LaunchScreen
+import com.Day.android.MainActivity
+import com.Day.android.core.LaunchScreen
 
 /**
  * Where our own notification actions, the island's Allow and the widget rows and buttons land. It is not exported, so no other app can start it;
@@ -13,7 +13,7 @@ import com.coucou.android.core.LaunchScreen
 class LaunchActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val model = (application as CoucouApp).model
+        val model = (application as DayApp).model
         val session = intent.getStringExtra(EXTRA_SESSION)
         // A widget row asks for a session to open, a widget button for a screen of the closed list, a notification for an
         // Allow. Each has its own slot, and one never clears the other. A screen that is not in the list is ignored: the

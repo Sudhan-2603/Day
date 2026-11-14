@@ -1,11 +1,11 @@
-cask "coucou" do
+cask "Day" do
   version "0.6.0"
   sha256 "00b47d90cc9c61b62fd3e235ab0f1963a1498d42e2e78cd8de308bd418e8d3a5"
 
-  url "https://github.com/Louis-CFM/coucou/releases/download/v#{version}/Coucou.zip"
-  name "Coucou"
+  url "https://github.com/Sudhan-2603/Day/releases/download/v#{version}/Day.zip"
+  name "Day"
   desc "Notch companion that keeps an eye on your AI coding agents"
-  homepage "https://github.com/Louis-CFM/coucou"
+  homepage "https://github.com/Sudhan-2603/Day"
 
   # Only the Mac's tags (vX.Y.Z): windows-v…, linux-v… and android-v… are other apps.
   livecheck do
@@ -14,16 +14,16 @@ cask "coucou" do
     strategy :github_releases
   end
 
-  # Coucou updates itself from the notch: brew leaves the installed app alone.
+  # Day updates itself from the notch: brew leaves the installed app alone.
   auto_updates true
   depends_on macos: :sequoia
 
-  app "Coucou.app"
+  app "Day.app"
 
   uninstall quit: "fr.louisraille.NotchBuddy"
 
   zap trash: [
-    "~/Library/Application Support/Coucou",
+    "~/Library/Application Support/Day",
     "~/Library/Application Support/NotchBuddy",
     "~/Library/Preferences/fr.louisraille.NotchBuddy.plist",
   ]

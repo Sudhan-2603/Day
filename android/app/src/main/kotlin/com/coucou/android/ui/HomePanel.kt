@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,22 +27,22 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.core.Decision
-import com.coucou.android.core.HistoryDays
-import com.coucou.android.core.HomePanel
-import com.coucou.android.core.HomeText
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Pills
-import com.coucou.android.core.SpokenLabels
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.TypeScale
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiConst
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
-import com.coucou.android.mochi.Rgb
+import com.Day.android.R
+import com.Day.android.core.Decision
+import com.Day.android.core.HistoryDays
+import com.Day.android.core.HomePanel
+import com.Day.android.core.HomeText
+import com.Day.android.core.IconKind
+import com.Day.android.core.Pills
+import com.Day.android.core.SpokenLabels
+import com.Day.android.core.Spacing
+import com.Day.android.core.TypeScale
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayConst
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
+import com.Day.android.Day.Rgb
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -65,19 +65,19 @@ internal fun stateLabel(state: BotState): Int = when (state) {
 internal fun rgbColor(c: Rgb) = Color(c.r.toFloat(), c.g.toFloat(), c.b.toFloat())
 
 
-/** The colour of an agent's state (Louis's state colours), for dots and glows. */
+/** The colour of an agent's state (Sudhan-2603's state colours), for dots and glows. */
 internal fun stateColor(state: BotState): Color =
-    if (state == BotState.IDLE) StatusColors.online else MochiConst.STATES[state]?.color?.let(::rgbColor) ?: StatusColors.offline
+    if (state == BotState.IDLE) StatusColors.online else DayConst.STATES[state]?.color?.let(::rgbColor) ?: StatusColors.offline
 
 /**
- * The hero of Home: Louis's island grown to full width and hanging from the top edge of the screen. It
- * holds the agent that matters most, with its own Mochi in its own colour (the one you chose on the
+ * The hero of Home: Sudhan-2603's island grown to full width and hanging from the top edge of the screen. It
+ * holds the agent that matters most, with its own Day in its own colour (the one you chose on the
  * computer), its name, one plain sentence, and at most two buttons. Black, with a soft
  * glow in the state's colour. No step counter: the computer cannot know how many steps are left.
  */
 @Composable
 fun HeroCard(
-    focus: SessionInfo?, engine: MochiEngine, touch: Modifier, link: HomePanel.Link, running: Int,
+    focus: SessionInfo?, engine: DayEngine, touch: Modifier, link: HomePanel.Link, running: Int,
     linkDot: Color, linkText: String, onLink: () -> Unit, onDetails: (() -> Unit)?,
     /** Opens the question sheet; non-null only while the agent has a question. */
     onQuestion: (() -> Unit)? = null,
@@ -85,7 +85,7 @@ fun HeroCard(
     canAnswer: Boolean = false,
 ) {
     val state = focus?.state ?: BotState.SLEEPING
-    val wash = MochiConst.STATES[state]?.color?.let(::rgbColor)
+    val wash = DayConst.STATES[state]?.color?.let(::rgbColor)
     val dim = Color(tokens().heroTextDim)
     val white = Color(tokens().heroText)
     HeroPanel(wash = wash) {
@@ -101,7 +101,7 @@ fun HeroCard(
             }
             if (focus == null) {
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    MochiView(engine, Modifier.size(112.dp).then(touch))
+                    DayView(engine, Modifier.size(112.dp).then(touch))
                     Text(stringResource(R.string.home_empty_title), style = TypeScale.TITLE.style(white))
                     Text(stringResource(R.string.home_empty_hint), style = TypeScale.SECONDARY.style(dim), maxLines = 3)
                 }
@@ -113,7 +113,7 @@ fun HeroCard(
                     Modifier.semantics(mergeDescendants = true) { contentDescription = spoken },
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    MochiView(engine, Modifier.size(108.dp).then(touch))
+                    DayView(engine, Modifier.size(108.dp).then(touch))
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(name, style = TypeScale.TITLE.style(white), maxLines = 2, overflow = TextOverflow.Ellipsis)
                         Text(
@@ -139,7 +139,7 @@ fun HeroCard(
                     if (onDetails != null) {
                         PillButton(
                             stringResource(R.string.session_details), onDetails, onDark = true,
-                            icon = { CoucouIcon(IconKind.CHEVRON, tint = white, size = 18.dp) },
+                            icon = { DayIcon(IconKind.CHEVRON, tint = white, size = 18.dp) },
                         )
                     }
                 }
@@ -148,9 +148,9 @@ fun HeroCard(
     }
 }
 
-/** The other agents, one full-width row each: its small Mochi in its colour, its name and one plain line. Tap to make it the main one. */
+/** The other agents, one full-width row each: its small Day in its colour, its name and one plain line. Tap to make it the main one. */
 @Composable
-fun AgentRows(others: List<SessionInfo>, engineFor: (SessionInfo) -> MochiEngine, onPick: (SessionInfo) -> Unit) {
+fun AgentRows(others: List<SessionInfo>, engineFor: (SessionInfo) -> DayEngine, onPick: (SessionInfo) -> Unit) {
     val t = tokens()
     Panel {
         others.forEachIndexed { i, s ->
@@ -165,7 +165,7 @@ fun AgentRows(others: List<SessionInfo>, engineFor: (SessionInfo) -> MochiEngine
                     .padding(horizontal = Spacing.INSIDE.dp, vertical = 12.dp).semantics(mergeDescendants = true) { contentDescription = spoken },
                 horizontalArrangement = Arrangement.spacedBy(Spacing.GAP.dp), verticalAlignment = Alignment.CenterVertically,
             ) {
-                MochiView(engineFor(s), Modifier.size(40.dp))
+                DayView(engineFor(s), Modifier.size(40.dp))
                 Column(Modifier.weight(1f)) {
                     Text(name, style = TypeScale.BODY.style(t.text.c()).copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(line ?: state, style = TypeScale.SECONDARY.style(t.textDim.c()), maxLines = 2, overflow = TextOverflow.Ellipsis)

@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -10,17 +10,17 @@ import android.content.Intent
 import android.os.Build
 import android.util.SizeF
 import android.widget.RemoteViews
-import com.coucou.android.MainActivity
-import com.coucou.android.R
-import com.coucou.android.core.LaunchScreen
-import com.coucou.android.core.TodayMidnight
-import com.coucou.android.core.UsageTone
-import com.coucou.android.core.WidgetContent
-import com.coucou.android.core.WidgetTone
+import com.Day.android.MainActivity
+import com.Day.android.R
+import com.Day.android.core.LaunchScreen
+import com.Day.android.core.TodayMidnight
+import com.Day.android.core.UsageTone
+import com.Day.android.core.WidgetContent
+import com.Day.android.core.WidgetTone
 import kotlin.math.roundToInt
 
 /**
- * The one place that pushes the Widgets (Solo, List, Mochi Big, Status Pill, Waiting Alert, Usage Ring, Today, Mochi Mood and Team). The app calls [update] on every change of sessions, requests and
+ * The one place that pushes the Widgets (Solo, List, Day Big, Status Pill, Waiting Alert, Usage Ring, Today, Day Mood and Team). The app calls [update] on every change of sessions, requests and
  * link (from AppModel.pushGlance); a push whose content is the same as the last one is dropped, so a change that does not
  * show on a widget costs nothing. There is no timer: a widget is drawn when something changes or when it is added, and the Today
  * widget once at local midnight (one inexact alarm, see [scheduleMidnight]).
@@ -36,7 +36,7 @@ object WidgetHub {
     private val widgets = listOf(
         Kind(SoloWidget::class.java) { c, w -> SoloWidget.views(c, w) },
         Kind(ListWidget::class.java) { c, w -> ListWidget.views(c, w) },
-        Kind(MochiBigWidget::class.java) { c, w -> MochiBigWidget.views(c, w) },
+        Kind(DayBigWidget::class.java) { c, w -> DayBigWidget.views(c, w) },
         Kind(StatusPillWidget::class.java) { c, w -> StatusPillWidget.views(c, w) },
         Kind(WaitingAlertWidget::class.java) { c, w -> WaitingAlertWidget.views(c, w) },
         Kind(UsageRingWidget::class.java) { c, w -> UsageRingWidget.views(c, w) },
@@ -141,7 +141,7 @@ object WidgetHub {
     }
 
     /** What the Widgets show now: the pinned preview if there is one, else what the app says. */
-    private fun current(context: Context): WidgetContent = pinned ?: (context.applicationContext as CoucouApp).model.widgetContent()
+    private fun current(context: Context): WidgetContent = pinned ?: (context.applicationContext as DayApp).model.widgetContent()
 
     /**
      * Shows [content] on every Widget and keeps it there (real pushes wait), or with null goes back to the real thing. Only the
@@ -162,7 +162,7 @@ object WidgetHub {
     }
 
     /** The one alarm of the Widgets: the Today widget's redraw at the next local midnight (see [scheduleMidnight]). */
-    const val ACTION_MIDNIGHT = "com.coucou.android.action.WIDGET_MIDNIGHT"
+    const val ACTION_MIDNIGHT = "com.Day.android.action.WIDGET_MIDNIGHT"
 
     private fun midnightIntent(context: Context): PendingIntent =
         PendingIntent.getBroadcast(
@@ -227,12 +227,12 @@ object WidgetHub {
     const val CODE_TODAY = 0x5800
     const val CODE_MOOD = 0x5900
 
-    /** The buttons: one code each, from these bases (the Status Pill has 4, Mochi Big 6, the summary none). */
+    /** The buttons: one code each, from these bases (the Status Pill has 4, Day Big 6, the summary none). */
     const val CODE_PILL_BUTTON = 0x5A00
     const val CODE_BIG_BUTTON = 0x5B00
     const val CODE_GLANCE = 0x5C00
 
-    /** Mochi Big's usage side: Settings when plan usage is off, the app otherwise. */
+    /** Day Big's usage side: Settings when plan usage is off, the app otherwise. */
     const val CODE_BIG_USAGE_SETTINGS = 0x5D00
     const val CODE_BIG_USAGE_APP = 0x5E00
     const val CODE_MIDNIGHT = 0x5F00

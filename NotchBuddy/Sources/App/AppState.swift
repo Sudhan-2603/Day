@@ -29,8 +29,8 @@ final class AppState: ObservableObject {
     // Bot drag-attach state (hides original bot while ghost follows cursor)
     @Published var isDraggingBot: Bool = false
 
-    // Desktop Mochi: true while Mochi lives on the desktop instead of the notch
-    @Published var mochiOnDesktop: Bool = false
+    // Desktop Day: true while Day lives on the desktop instead of the notch
+    @Published var DayOnDesktop: Bool = false
 
     // Mouse tracking
     var mousePosition: CGPoint = .zero
@@ -71,11 +71,11 @@ final class AppState: ObservableObject {
         didSet { UserDefaults.standard.set(recapHideProjects, forKey: "recapHideProjects") }
     }
 
-    // Mochi outfit selection — persisted
-    @Published var mochiOutfitSelection: Outfit = .auto {
-        didSet { Outfit.stored = mochiOutfitSelection }
+    // Day outfit selection — persisted
+    @Published var DayOutfitSelection: Outfit = .auto {
+        didSet { Outfit.stored = DayOutfitSelection }
     }
-    // A colour of the user's own for each pill's Mochi (pill id → "#RRGGBB") — persisted.
+    // A colour of the user's own for each pill's Day (pill id → "#RRGGBB") — persisted.
     // Empty means the catalog's colours. PillDefinition.color reads the stored value, so
     // what is built from the catalog follows on its own; the tasks already on the island
     // hold a copy of their colour and are repainted here.
@@ -93,19 +93,19 @@ final class AppState: ObservableObject {
             if changed { tasks = repainted }
         }
     }
-    /// Picks a colour for a pill's Mochi; nil, or the pill's own catalog colour, goes back to the default.
+    /// Picks a colour for a pill's Day; nil, or the pill's own catalog colour, goes back to the default.
     func setPillColor(_ id: String, _ hex: String?) {
         guard let def = PillCatalog.definition(for: id) else { return }
         pillColors = PillColors.picking(hex, for: id, catalogColor: def.defaultColor, in: pillColors)
     }
     // Transient: outfit preview while hovering in wardrobe (overrides resolvedOutfit in BotCanvasView)
     var wardrobePreviewOutfit: Outfit? = nil
-    // Per-day seasonal cache — read on every Mochi frame: valid until the next midnight,
+    // Per-day seasonal cache — read on every Day frame: valid until the next midnight,
     // so a frame costs one date comparison instead of calendar math.
     private var _seasonalCache: (validUntil: Date, outfit: Outfit)?
     var resolvedOutfit: Outfit {
         if let preview = wardrobePreviewOutfit { return preview }
-        guard mochiOutfitSelection == .auto else { return mochiOutfitSelection }
+        guard DayOutfitSelection == .auto else { return DayOutfitSelection }
         let now = Date()
         if let c = _seasonalCache, now < c.validUntil { return c.outfit }
         let cal = Calendar.current
@@ -359,11 +359,11 @@ final class AppState: ObservableObject {
         didSet { UserDefaults.standard.set(Int(hotkeyCode), forKey: "hotkeyCode") }
     }
 
-    /// Two Mochis swapping places in a corner (CornerArcView draws both): the main one hides.
+    /// Two Days swapping places in a corner (CornerArcView draws both): the main one hides.
     @Published var cornerSwapping = false
     /// The pointer on the compact tile in a corner: the other pills come out of it (CornerBubbles).
     @Published var cornerPeek = false
-    /// One of them clicked: once open, the island swaps it with Mochi (CornerArcView).
+    /// One of them clicked: once open, the island swaps it with Day (CornerArcView).
     @Published var cornerPendingSwap: String? = nil
 
     /// Where the island lives on its screen: the notch, or a corner (IslandPlacement) — persisted.
@@ -508,10 +508,10 @@ final class AppState: ObservableObject {
 
     // Voice command result (shown in VoiceResultView for ~2 s, then cleared by IWC)
     @Published var voiceResult: VoiceActionResult? = nil
-    /// True from "OK Coucou" until Coucou has finished answering (island stays compact).
-    /// Drives Mochi's single attentive pose for the whole exchange.
+    /// True from "OK Day" until Day has finished answering (island stays compact).
+    /// Drives Day's single attentive pose for the whole exchange.
     @Published var voiceActive = false
-    /// Listening / thinking / speaking — drives per-frame Mochi animations.
+    /// Listening / thinking / speaking — drives per-frame Day animations.
     /// Set by IslandWindowController; read by BotCanvasView each display frame.
     @Published var voiceSubState: BotVoiceSubState = .none
     #endif
@@ -574,7 +574,7 @@ final class AppState: ObservableObject {
 
         if let v = ud.object(forKey: "soundEnabled") as? Bool   { soundEnabled = v }
         if let v = ud.object(forKey: "soundVolume")  as? Double { soundVolume  = v }
-        mochiOutfitSelection = Outfit.stored
+        DayOutfitSelection = Outfit.stored
         pillColors = PillColors.stored
         if let v = ud.string(forKey: "claudeModel"),
            !v.trimmingCharacters(in: .whitespaces).isEmpty { claudeModel = v }

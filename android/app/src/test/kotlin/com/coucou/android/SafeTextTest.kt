@@ -1,10 +1,10 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.HomeText
-import com.coucou.android.core.SafeText
-import com.coucou.android.core.ToolLabels
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.HomeText
+import com.Day.android.core.SafeText
+import com.Day.android.core.ToolLabels
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -92,7 +92,7 @@ class SafeTextTest {
     }
 
     @Test fun noSurfaceThatIsSeenWithoutATapPrintsTheCommand() {
-        val main = "src/main/kotlin/com/coucou/android/"
+        val main = "src/main/kotlin/com/Day/android/"
         val n = java.io.File(main + "app/Notifications.kt").readText()
         assertFalse(n.replace("SafeText.requestLabel(r.tool, r.command)", "").contains("r.command"))
         assertFalse(n.contains("setSubText(statusText"))

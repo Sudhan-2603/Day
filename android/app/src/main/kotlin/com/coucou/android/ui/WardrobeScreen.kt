@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.os.SystemClock
 import androidx.annotation.StringRes
@@ -41,19 +41,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Radii
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.TypeScale
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
-import com.coucou.android.mochi.outfit.ComposeGfx
-import com.coucou.android.mochi.outfit.Ctx2D
-import com.coucou.android.mochi.outfit.Outfit
-import com.coucou.android.mochi.outfit.Wardrobe
-import com.coucou.android.mochi.outfit.drawIconMochi
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.core.IconKind
+import com.Day.android.core.Radii
+import com.Day.android.core.Spacing
+import com.Day.android.core.TypeScale
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
+import com.Day.android.Day.outfit.ComposeGfx
+import com.Day.android.Day.outfit.Ctx2D
+import com.Day.android.Day.outfit.Outfit
+import com.Day.android.Day.outfit.Wardrobe
+import com.Day.android.Day.outfit.drawIconDay
 import java.time.LocalDate
 
 /** The name of a wardrobe value, in the app's words. */
@@ -74,7 +74,7 @@ fun outfitLabelRes(id: String): Int = when (id) {
     else -> R.string.outfit_bunnyEars
 }
 
-/** A little Mochi wearing [outfit], the PC's wardrobe icon (drawn by the same code as the big one). */
+/** A little Day wearing [outfit], the PC's wardrobe icon (drawn by the same code as the big one). */
 @Composable
 fun OutfitIcon(outfit: Outfit, size: Dp, modifier: Modifier = Modifier) {
     Canvas(modifier.size(size)) {
@@ -82,7 +82,7 @@ fun OutfitIcon(outfit: Outfit, size: Dp, modifier: Modifier = Modifier) {
             c.save()
             val k = this.size.width / 40f
             c.scale(k, k)
-            drawIconMochi(Ctx2D(ComposeGfx(c, Rect(0f, 0f, 40f, 40f))), 40.0, outfit)
+            drawIconDay(Ctx2D(ComposeGfx(c, Rect(0f, 0f, 40f, 40f))), 40.0, outfit)
             c.restore()
         }
     }
@@ -102,7 +102,7 @@ private fun NoOutfitIcon(size: Dp) {
 }
 
 /**
- * Settings > Mochi's wardrobe: what Mochi wears on this phone. Either the same as on the computer (the default),
+ * Settings > Day's wardrobe: what Day wears on this phone. Either the same as on the computer (the default),
  * or one of the PC's thirteen choices ("Auto" follows the seasons on this phone's calendar). A preview on top.
  */
 @Composable
@@ -110,7 +110,7 @@ fun WardrobeScreen(model: AppModel, onBack: () -> Unit) {
     val t = tokens()
     val s = model.settings
     val clock = remember { { SystemClock.elapsedRealtimeNanos() / 1e6 } }
-    val preview = remember { MochiEngine(clock) }
+    val preview = remember { DayEngine(clock) }
     val worn = model.dress()
     val first = remember { androidx.compose.runtime.mutableStateOf(true) }
     LaunchedEffect(worn) {
@@ -125,7 +125,7 @@ fun WardrobeScreen(model: AppModel, onBack: () -> Unit) {
         item {
             Panel {
                 Column(Modifier.fillMaxWidth().padding(Spacing.INSIDE.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    MochiView(preview, Modifier.size(120.dp))
+                    DayView(preview, Modifier.size(120.dp))
                     Text(stringResource(outfitLabelRes(model.outfitSelection)), style = TypeScale.TITLE.style(t.text.c()), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(stringResource(R.string.wardrobe_note), style = TypeScale.SECONDARY.style(t.textDim.c()), textAlign = TextAlign.Center)
                 }
@@ -137,7 +137,7 @@ fun WardrobeScreen(model: AppModel, onBack: () -> Unit) {
                     stringResource(R.string.wardrobe_follow), hint = stringResource(R.string.wardrobe_follow_hint),
                     modifier = Modifier.clickable(role = Role.RadioButton) { model.updateSettings(s.copy(outfit = Wardrobe.FOLLOW)) }
                         .semantics { selected = following },
-                    trailing = { if (following) CoucouIcon(IconKind.CHECK, tint = t.online.c(), size = 22.dp) },
+                    trailing = { if (following) DayIcon(IconKind.CHECK, tint = t.online.c(), size = 22.dp) },
                 )
             }
         }

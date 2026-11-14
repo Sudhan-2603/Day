@@ -1,10 +1,10 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 /**
- * Mochi's wardrobe logic, a port of windows/src/mochi/wardrobe.ts: what is stored ("auto" or an outfit),
+ * Day's wardrobe logic, a port of windows/src/Day/wardrobe.ts: what is stored ("auto" or an outfit),
  * and which outfit "auto" means on a given day. The raw values are the Mac's and the PC's: keep them stable.
  */
 object Wardrobe {

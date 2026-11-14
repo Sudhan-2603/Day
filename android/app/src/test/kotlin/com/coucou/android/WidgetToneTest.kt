@@ -1,14 +1,14 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Glance
-import com.coucou.android.core.GlanceTone
-import com.coucou.android.core.GlanceLine
-import com.coucou.android.core.look
-import com.coucou.android.core.mood
-import com.coucou.android.core.WidgetContent
-import com.coucou.android.core.WidgetTile
-import com.coucou.android.core.WidgetTone
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.Glance
+import com.Day.android.core.GlanceTone
+import com.Day.android.core.GlanceLine
+import com.Day.android.core.look
+import com.Day.android.core.mood
+import com.Day.android.core.WidgetContent
+import com.Day.android.core.WidgetTile
+import com.Day.android.core.WidgetTone
+import com.Day.android.Day.BotState
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -41,7 +41,7 @@ class WidgetToneTest {
         for (s in BotState.values()) assertEquals(WidgetTone.MUTED, WidgetTone.of(s, connected = false))
     }
 
-    @Test fun theColoursAreOpaqueAndTheOnesOfMochi() {
+    @Test fun theColoursAreOpaqueAndTheOnesOfDay() {
         assertEquals(0xFFF5A524.toInt(), WidgetTone.ATTENTION.argb)
         assertEquals(0xFF3B9EFF.toInt(), WidgetTone.WORKING.argb)
         assertEquals(0xFF34D499.toInt(), WidgetTone.DONE.argb)
@@ -120,7 +120,7 @@ class WidgetToneTest {
         assertEquals(WidgetTone.ATTENTION, Glance("h", "d", GlanceTone.ATTENTION, true, listOf(GlanceLine("A", "t", BotState.WORKING)), 1).look())
     }
 
-    @Test fun mochiOnTheSummaryFollowsTheMostUrgentLine() {
+    @Test fun DayOnTheSummaryFollowsTheMostUrgentLine() {
         assertEquals(BotState.APPROVAL, glance(true, BotState.APPROVAL, BotState.WORKING).mood())
         assertEquals(BotState.WORKING, glance(true, BotState.WORKING).mood())
         assertEquals(BotState.IDLE, glance(true).mood())

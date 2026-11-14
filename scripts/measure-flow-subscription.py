@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """How long Flow's clean-up takes on your own AI subscription, tool by tool (Mac).
 
-Each installed tool is run the way Coucou runs Claude Code for Flow: the same flags, an empty
+Each installed tool is run the way Day runs Claude Code for Flow: the same flags, an empty
 folder, none of your shell's AI keys (the app never sees them), and a short dictation to clean
 up. Two ways:
 
-  cold  the tool starts when the dictation key comes up (what Coucou does).
+  cold  the tool starts when the dictation key comes up (what Day does).
   warm  the tool starts when the key goes down; the first bytes of the prompt are written at
         once (Claude Code gives up on a stdin that stays empty for 3 s), the rest when the key
         comes up after --hold seconds. Only for the tools that read the prompt on stdin.
 
 Prints the time from the key coming up to the answer: what you wait for before the words are
-pasted. Coucou gives Claude Code 10 s for a clean-up, 14 s for a translation, 18 s for a prompt.
+pasted. Day gives Claude Code 10 s for a clean-up, 14 s for a translation, 18 s for a prompt.
 
     python3 scripts/measure-flow-subscription.py [--runs 3] [--hold 3] [--tools claude,codex] [--text "…"]
 
@@ -67,7 +67,7 @@ def tools():
                       parse_codex),
         "gemini": (["gemini"],
                    lambda p: ["-p", instructions(p), "--output-format", "json", "--approval-mode", "plan", "--skip-trust",
-                              "--extensions", "none", "--allowed-mcp-server-names", "coucou-none"],
+                              "--extensions", "none", "--allowed-mcp-server-names", "Day-none"],
                    None, {}, parse_response),
         "antigravity": (["agy"],
                         lambda p: ["-p", instructions(p), "--output-format", "json", "--mode", "plan",
@@ -197,7 +197,7 @@ def main():
     if removed:
         print("Left out, as in the app:", ", ".join(removed))
     prompt = f"<dictation>\n{args.text}\n</dictation>"
-    workdir = tempfile.mkdtemp(prefix="coucou-flow-measure-")
+    workdir = tempfile.mkdtemp(prefix="Day-flow-measure-")
     for name in wanted:
         spec = specs[name]
         exe = find(spec[0])

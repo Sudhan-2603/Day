@@ -1,4 +1,4 @@
-package com.coucou.android.mochi
+package com.Day.android.Day
 
 /** Components 0..1, like the TS `RGB` tuple. */
 data class Rgb(val r: Double, val g: Double, val b: Double) {
@@ -36,7 +36,7 @@ data class BotStateCfg(
     val tilt: Double = 0.0,
 )
 
-object MochiConst {
+object DayConst {
     const val EYE_W = 0.25
     const val EYE_H = 0.27
     const val EYE_SP = 0.37

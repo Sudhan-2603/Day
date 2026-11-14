@@ -1,15 +1,15 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.ChatIds
-import com.coucou.android.core.ChatModels
-import com.coucou.android.core.ChatRole
-import com.coucou.android.core.ChatSession
-import com.coucou.android.core.ChatSession.Refusal
-import com.coucou.android.core.ChatSession.Sent
-import com.coucou.android.core.ChatStatus
-import com.coucou.android.link.ChatModel
-import com.coucou.android.link.Protocol
-import com.coucou.android.link.Wire
+import com.Day.android.core.ChatIds
+import com.Day.android.core.ChatModels
+import com.Day.android.core.ChatRole
+import com.Day.android.core.ChatSession
+import com.Day.android.core.ChatSession.Refusal
+import com.Day.android.core.ChatSession.Sent
+import com.Day.android.core.ChatStatus
+import com.Day.android.link.ChatModel
+import com.Day.android.link.Protocol
+import com.Day.android.link.Wire
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue

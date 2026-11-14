@@ -1,13 +1,13 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
-import com.coucou.android.core.AgentMute
-import com.coucou.android.core.TeamChoice
+import com.Day.android.core.AgentMute
+import com.Day.android.core.TeamChoice
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.saveable.rememberSaveable
 import android.content.Intent
-import com.coucou.android.core.HistoryExport
-import com.coucou.android.core.Languages
-import com.coucou.android.app.AppLanguage
+import com.Day.android.core.HistoryExport
+import com.Day.android.core.Languages
+import com.Day.android.app.AppLanguage
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,26 +52,26 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.alpha
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.TypeScale
+import com.Day.android.core.IconKind
+import com.Day.android.core.Spacing
+import com.Day.android.core.TypeScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.coucou.android.Attribution
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.app.Mode
-import com.coucou.android.core.HistoryDays
-import com.coucou.android.core.HomeText
-import com.coucou.android.core.MotionChoice
-import com.coucou.android.core.QuietHours
-import com.coucou.android.core.ThemeChoice
-import com.coucou.android.core.ThemePolicy
-import com.coucou.android.core.VibrationChoice
-import com.coucou.android.core.RelayLineKind
-import com.coucou.android.core.RelayStatus
-import com.coucou.android.link.LinkState
-import com.coucou.android.sound.SoundVolume
+import com.Day.android.Attribution
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.app.Mode
+import com.Day.android.core.HistoryDays
+import com.Day.android.core.HomeText
+import com.Day.android.core.MotionChoice
+import com.Day.android.core.QuietHours
+import com.Day.android.core.ThemeChoice
+import com.Day.android.core.ThemePolicy
+import com.Day.android.core.VibrationChoice
+import com.Day.android.core.RelayLineKind
+import com.Day.android.core.RelayStatus
+import com.Day.android.link.LinkState
+import com.Day.android.sound.SoundVolume
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -109,13 +109,13 @@ fun SectionTitle(text: String) {
 /** A setting with a switch at its end. */
 @Composable
 fun SettingSwitch(title: String, hint: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
-    ListRow(title, hint = hint, trailing = { CoucouSwitch(checked, onChange, label = title) })
+    ListRow(title, hint = hint, trailing = { DaySwitch(checked, onChange, label = title) })
 }
 
 /** A row that opens another page: its title and a chevron. */
 @Composable
 private fun LinkRow(title: String, onClick: () -> Unit) {
-    ListRow(title, onClick = onClick, trailing = { CoucouIcon(IconKind.CHEVRON, tint = tokens().textDim.c(), size = 20.dp) })
+    ListRow(title, onClick = onClick, trailing = { DayIcon(IconKind.CHEVRON, tint = tokens().textDim.c(), size = 20.dp) })
 }
 
 private fun clock(min: Int) = "%02d:%02d".format(QuietHours.wrap(min) / 60, QuietHours.wrap(min) % 60)
@@ -173,7 +173,7 @@ private fun LanguageRow() {
     val currentName = Languages.ALL.firstOrNull { it.tag == current }?.name ?: system
     ListRow(
         stringResource(R.string.settings_language), hint = currentName, onClick = { open = true },
-        trailing = { CoucouIcon(IconKind.CHEVRON, tint = t.textDim.c(), size = 20.dp) },
+        trailing = { DayIcon(IconKind.CHEVRON, tint = t.textDim.c(), size = 20.dp) },
     )
     if (open) {
         AlertDialog(
@@ -192,7 +192,7 @@ private fun LanguageRow() {
                             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(label, Modifier.weight(1f), style = TypeScale.BODY.style(t.text.c()))
-                            if (tag == current) CoucouIcon(IconKind.CHECK, tint = t.online.c(), size = 22.dp)
+                            if (tag == current) DayIcon(IconKind.CHECK, tint = t.online.c(), size = 22.dp)
                         }
                     }
                 }
@@ -206,7 +206,7 @@ val BarClearance = 96.dp
 
 /**
  * Settings, a tab. Grouped, each group one panel: your computer (with Disconnect at the bottom, away
- * from the everyday switches), the island, sound, notices, more, and About (Louis Raillé's required notice).
+ * from the everyday switches), the island, sound, notices, more, and About (Sudhan-2603 Raillé's required notice).
  */
 @Composable
 fun SettingsScreen(model: AppModel, onHistory: () -> Unit, onGallery: () -> Unit, onWardrobe: () -> Unit, onOverlay: (Boolean) -> Unit, onDiagnostics: () -> Unit, onLicences: () -> Unit) {
@@ -306,7 +306,7 @@ fun SettingsScreen(model: AppModel, onHistory: () -> Unit, onGallery: () -> Unit
                         Text(stringResource(R.string.settings_volume), Modifier.weight(1f), style = TypeScale.BODY.style(t.text.c()))
                         Text("${(s.volume / SoundVolume.MAX * 100).toInt().coerceIn(0, 100)}%", style = TypeScale.SECONDARY.style(t.textDim.c()))
                     }
-                    CoucouSlider(
+                    DaySlider(
                         value = s.volume, onChange = { model.updateSettings(s.copy(volume = SoundVolume.clamp(it))) },
                         valueRange = 0f..SoundVolume.MAX, enabled = s.soundOn, label = stringResource(R.string.settings_volume),
                     )
@@ -371,7 +371,7 @@ fun SettingsScreen(model: AppModel, onHistory: () -> Unit, onGallery: () -> Unit
             }
         }
 
-        // Required by Louis Raillé's permission: visible, one tap from Home.
+        // Required by Sudhan-2603 Raillé's permission: visible, one tap from Home.
         item { SectionHeading(stringResource(R.string.settings_section_about)) }
         item {
             Panel {

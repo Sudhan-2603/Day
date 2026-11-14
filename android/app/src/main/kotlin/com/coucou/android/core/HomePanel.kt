@@ -1,8 +1,8 @@
-package com.coucou.android.core
+package com.Day.android.core
 
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.Rgb
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
+import com.Day.android.Day.Rgb
 
 /**
  * What the Home screen shows, like the PC's Home panel: one agent card for the agent that matters
@@ -44,7 +44,7 @@ object HomePanel {
     /** Newest first, as the detail screen lists them. */
     fun stepsNewestFirst(s: SessionInfo): List<String> = s.steps.asReversed()
 
-    /** "#8AB4F8" to a colour for a mini Mochi's body; a malformed value gives null (the default body). */
+    /** "#8AB4F8" to a colour for a mini Day's body; a malformed value gives null (the default body). */
     fun rgb(hex: String): Rgb? {
         val h = hex.trim().removePrefix("#")
         if (h.length != 6) return null

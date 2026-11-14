@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.RelayLineKind
-import com.coucou.android.core.RelayStatus
-import com.coucou.android.link.RelayIssue
-import com.coucou.android.link.Route
+import com.Day.android.core.RelayLineKind
+import com.Day.android.core.RelayStatus
+import com.Day.android.link.RelayIssue
+import com.Day.android.link.Route
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.content.Context
 import android.net.nsd.NsdManager
@@ -6,13 +6,13 @@ import android.net.nsd.NsdServiceInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.util.Log
-import com.coucou.android.link.Discovery
-import com.coucou.android.link.DiscoverySource
-import com.coucou.android.link.Found
+import com.Day.android.link.Discovery
+import com.Day.android.link.DiscoverySource
+import com.Day.android.link.Found
 import java.net.Inet4Address
 
 /**
- * Browses for `_coucou._tcp` with the framework's NsdManager (no library). A multicast lock is held only while
+ * Browses for `_Day._tcp` with the framework's NsdManager (no library). A multicast lock is held only while
  * browsing and released the moment it stops. Services are resolved one at a time (NsdManager allows one resolve at a time);
  * what comes back is only what the computer announced: its name, an IPv4 address, the port and the short fingerprint id.
  * The caller decides if it is the paired computer, and checks the certificate; nothing here is trusted.
@@ -32,7 +32,7 @@ class NsdDiscovery(context: Context) : DiscoverySource {
         stop()
         this.onFound = onFound
         lock = runCatching {
-            wifi?.createMulticastLock("coucou-discovery")?.apply { setReferenceCounted(false); acquire() }
+            wifi?.createMulticastLock("Day-discovery")?.apply { setReferenceCounted(false); acquire() }
         }.getOrNull()
         val l = object : NsdManager.DiscoveryListener {
             override fun onDiscoveryStarted(serviceType: String) { Log.d(TAG, "browsing") }
@@ -102,5 +102,5 @@ class NsdDiscovery(context: Context) : DiscoverySource {
         return Found(info.serviceName.orEmpty(), host, info.port, attr("fp"), attr("v"))
     }
 
-    private companion object { const val TAG = "CoucouDiscovery" }
+    private companion object { const val TAG = "DayDiscovery" }
 }

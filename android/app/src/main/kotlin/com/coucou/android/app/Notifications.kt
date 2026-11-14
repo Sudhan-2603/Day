@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,19 +11,19 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.net.Uri
 import android.util.Log
-import com.coucou.android.MainActivity
-import com.coucou.android.R
-import com.coucou.android.core.ApprovalChannels
-import com.coucou.android.core.ApprovalSheetPlan
-import com.coucou.android.core.Glance
-import com.coucou.android.core.GlanceTone
-import com.coucou.android.core.OverlayPolicy
-import com.coucou.android.core.OngoingGate
-import com.coucou.android.core.SafeText
-import com.coucou.android.core.ToolLabels
-import com.coucou.android.core.VibrationChoice
-import com.coucou.android.link.ApprovalRequest
-import com.coucou.android.mochi.BotState
+import com.Day.android.MainActivity
+import com.Day.android.R
+import com.Day.android.core.ApprovalChannels
+import com.Day.android.core.ApprovalSheetPlan
+import com.Day.android.core.Glance
+import com.Day.android.core.GlanceTone
+import com.Day.android.core.OverlayPolicy
+import com.Day.android.core.OngoingGate
+import com.Day.android.core.SafeText
+import com.Day.android.core.ToolLabels
+import com.Day.android.core.VibrationChoice
+import com.Day.android.link.ApprovalRequest
+import com.Day.android.Day.BotState
 
 /**
  * Notifications: one quiet ongoing notification for the link, and a loud one per approval.
@@ -71,7 +71,7 @@ class Notifications(private val context: Context) {
     /**
      * The two Settings choices about a request: how it buzzes and whether it lights the screen. A channel's vibration cannot change
      * after it exists, so a new choice means a new channel id and the old channel is deleted. The channel stays IMPORTANCE_HIGH with
-     * Mochi's sound whatever is chosen: a request is never muted or hidden.
+     * Day's sound whatever is chosen: a request is never muted or hidden.
      */
     fun applyApprovalSettings(v: VibrationChoice, screenOff: Boolean) {
         keepScreenOff = screenOff
@@ -89,7 +89,7 @@ class Notifications(private val context: Context) {
                 } else {
                     enableVibration(false)
                 }
-                // Mochi's own approval sound, bundled in res/raw.
+                // Day's own approval sound, bundled in res/raw.
                 setSound(
                     Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.approval}"),
                     AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).build(),
@@ -122,7 +122,7 @@ class Notifications(private val context: Context) {
         val title = g?.headline ?: context.getString(R.string.status_connecting)
         val detail = g?.detail.orEmpty()
         val b = Notification.Builder(context, CH_LINK)
-            .setSmallIcon(R.drawable.ic_stat_mochi)
+            .setSmallIcon(R.drawable.ic_stat_Day)
             .setContentTitle(title)
             .setContentText(detail)
             .setColor(g?.tone?.argb ?: GlanceTone.CALM.argb)
@@ -131,7 +131,7 @@ class Notifications(private val context: Context) {
             .setShowWhen(false)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPublicVersion(
-                Notification.Builder(context, CH_LINK).setSmallIcon(R.drawable.ic_stat_mochi)
+                Notification.Builder(context, CH_LINK).setSmallIcon(R.drawable.ic_stat_Day)
                     .setContentTitle(context.getString(R.string.app_name))
                     .setContentText(if (g?.connected == true) context.getString(R.string.status_connected) else context.getString(R.string.status_not_connected))
                     .build(),
@@ -160,16 +160,16 @@ class Notifications(private val context: Context) {
 
     fun showApproval(r: ApprovalRequest, agentName: String, alert: OverlayPolicy.ApprovalAlert = OverlayPolicy.ApprovalAlert.HEADS_UP) {
         val channel = if (alert == OverlayPolicy.ApprovalAlert.QUIET) CH_APPROVAL_QUIET else ApprovalChannels.id(vibration)
-        Log.d("CoucouOverlay", "approval notification: $alert")
+        Log.d("DayOverlay", "approval notification: $alert")
         val id = idFor(r.fingerprint)
         val deny = PendingIntent.getBroadcast(
             context, id, Intent(context, ActionReceiver::class.java).setAction(ACTION_DENY).putExtra(EXTRA_FP, r.fingerprint),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val publicVersion = Notification.Builder(context, channel)
-            .setSmallIcon(R.drawable.ic_stat_mochi).setContentTitle(context.getString(R.string.approval_title)).setContentText(context.getString(R.string.notif_unlock)).build()
+            .setSmallIcon(R.drawable.ic_stat_Day).setContentTitle(context.getString(R.string.approval_title)).setContentText(context.getString(R.string.notif_unlock)).build()
         val n = Notification.Builder(context, channel)
-            .setSmallIcon(R.drawable.ic_stat_mochi)
+            .setSmallIcon(R.drawable.ic_stat_Day)
             .setContentTitle(agentName)
             .setSubText(context.getString(R.string.approval_title))
             // A label and at most the program's name: the exact command is on the approval sheet, behind a tap.
@@ -178,7 +178,7 @@ class Notifications(private val context: Context) {
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPublicVersion(publicVersion)
             .setAutoCancel(true)
-            .setTimeoutAfter(com.coucou.android.link.Protocol.APPROVAL_TTL_MS)
+            .setTimeoutAfter(com.Day.android.link.Protocol.APPROVAL_TTL_MS)
             .setContentIntent(open(r.fingerprint, false, id))
             .addAction(Notification.Action.Builder(null, context.getString(R.string.action_deny), deny).build())
             .apply {
@@ -198,13 +198,13 @@ class Notifications(private val context: Context) {
     private fun wakeScreen() = runCatching {
         val pm = context.getSystemService(android.os.PowerManager::class.java)
         if (pm.isInteractive) return@runCatching
-        pm.newWakeLock(android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, "coucou:approval")
+        pm.newWakeLock(android.os.PowerManager.SCREEN_BRIGHT_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, "Day:approval")
             .acquire(WAKE_MS)
     }
 
     fun cancelApproval(fp: String) = nm.cancel(idFor(fp))
 
-    /** An agent finished, failed, hit a limit or asks something. Quiet: Mochi's own sound and the pill are the alerts. */
+    /** An agent finished, failed, hit a limit or asks something. Quiet: Day's own sound and the pill are the alerts. */
     fun showStatus(pillId: String, agentName: String, state: BotState, statusText: String) {
         val what = context.getString(
             when (state) {
@@ -215,14 +215,14 @@ class Notifications(private val context: Context) {
             },
         )
         val n = Notification.Builder(context, CH_UPDATES)
-            .setSmallIcon(R.drawable.ic_stat_mochi)
+            .setSmallIcon(R.drawable.ic_stat_Day)
             .setContentTitle(agentName)
             .setContentText(what)
             .setSubText(ToolLabels.label(statusText).takeIf { it.isNotBlank() })
             .setCategory(Notification.CATEGORY_STATUS)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPublicVersion(
-                Notification.Builder(context, CH_UPDATES).setSmallIcon(R.drawable.ic_stat_mochi)
+                Notification.Builder(context, CH_UPDATES).setSmallIcon(R.drawable.ic_stat_Day)
                     .setContentTitle(context.getString(R.string.app_name)).setContentText(what).build(),
             )
             .setAutoCancel(true)
@@ -233,7 +233,7 @@ class Notifications(private val context: Context) {
 
     fun cancelStatus(pillId: String) = runCatching { nm.cancel(STATUS_TAG, statusId(pillId)) }
 
-    /** Coucou is on screen: the notices are redundant. */
+    /** Day is on screen: the notices are redundant. */
     fun cancelAllStatus() {
         runCatching { nm.activeNotifications.filter { it.tag == STATUS_TAG }.forEach { nm.cancel(it.tag, it.id) } }
     }
@@ -242,12 +242,12 @@ class Notifications(private val context: Context) {
 
     /** Opens the app on the biometric prompt for this request (the same as tapping Allow in the notification). */
     fun openAllow(fp: String) {
-        Log.d("CoucouLaunch", "open the app on Allow (tap on the pill)")
+        Log.d("DayLaunch", "open the app on Allow (tap on the pill)")
         runCatching { open(fp, true, idFor(fp) + 1).send() }
     }
 
     fun openApp() {
-        Log.d("CoucouLaunch", "open the app (tap on the pill)")
+        Log.d("DayLaunch", "open the app (tap on the pill)")
         runCatching { open(null, false, 0).send() }
     }
 
@@ -258,7 +258,7 @@ class Notifications(private val context: Context) {
         const val CH_UPDATES = "updates"
         private const val STATUS_TAG = "status"
         const val ONGOING_ID = 1
-        const val ACTION_DENY = "com.coucou.android.DENY"
+        const val ACTION_DENY = "com.Day.android.DENY"
         const val EXTRA_FP = "fingerprint"
         const val EXTRA_ALLOW = "allow"
         /** Even ids for the request, +1 for its Allow action; never collides with ONGOING_ID. */
@@ -271,6 +271,6 @@ class ActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Notifications.ACTION_DENY) return
         val fp = intent.getStringExtra(Notifications.EXTRA_FP) ?: return
-        (context.applicationContext as CoucouApp).model.decide(fp, allow = false)
+        (context.applicationContext as DayApp).model.decide(fp, allow = false)
     }
 }

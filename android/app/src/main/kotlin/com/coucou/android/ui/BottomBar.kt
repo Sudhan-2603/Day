@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,15 +26,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.core.BarFit
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.SpokenLabels
-import com.coucou.android.core.Tab
-import com.coucou.android.core.TypeScale
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiConst
+import com.Day.android.R
+import com.Day.android.core.BarFit
+import com.Day.android.core.IconKind
+import com.Day.android.core.Spacing
+import com.Day.android.core.SpokenLabels
+import com.Day.android.core.Tab
+import com.Day.android.core.TypeScale
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayConst
 
 private fun Tab.icon() = when (this) {
     Tab.HOME -> IconKind.HOME
@@ -73,11 +73,11 @@ fun BottomBar(tabs: List<Tab>, selected: Tab?, onSelect: (Tab) -> Unit, alert: B
                 contentAlignment = Alignment.Center,
             ) {
                 Column(Modifier.padding(horizontal = BarFit.ITEM_SIDE_PADDING_DP.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    CoucouIcon(tab.icon(), tint = if (on) t.text.c() else t.textDim.c(), size = 22.dp)
+                    DayIcon(tab.icon(), tint = if (on) t.text.c() else t.textDim.c(), size = 22.dp)
                     Text(label, style = TypeScale.LABEL.style(if (on) t.text.c() else t.textDim.c()), maxLines = 1, softWrap = false)
                 }
                 if (alert && tab == Tab.HOME) {
-                    val amber = MochiConst.STATES[BotState.APPROVAL]?.color?.let(::rgbColor) ?: Color(0xFFF5A524)
+                    val amber = DayConst.STATES[BotState.APPROVAL]?.color?.let(::rgbColor) ?: Color(0xFFF5A524)
                     Box(Modifier.align(Alignment.TopCenter).padding(start = 22.dp, top = 4.dp).size(9.dp).clip(CircleShape).background(amber).border(2.dp, t.panel.c(), CircleShape))
                 }
             }

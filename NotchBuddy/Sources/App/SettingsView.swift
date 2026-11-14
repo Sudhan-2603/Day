@@ -115,8 +115,8 @@ struct SettingsView: View {
     @AppStorage(CryptoSettings.coinsKey)        private var cryptoCoins = CryptoSettings.defaultCoins
     @AppStorage(CryptoSettings.alertKey)        private var cryptoAlert = false
     @AppStorage(CryptoSettings.alertPercentKey) private var cryptoAlertPercent = 5.0
-    @AppStorage(CoucoudoroSettings.workKey)     private var coucoudoroWork = CoucoudoroSettings.defaultWork
-    @AppStorage(CoucoudoroSettings.restKey)     private var coucoudoroRest = CoucoudoroSettings.defaultRest
+    @AppStorage(DaydoroSettings.workKey)     private var DaydoroWork = DaydoroSettings.defaultWork
+    @AppStorage(DaydoroSettings.restKey)     private var DaydoroRest = DaydoroSettings.defaultRest
 
     // Hotkey
     @State private var hotkeyFlags: UInt    = AppState.shared.hotkeyFlags
@@ -143,7 +143,7 @@ struct SettingsView: View {
 
     // Sidebar selection persisted across sessions
     @AppStorage("settingsSection") private var selectedSection: String = "general"
-    /// Shown inside the Coucou Flow window (GitHub build): one section, without this window's
+    /// Shown inside the Day Flow window (GitHub build): one section, without this window's
     /// sidebar, as the window has its own.
     private var embeddedSection: String? = nil
     private var section: String { embeddedSection ?? selectedSection }
@@ -176,7 +176,7 @@ struct SettingsView: View {
                             .resizable()
                             .frame(width: 32, height: 32)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("Coucou")
+                            Text("Day")
                                 .font(.system(size: 13, weight: .semibold))
                             Text(appVersion)
                                 .font(.system(size: 11))
@@ -340,7 +340,7 @@ struct SettingsView: View {
                     }
                 }
                 .disabled(!state.soundEnabled)
-                Text("Drop a file named like one of Mochi's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.")
+                Text("Drop a file named like one of Day's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -376,7 +376,7 @@ struct SettingsView: View {
 
         GroupBox("Display") {
             VStack(alignment: .leading, spacing: 10) {
-                Picker("Show Mochi on", selection: $state.islandDisplay) {
+                Picker("Show Day on", selection: $state.islandDisplay) {
                     Text("Screen with the notch").tag(IslandDisplayChoice.notch)
                     Text("Main screen (menu bar)").tag(IslandDisplayChoice.menuBar)
                     Text("Follow the mouse").tag(IslandDisplayChoice.followMouse)
@@ -390,7 +390,7 @@ struct SettingsView: View {
                     }
                 }
                 .frame(maxWidth: 360)
-                Text("On a screen without a notch, Mochi sits in a small bar at the top. Follow the mouse moves it to your cursor's screen while it is closed.")
+                Text("On a screen without a notch, Day sits in a small bar at the top. Follow the mouse moves it to your cursor's screen while it is closed.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -520,7 +520,7 @@ struct SettingsView: View {
                     UserDefaults.standard.synchronize()
                 }
                 HStack(spacing: 8) {
-                    Button(String(localized: "Restart Coucou")) {
+                    Button(String(localized: "Restart Day")) {
                         #if APPSTORE
                         // Sandboxed: no helper process that outlives the app (guideline 2.4.5).
                         // Launch a fresh copy through Launch Services, then quit once it is on its way.
@@ -598,7 +598,7 @@ struct SettingsView: View {
     @ViewBuilder private var activePillsSection: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Choose the tools you use. Coucou only shows what you declare here.")
+                Text("Choose the tools you use. Day only shows what you declare here.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
 
@@ -653,7 +653,7 @@ struct SettingsView: View {
                     #endif
                 }
                 #if APPSTORE
-                Text("~/.claude/coucou/nb-hook")
+                Text("~/.claude/Day/nb-hook")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
                 HStack(spacing: 10) {
@@ -780,7 +780,7 @@ struct SettingsView: View {
                         .font(.system(size: 11))
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
-                    // Hooks written by an older Coucou give Antigravity 10 s: too short to wait for a click.
+                    // Hooks written by an older Day give Antigravity 10 s: too short to wait for a click.
                     if agyApprovalsEnabled, (agyHookTimeout ?? 0) < HookServer.agyApprovalHookTimeout {
                         Text(String(localized: "hooks.antigravity.approvals.update"))
                             .font(.caption)
@@ -831,7 +831,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(copilotHooksInstalled
                      ? String(localized: "hooks.copilot.installed")
-                     : "~/.copilot/hooks/coucou.json")
+                     : "~/.copilot/hooks/Day.json")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
                 HStack(spacing: 10) {
@@ -899,7 +899,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(openCodePluginInstalled
                      ? String(localized: "plugin.opencode.installed")
-                     : "~/.config/opencode/plugins/coucou.js")
+                     : "~/.config/opencode/plugins/Day.js")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
                 HStack(spacing: 10) {
@@ -933,7 +933,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(ampPluginInstalled
                      ? String(localized: "plugin.amp.installed")
-                     : "~/.config/amp/plugins/coucou.ts")
+                     : "~/.config/amp/plugins/Day.ts")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
                 HStack(spacing: 10) {
@@ -967,7 +967,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text(hermesPluginInstalled
                      ? String(localized: "plugin.hermes.installed")
-                     : "~/.hermes/plugins/coucou/__init__.py")
+                     : "~/.hermes/plugins/Day/__init__.py")
                     .font(.system(size: 11, design: .monospaced))
                     .foregroundColor(.secondary)
                 HStack(spacing: 10) {
@@ -1103,7 +1103,7 @@ struct SettingsView: View {
                     }
                 }
                 Divider()
-                Text("Shows your Codex plan usage (weekly limit and free resets left) in the notch header. Coucou asks the Codex CLI (codex app-server) when the pill shows; nothing is installed. Codex must be signed in with ChatGPT.")
+                Text("Shows your Codex plan usage (weekly limit and free resets left) in the notch header. Day asks the Codex CLI (codex app-server) when the pill shows; nothing is installed. Codex must be signed in with ChatGPT.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -1519,24 +1519,24 @@ struct SettingsView: View {
                 .onChange(of: cryptoExchange) { _, _ in CryptoController.shared.settingsChanged() }
                 .onChange(of: cryptoCurrency) { _, _ in CryptoController.shared.settingsChanged() }
 
-                // Coucoudoro: a local countdown. Lengths are minutes and apply to the next phase.
+                // Daydoro: a local countdown. Lengths are minutes and apply to the next phase.
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
                         Circle().fill(Color(hex: "#0EA5E9")).frame(width: 8, height: 8)
-                        Text(verbatim: "Coucoudoro").font(.system(size: 12, weight: .semibold))
+                        Text(verbatim: "Daydoro").font(.system(size: 12, weight: .semibold))
                     }
-                    coucoudoroMinutes(String(localized: "coucoudoro.work", defaultValue: "Work"),
-                                 value: $coucoudoroWork, bounds: CoucoudoroSettings.workBounds)
-                    coucoudoroMinutes(String(localized: "coucoudoro.rest", defaultValue: "Rest"),
-                                 value: $coucoudoroRest, bounds: CoucoudoroSettings.restBounds)
-                    Text(String(localized: "coucoudoro.hint", defaultValue: "Work, then rest, on repeat, until you stop. Turn the Coucoudoro pill on to use it."))
+                    DaydoroMinutes(String(localized: "Daydoro.work", defaultValue: "Work"),
+                                 value: $DaydoroWork, bounds: DaydoroSettings.workBounds)
+                    DaydoroMinutes(String(localized: "Daydoro.rest", defaultValue: "Rest"),
+                                 value: $DaydoroRest, bounds: DaydoroSettings.restBounds)
+                    Text(String(localized: "Daydoro.hint", defaultValue: "Work, then rest, on repeat, until you stop. Turn the Daydoro pill on to use it."))
                         .font(.system(size: 10))
                         .foregroundColor(Color(hex: "#8E939C"))
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .onAppear { applyCoucoudoroSettings() }
-                .onChange(of: coucoudoroWork) { _, _ in applyCoucoudoroSettings() }
-                .onChange(of: coucoudoroRest) { _, _ in applyCoucoudoroSettings() }
+                .onAppear { applyDaydoroSettings() }
+                .onChange(of: DaydoroWork) { _, _ in applyDaydoroSettings() }
+                .onChange(of: DaydoroRest) { _, _ in applyDaydoroSettings() }
 
                 #if !APPSTORE
                 // Portfolio: exchange accounts + wallets (GitHub build, like its pill).
@@ -1579,8 +1579,8 @@ struct SettingsView: View {
 
     private func speakVoiceSample() {
         let en = voiceLanguage != "fr"
-        VoiceSpeaker.shared.speak(en ? "Hi, I'm Coucou. Say OK Coucou whenever you need me."
-                                     : "Salut, c'est Coucou. Dis OK Coucou quand tu as besoin de moi.",
+        VoiceSpeaker.shared.speak(en ? "Hi, I'm Day. Say OK Day whenever you need me."
+                                     : "Salut, c'est Day. Dis OK Day quand tu as besoin de moi.",
                                   locale: Locale(identifier: en ? "en-US" : "fr-FR"))
     }
 
@@ -1588,9 +1588,9 @@ struct SettingsView: View {
         // Flow dictation: hold a key anywhere, speak, the words are pasted where you type.
         FlowSettingsBox()
 
-        // Claude is Coucou's brain: no model, language or feature switches any more,
-        // only the wake word, the Anthropic key it needs, and Coucou's voice.
-        GroupBox(String(localized: "«\u{202F}OK Coucou\u{202F}» — voice wake word")) {
+        // Claude is Day's brain: no model, language or feature switches any more,
+        // only the wake word, the Anthropic key it needs, and Day's voice.
+        GroupBox(String(localized: "«\u{202F}OK Day\u{202F}» — voice wake word")) {
             VStack(alignment: .leading, spacing: 10) {
                 Toggle(String(localized: "Enable voice command"), isOn: $voiceEngine.isEnabled)
                     .disabled(!voicePermissionsGranted && !voiceEngine.isEnabled)
@@ -1671,7 +1671,7 @@ struct SettingsView: View {
                     .pickerStyle(.segmented)
                     .frame(maxWidth: 180)
                     .onChange(of: voiceLanguage) { _, _ in
-                        // Chosen by hand: Coucou no longer offers to switch.
+                        // Chosen by hand: Day no longer offers to switch.
                         VoiceSettings.languageOfferDone = true
                         ElevenLabsTTS.shared.reset()
                     }
@@ -1877,7 +1877,7 @@ struct SettingsView: View {
 
     private func installHooksAppStore() {
         guard let claudeURL = pickClaudeFolder(prompt: "Select") else { return }
-        // Show the settings.json Coucou is about to write, as the GitHub build does.
+        // Show the settings.json Day is about to write, as the GitHub build does.
         let preview: String
         do {
             preview = try HookServer.shared.previewClaudeHooksAppStore(claudeURL: claudeURL)
@@ -2002,7 +2002,7 @@ struct SettingsView: View {
             pendingGeminiJSON = try HookServer.shared.previewGeminiHooks(install: install)
             showGeminiDiff = true
             statusMessage = String(localized: "hooks.review-json")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2029,7 +2029,7 @@ struct SettingsView: View {
             pendingAgyJSON = try HookServer.shared.previewAgyHooks(install: install)
             showAgyDiff = true
             statusMessage = String(localized: "hooks.review-json")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2057,7 +2057,7 @@ struct SettingsView: View {
             pendingCodexJSON = try HookServer.shared.previewCodexHooks(install: install)
             showCodexDiff = true
             statusMessage = String(localized: "hooks.review-json")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2084,7 +2084,7 @@ struct SettingsView: View {
             pendingCopilotJSON = try HookServer.shared.previewCopilotHooks(install: install)
             showCopilotDiff = true
             statusMessage = String(localized: "hooks.review-json")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2111,7 +2111,7 @@ struct SettingsView: View {
             pendingMuseJSON = try HookServer.shared.previewMuseHooks(install: install)
             showMuseDiff = true
             statusMessage = String(localized: "hooks.review-json")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2138,7 +2138,7 @@ struct SettingsView: View {
             pendingOpenCodeContent = try HookServer.shared.previewOpenCodePlugin(install: install)
             showOpenCodeDiff = true
             statusMessage = String(localized: "plugin.review-content")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2169,7 +2169,7 @@ struct SettingsView: View {
             pendingAmpContent = try HookServer.shared.previewAmpPlugin(install: install)
             showAmpDiff = true
             statusMessage = String(localized: "plugin.review-content")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2200,7 +2200,7 @@ struct SettingsView: View {
             pendingHermesPluginContent = try HookServer.shared.previewHermesPlugin(install: install)
             showHermesPluginDiff = true
             statusMessage = String(localized: "plugin.review-content")
-        } catch let e as NSError where e.domain == "CoucouNoop" {
+        } catch let e as NSError where e.domain == "DayNoop" {
             statusMessage = e.localizedDescription
         } catch {
             statusMessage = "❌ \(error.localizedDescription)"
@@ -2292,22 +2292,22 @@ struct SettingsView: View {
     #endif
 
     /// Pull each length into 1…60 minutes.
-    private func applyCoucoudoroSettings() {
-        let work = CoucoudoroSettings.clampWork(coucoudoroWork)
-        let rest = CoucoudoroSettings.clampRest(coucoudoroRest)
-        if coucoudoroWork != work { coucoudoroWork = work }
-        if coucoudoroRest != rest { coucoudoroRest = rest }
-        CoucoudoroController.shared.settingsChanged()
+    private func applyDaydoroSettings() {
+        let work = DaydoroSettings.clampWork(DaydoroWork)
+        let rest = DaydoroSettings.clampRest(DaydoroRest)
+        if DaydoroWork != work { DaydoroWork = work }
+        if DaydoroRest != rest { DaydoroRest = rest }
+        DaydoroController.shared.settingsChanged()
     }
 
     /// One minute per step, with the current length beside the slider. Same row as the volume slider.
-    private func coucoudoroMinutes(_ label: String, value: Binding<Int>, bounds: ClosedRange<Int>) -> some View {
+    private func DaydoroMinutes(_ label: String, value: Binding<Int>, bounds: ClosedRange<Int>) -> some View {
         let shown = min(max(value.wrappedValue, bounds.lowerBound), bounds.upperBound)
         let minutes = Binding<Double>(
             get: { Double(min(max(value.wrappedValue, bounds.lowerBound), bounds.upperBound)) },
             set: { value.wrappedValue = Int($0.rounded()) }
         )
-        let unit = String(localized: "coucoudoro.unit", defaultValue: "min")
+        let unit = String(localized: "Daydoro.unit", defaultValue: "min")
         return HStack(spacing: 8) {
             Text(label)
                 .lineLimit(1)
@@ -2700,7 +2700,7 @@ struct ShortcutRecorderButton: View {
 }
 
 extension SettingsView {
-    /// One section of Settings, for the Coucou Flow window.
+    /// One section of Settings, for the Day Flow window.
     init(embeddedSection: String) {
         self.init()
         self.embeddedSection = embeddedSection

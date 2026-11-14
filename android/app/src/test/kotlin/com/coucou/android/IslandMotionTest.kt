@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Spring
-import com.coucou.android.core.Tracked
-import com.coucou.android.core.closeCurve
-import com.coucou.android.core.cubicBezier
+import com.Day.android.core.Spring
+import com.Day.android.core.Tracked
+import com.Day.android.core.closeCurve
+import com.Day.android.core.cubicBezier
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

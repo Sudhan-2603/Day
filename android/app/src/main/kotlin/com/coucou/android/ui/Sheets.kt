@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
@@ -50,25 +50,25 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.core.ApprovalSheetPlan
-import com.coucou.android.core.HomePanel
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.MotionSpec
-import com.coucou.android.core.Pills
-import com.coucou.android.core.QuestionFlow
-import com.coucou.android.link.AskedOption
-import com.coucou.android.link.QuestionRequest
-import com.coucou.android.core.Radii
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.SpokenLabels
-import com.coucou.android.core.TypeScale
-import com.coucou.android.link.ApprovalRequest
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiConst
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.core.ApprovalSheetPlan
+import com.Day.android.core.HomePanel
+import com.Day.android.core.IconKind
+import com.Day.android.core.MotionSpec
+import com.Day.android.core.Pills
+import com.Day.android.core.QuestionFlow
+import com.Day.android.link.AskedOption
+import com.Day.android.link.QuestionRequest
+import com.Day.android.core.Radii
+import com.Day.android.core.Spacing
+import com.Day.android.core.SpokenLabels
+import com.Day.android.core.TypeScale
+import com.Day.android.link.ApprovalRequest
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayConst
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
 import kotlinx.coroutines.delay
 
 /**
@@ -113,15 +113,15 @@ fun BottomSheetHost(onDismiss: () -> Unit, wash: Color? = null, announce: String
     }
 }
 
-/** The colour of an agent for its Mochi: the user's choice on the computer, else the catalog's, else none. */
+/** The colour of an agent for its Day: the user's choice on the computer, else the catalog's, else none. */
 private fun agentColour(model: AppModel, pillId: String) =
     (model.sessions.firstOrNull { it.pillId == pillId }?.let { HomePanel.colorHex(it) } ?: Pills.byId(pillId)?.colorHex)?.let { HomePanel.rgb(it) }
 
 @Composable
-private fun SheetMochi(state: BotState, colour: com.coucou.android.mochi.Rgb?) {
-    val engine = remember { MochiEngine({ SystemClock.elapsedRealtimeNanos() / 1e6 }).apply { setState(state, force = true) } }
+private fun SheetDay(state: BotState, colour: com.Day.android.Day.Rgb?) {
+    val engine = remember { DayEngine({ SystemClock.elapsedRealtimeNanos() / 1e6 }).apply { setState(state, force = true) } }
     engine.bodyColor = colour
-    MochiView(engine, Modifier.size(84.dp))
+    DayView(engine, Modifier.size(84.dp))
 }
 
 /**
@@ -136,13 +136,13 @@ fun ApprovalSheet(model: AppModel, r: ApprovalRequest, onAllow: (ApprovalRequest
     var showCommand by remember(r.fingerprint) { mutableStateOf(false) }
     val white = Color(tokens().heroText)
     val dim = Color(tokens().heroTextDim)
-    val wash = MochiConst.STATES[BotState.APPROVAL]?.color?.let(::rgbColor)
+    val wash = DayConst.STATES[BotState.APPROVAL]?.color?.let(::rgbColor)
     val name = model.agentName(r.pillId)
     val kind = Pills.byId(r.pillId)?.name.orEmpty()
     val announce = SpokenLabels.approval(stringResource(R.string.approval_title), name, stringResource(R.string.approval_wants, ApprovalSheetPlan.action(r.tool)))
     BottomSheetHost(onDismiss, wash, announce) {
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            SheetMochi(BotState.APPROVAL, agentColour(model, r.pillId))
+            SheetDay(BotState.APPROVAL, agentColour(model, r.pillId))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(if (kind.isNotBlank() && kind != name) "$name · $kind" else name, style = TypeScale.SECONDARY.style(dim), maxLines = 2)
                 Text(stringResource(R.string.approval_wants, ApprovalSheetPlan.action(r.tool)), style = TypeScale.TITLE.style(white), maxLines = 3)
@@ -178,7 +178,7 @@ fun ApprovalSheet(model: AppModel, r: ApprovalRequest, onAllow: (ApprovalRequest
             if (canAllow) {
                 PillButton(
                     stringResource(R.string.action_allow), { onAllow(r) }, Modifier.weight(1f), PillKind.PRIMARY, enabled = armed, onDark = true,
-                    icon = { CoucouIcon(IconKind.LOCK, tint = Color(tokens().heroOnPrimary), size = 18.dp) },
+                    icon = { DayIcon(IconKind.LOCK, tint = Color(tokens().heroOnPrimary), size = 18.dp) },
                 )
             }
         }
@@ -200,13 +200,13 @@ fun ApprovalSheet(model: AppModel, r: ApprovalRequest, onAllow: (ApprovalRequest
 fun QuestionSheet(model: AppModel, pillId: String, onDismiss: () -> Unit, onSend: (QuestionRequest, List<List<String>>) -> Unit) {
     val white = Color(tokens().heroText)
     val dim = Color(tokens().heroTextDim)
-    val wash = MochiConst.STATES[BotState.QUESTION]?.color?.let(::rgbColor)
+    val wash = DayConst.STATES[BotState.QUESTION]?.color?.let(::rgbColor)
     val request = model.questionFor(pillId)
     val announce = stringResource(R.string.question_title, model.agentName(pillId))
     BottomSheetHost(onDismiss, wash, announce) {
         if (request == null) {
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                SheetMochi(BotState.QUESTION, agentColour(model, pillId))
+                SheetDay(BotState.QUESTION, agentColour(model, pillId))
                 Text(stringResource(R.string.question_title, model.agentName(pillId)), Modifier.weight(1f), style = TypeScale.TITLE.style(white), maxLines = 3)
             }
             Text(stringResource(R.string.question_body), Modifier.padding(top = 12.dp, bottom = 16.dp), style = TypeScale.BODY.style(dim))
@@ -218,7 +218,7 @@ fun QuestionSheet(model: AppModel, pillId: String, onDismiss: () -> Unit, onSend
         LaunchedEffect(request.fingerprint) { delay(ApprovalSheetPlan.GUARD_MS); armed = true }
         val q = request.questions[st.index.coerceIn(0, request.questions.lastIndex)]
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            SheetMochi(BotState.QUESTION, agentColour(model, pillId))
+            SheetDay(BotState.QUESTION, agentColour(model, pillId))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(stringResource(R.string.question_title, model.agentName(pillId)), style = TypeScale.SECONDARY.style(dim), maxLines = 2)
                 QuestionFlow.position(request.questions, st)?.let { (n, total) ->
@@ -240,7 +240,7 @@ fun QuestionSheet(model: AppModel, pillId: String, onDismiss: () -> Unit, onSend
                     stringResource(R.string.question_send),
                     { QuestionFlow.picks(request.questions, st)?.let { onSend(request, it) } }, Modifier.weight(1f), PillKind.PRIMARY,
                     enabled = armed && QuestionFlow.complete(request.questions, st), onDark = true,
-                    icon = { CoucouIcon(IconKind.LOCK, tint = Color(tokens().heroOnPrimary), size = 18.dp) },
+                    icon = { DayIcon(IconKind.LOCK, tint = Color(tokens().heroOnPrimary), size = 18.dp) },
                 )
             } else {
                 PillButton(
@@ -277,7 +277,7 @@ private fun OptionRow(option: AskedOption, selected: Boolean, multi: Boolean, on
                 .background(if (selected) white else Color.Transparent)
                 .border(1.5.dp, if (selected) white else dim, if (multi) RoundedCornerShape(6.dp) else CircleShape),
             contentAlignment = Alignment.Center,
-        ) { if (selected) CoucouIcon(IconKind.CHECK, tint = Color(tokens().heroOnPrimary), size = 16.dp) }
+        ) { if (selected) DayIcon(IconKind.CHECK, tint = Color(tokens().heroOnPrimary), size = 16.dp) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(option.label, style = TypeScale.BODY.style(white).copy(fontWeight = FontWeight.SemiBold))
             if (option.description.isNotBlank()) Text(option.description, style = TypeScale.SECONDARY.style(dim))

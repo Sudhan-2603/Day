@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
@@ -36,33 +36,33 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.Tokens
-import com.coucou.android.core.TypeScale
-import com.coucou.android.link.PairingPayload
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.core.IconKind
+import com.Day.android.core.Spacing
+import com.Day.android.core.Tokens
+import com.Day.android.core.TypeScale
+import com.Day.android.link.PairingPayload
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
 
 /**
- * The first thing a new user sees: one clear action. A sleeping Mochi, a sentence, "Scan QR code" as the main
+ * The first thing a new user sees: one clear action. A sleeping Day, a sentence, "Scan QR code" as the main
  * pill, and two quiet ones: paste the link (in a sheet, so no field sits on the screen) and try the demo.
  */
 @Composable
 fun PairingScreen(model: AppModel, onScan: () -> Unit, onAbout: () -> Unit) {
     val t = tokens()
     var pasteOpen by remember { mutableStateOf(false) }
-    val engine = remember { MochiEngine({ SystemClock.elapsedRealtimeNanos() / 1e6 }).apply { setState(BotState.SLEEPING, force = true) } }
+    val engine = remember { DayEngine({ SystemClock.elapsedRealtimeNanos() / 1e6 }).apply { setState(BotState.SLEEPING, force = true) } }
     Column(
         Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).verticalScroll(rememberScrollState())
             .padding(start = Gutter + 8.dp, end = Gutter + 8.dp, bottom = BarClearance),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.size(48.dp))
-        MochiView(engine, Modifier.size(132.dp))
+        DayView(engine, Modifier.size(132.dp))
         Spacer(Modifier.size(24.dp))
         Text(stringResource(R.string.pairing_headline), style = TypeScale.DISPLAY.style(t.text.c()).copy(textAlign = TextAlign.Center))
         Text(
@@ -72,7 +72,7 @@ fun PairingScreen(model: AppModel, onScan: () -> Unit, onAbout: () -> Unit) {
         model.message?.let { MessagePanel(it) { model.message = null }; Spacer(Modifier.size(Gap)) }
         PillButton(
             stringResource(R.string.scan_button), onScan, Modifier.fillMaxWidth(), PillKind.PRIMARY,
-            icon = { CoucouIcon(IconKind.SCAN, tint = t.onPrimaryButton.c(), size = 20.dp) },
+            icon = { DayIcon(IconKind.SCAN, tint = t.onPrimaryButton.c(), size = 20.dp) },
         )
         Spacer(Modifier.size(Gap))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Gap)) {
@@ -90,7 +90,7 @@ fun PairingScreen(model: AppModel, onScan: () -> Unit, onAbout: () -> Unit) {
     if (pasteOpen) PasteSheet(model, onDismiss = { pasteOpen = false })
 }
 
-/** The pairing link as text, for people who cannot scan. A link that is not a Coucou one is refused here, with the same words as everywhere. */
+/** The pairing link as text, for people who cannot scan. A link that is not a Day one is refused here, with the same words as everywhere. */
 @Composable
 private fun PasteSheet(model: AppModel, onDismiss: () -> Unit) {
     var text by remember { mutableStateOf("") }
@@ -106,7 +106,7 @@ private fun PasteSheet(model: AppModel, onDismiss: () -> Unit) {
         Text(stringResource(R.string.paste_hint), Modifier.padding(top = 4.dp, bottom = 12.dp), style = TypeScale.SECONDARY.style(dim))
         OutlinedTextField(
             text, { text = it; bad = false }, Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(14.dp),
-            placeholder = { Text("coucou://pair?…", color = Color(Tokens.DARK.textFaint)) },
+            placeholder = { Text("Day://pair?…", color = Color(Tokens.DARK.textFaint)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = white, unfocusedTextColor = white, cursorColor = white,

@@ -1,11 +1,11 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import com.coucou.android.link.PairingPayload
-import com.coucou.android.link.PairingCodec
+import com.Day.android.link.PairingPayload
+import com.Day.android.link.PairingCodec
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -17,7 +17,7 @@ import javax.crypto.spec.GCMParameterSpec
  * leaves the Android Keystore. Backups are off (allowBackup=false), so it stays on this device.
  */
 class SecureStore(context: Context) {
-    private val prefs = context.getSharedPreferences("coucou_link", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("Day_link", Context.MODE_PRIVATE)
 
     private fun key(): SecretKey {
         val ks = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
@@ -58,7 +58,7 @@ class SecureStore(context: Context) {
     fun clearPairing() = prefs.edit().remove(PREF).apply()
 
     private companion object {
-        const val ALIAS = "coucou_pairing_key"
+        const val ALIAS = "Day_pairing_key"
         const val PREF = "pairing"
         const val IV_BYTES = 12
     }

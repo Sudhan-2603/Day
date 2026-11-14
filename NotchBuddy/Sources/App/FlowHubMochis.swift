@@ -9,7 +9,7 @@ private struct HubVisibleKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
-    /// Whether the Coucou window is on screen: the Mochis rest (no frame drawn) while it is hidden,
+    /// Whether the Day window is on screen: the Days rest (no frame drawn) while it is hidden,
     /// minimized or covered.
     var hubVisible: Bool {
         get { self[HubVisibleKey.self] }
@@ -17,7 +17,7 @@ extension EnvironmentValues {
     }
 }
 
-/// Follows the Coucou window's occlusion, for `hubVisible`.
+/// Follows the Day window's occlusion, for `hubVisible`.
 @MainActor
 final class HubWindowState: ObservableObject {
     @Published private(set) var visible = true
@@ -42,10 +42,10 @@ final class HubWindowState: ObservableObject {
     }
 }
 
-// MARK: - A troupe of mini Mochis
+// MARK: - A troupe of mini Days
 
-/// One Mochi of a scene: its look, and whether it walks around.
-struct HubMochiSpec: Hashable {
+/// One Day of a scene: its look, and whether it walks around.
+struct HubDaySpec: Hashable {
     var color: String
     /// The drawing's width in points (the body is about two thirds of it).
     var size: CGFloat
@@ -57,11 +57,11 @@ struct HubMochiSpec: Hashable {
     var start: CGFloat = 0.5
 }
 
-/// The Mochis of a scene, moved frame by frame.
+/// The Days of a scene, moved frame by frame.
 @MainActor
-final class HubMochiTroupe: ObservableObject {
+final class HubDayTroupe: ObservableObject {
     @MainActor final class Walker {
-        let spec: HubMochiSpec
+        let spec: HubDaySpec
         let engine: BotEngine
         var x: CGFloat
         var target: CGFloat
@@ -70,7 +70,7 @@ final class HubMochiTroupe: ObservableObject {
         var hop: CGFloat = 0
         var lastHello: Double = 0
 
-        init(spec: HubMochiSpec) {
+        init(spec: HubDaySpec) {
             self.spec = spec
             let e = BotEngine()
             e.isMini = true
@@ -89,7 +89,7 @@ final class HubMochiTroupe: ObservableObject {
     /// The part of the scene where they walk, from 0 to 1.
     var range: ClosedRange<CGFloat> = 0.05...0.95
 
-    init(cast: [HubMochiSpec]) {
+    init(cast: [HubDaySpec]) {
         walkers = cast.map { Walker(spec: $0) }
     }
 
@@ -99,7 +99,7 @@ final class HubMochiTroupe: ObservableObject {
         let dt = CGFloat(min(0.05, max(0, now - last)))
         last = now
         for actor in walkers {
-            MochiFrameClock.advance(actor.engine)
+            DayFrameClock.advance(actor.engine)
             guard actor.spec.roams else { continue }
             if now < actor.restUntil {
                 actor.hop = max(0, actor.hop - dt * 4)
@@ -128,7 +128,7 @@ final class HubMochiTroupe: ObservableObject {
         case 3:    actor.engine.doRoll(duration: 900, turns: 1)
         default:   break
         }
-        // Two Mochis meeting say hello.
+        // Two Days meeting say hello.
         for other in walkers where other !== actor && abs(other.x - actor.x) < 0.09 && now - actor.lastHello > 12 {
             actor.lastHello = now
             other.lastHello = now
@@ -138,7 +138,7 @@ final class HubMochiTroupe: ObservableObject {
         }
     }
 
-    /// A click on a Mochi: it blushes and jumps.
+    /// A click on a Day: it blushes and jumps.
     func poke(at point: CGPoint, in size: CGSize) {
         let hit = walkers.min { distance(point, $0, size) < distance(point, $1, size) }
         guard let hit, distance(point, hit, size) < hit.spec.size * 0.6 else { return }
@@ -163,7 +163,7 @@ final class HubMochiTroupe: ObservableObject {
             let w = actor.spec.size
             let cx = xPosition(actor, width: size.width)
             let lift = actor.spec.roams ? abs(sin(actor.hop)) * w * 0.07 : 0
-            // Its shadow on the floor (a scene, not a lone Mochi).
+            // Its shadow on the floor (a scene, not a lone Day).
             if size.height > w * 1.05 || walkers.count > 1 {
                 let shadow = CGRect(x: cx - w * 0.26, y: size.height - w * 0.12, width: w * 0.52, height: w * 0.09)
                 context.fill(Path(ellipseIn: shadow), with: .color(.black.opacity(0.28 - Double(lift / w))))
@@ -175,15 +175,15 @@ final class HubMochiTroupe: ObservableObject {
     }
 }
 
-/// A strip where a few mini Mochis live: drawn in one canvas, at the display's rate while the
+/// A strip where a few mini Days live: drawn in one canvas, at the display's rate while the
 /// window shows, still otherwise. Click one to say hello.
-struct HubMochiScene: View {
-    @StateObject private var troupe: HubMochiTroupe
+struct HubDayScene: View {
+    @StateObject private var troupe: HubDayTroupe
     @Environment(\.hubVisible) private var visible
 
-    init(cast: [HubMochiSpec], range: ClosedRange<CGFloat> = 0.05...0.95) {
+    init(cast: [HubDaySpec], range: ClosedRange<CGFloat> = 0.05...0.95) {
         _troupe = StateObject(wrappedValue: {
-            let t = HubMochiTroupe(cast: cast)
+            let t = HubDayTroupe(cast: cast)
             t.range = range
             return t
         }())
@@ -205,8 +205,8 @@ struct HubMochiScene: View {
     }
 }
 
-/// One Mochi that stays where it is (the logo, the empty pages).
-struct HubLiveMochi: View {
+/// One Day that stays where it is (the logo, the empty pages).
+struct HubLiveDay: View {
     var color = "#F5F6F8"
     /// Width of the body; the drawing around it is larger.
     var size: CGFloat = 28
@@ -214,7 +214,7 @@ struct HubLiveMochi: View {
     var outfit: Outfit = .none
 
     var body: some View {
-        HubMochiScene(cast: [HubMochiSpec(color: color, size: size / 0.68, outfit: outfit, state: state, roams: false)])
+        HubDayScene(cast: [HubDaySpec(color: color, size: size / 0.68, outfit: outfit, state: state, roams: false)])
             .frame(width: size / 0.68, height: size / 0.68)
             .frame(width: size, height: size * 0.75)
     }
@@ -222,15 +222,15 @@ struct HubLiveMochi: View {
 
 // MARK: - The top of each page
 
-/// A page's colour and its Mochis.
+/// A page's colour and its Days.
 struct HubHeroTheme {
     var color: Color
-    var cast: [HubMochiSpec]
+    var cast: [HubDaySpec]
 
     static func of(_ page: HubPage) -> HubHeroTheme {
         func m(_ color: String, _ size: CGFloat, _ start: CGFloat, outfit: Outfit = .none,
-               state: BotState = .idle, roams: Bool = true) -> HubMochiSpec {
-            HubMochiSpec(color: color, size: size, outfit: outfit, state: state, roams: roams, start: start)
+               state: BotState = .idle, roams: Bool = true) -> HubDaySpec {
+            HubDaySpec(color: color, size: size, outfit: outfit, state: state, roams: roams, start: start)
         }
         switch page {
         case .dictation:
@@ -276,7 +276,7 @@ struct HubHeroTheme {
     }
 }
 
-/// The top of a page: a coloured band with the title, a line, an action, and the page's Mochis
+/// The top of a page: a coloured band with the title, a line, an action, and the page's Days
 /// walking on its floor.
 struct HubHero<Trailing: View>: View {
     let page: HubPage
@@ -291,7 +291,7 @@ struct HubHero<Trailing: View>: View {
         ZStack(alignment: .bottomTrailing) {
             HubHeroBackdrop(color: theme.color, light: light)
                 .allowsHitTesting(false)
-            HubMochiScene(cast: theme.cast, range: 0...1)
+            HubDayScene(cast: theme.cast, range: 0...1)
                 .id(page)
                 .frame(width: compact ? 280 : 340, height: compact ? 92 : 128)
                 .padding(.trailing, 18)
@@ -499,7 +499,7 @@ struct HubGlowCard<Content: View>: View {
     }
 }
 
-/// An empty page: a Mochi asleep, and a line.
+/// An empty page: a Day asleep, and a line.
 struct HubEmptyState: View {
     let text: String
     var state: BotState = .sleeping
@@ -507,7 +507,7 @@ struct HubEmptyState: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            HubLiveMochi(color: color, size: 54, state: state)
+            HubLiveDay(color: color, size: 54, state: state)
                 .frame(height: 54)
             Text(text)
                 .font(.system(size: 13.5))

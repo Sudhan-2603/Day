@@ -1,8 +1,8 @@
-package com.coucou.android.mochi
+package com.Day.android.Day
 
-import com.coucou.android.mochi.outfit.Outfit
-import com.coucou.android.core.Ease
-import com.coucou.android.core.EaseFn
+import com.Day.android.Day.outfit.Outfit
+import com.Day.android.core.Ease
+import com.Day.android.core.EaseFn
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.max
@@ -12,9 +12,9 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 /**
- * Mochi's animation state machine: a port of windows/src/mochi/engine.ts (itself a port of
+ * Day's animation state machine: a port of windows/src/Day/engine.ts (itself a port of
  * BotEngine.swift). Same constants, tweens, easings and particles. Drawing lives in
- * MochiPainter; this class has no Android dependency so it runs in plain JVM unit tests.
+ * DayPainter; this class has no Android dependency so it runs in plain JVM unit tests.
  *
  * Not ported yet: outfits (wardrobe), which the author's assets cover but are a later phase.
  */
@@ -43,14 +43,14 @@ private class Tween(
 
 private class Scheduled(val dueMs: Double, val action: () -> Unit)
 
-class MochiEngine(
+class DayEngine(
     /** Monotonic clock in milliseconds (performance.now() in the TS port). */
     private val clockMs: () -> Double,
     private val random: Random = Random.Default,
     private val sound: SoundSink = SoundSink { },
 ) {
     var isMini = false
-    /** Solid body colour for mini bots (null = Mochi gradient). */
+    /** Solid body colour for mini bots (null = Day gradient). */
     var bodyColor: Rgb? = null
 
     // Animated state (BotEngine `s`)
@@ -58,7 +58,7 @@ class MochiEngine(
     var sx = 1.0; var sy = 1.0; var oy = 0.0; var ox = 0.0
     var tint = 0.0; var morph = 0.0; var hands = 0.0; var blush = 0.0; var es = 1.0; var badgeS = 0.0
 
-    // Outfit (the main Mochi only: minis never wear one). `outfit` is what is drawn; it changes only once the previous one has left.
+    // Outfit (the main Day only: minis never wear one). `outfit` is what is drawn; it changes only once the previous one has left.
     var outfit: Outfit = Outfit.NONE
         private set
     /** 0 = gone, 1 = fully on. */
@@ -82,12 +82,12 @@ class MochiEngine(
     // Mouth spring (fraction of R)
     var slotH = 0.0; var slotHTarget = 0.0; var slotHVel = 0.0; var isChewing = false
 
-    var col: Rgb = MochiConst.C_IDLE
-    var colT: Rgb = MochiConst.C_IDLE
+    var col: Rgb = DayConst.C_IDLE
+    var colT: Rgb = DayConst.C_IDLE
 
     var state: BotState = BotState.IDLE
         private set
-    var cfg: BotStateCfg = MochiConst.STATES.getValue(BotState.IDLE)
+    var cfg: BotStateCfg = DayConst.STATES.getValue(BotState.IDLE)
         private set
 
     var eyeOverride: EyeShape? = null
@@ -155,7 +155,7 @@ class MochiEngine(
         if (state == next && !force) return
         val prev = state
         state = next
-        cfg = MochiConst.STATES.getValue(next)
+        cfg = DayConst.STATES.getValue(next)
         colT = cfg.color
         if (Prop.TINT !in locks) tint = cfg.tint
         if (Prop.TILT !in locks) tgTilt = cfg.tilt
@@ -240,7 +240,7 @@ class MochiEngine(
         anim(Prop.ROLL, keys(Triple(PI * 2 * turns, durationMs, Ease.inOut))) { roll = 0.0 }
     }
 
-    /** Peek wave, the "coucou". Timings from BotEngine.greet(). */
+    /** Peek wave, the "Day". Timings from BotEngine.greet(). */
     fun greet() {
         val t = now()
         val tok = ++greetToken
@@ -287,7 +287,7 @@ class MochiEngine(
             miniNextBehavior = now() + 0.8 + random.nextDouble() * 1.7
             return
         }
-        permanentEye = emote?.let { MochiConst.EMOTE_EYE.getValue(it) }
+        permanentEye = emote?.let { DayConst.EMOTE_EYE.getValue(it) }
         if (permanentEye != null) {
             eyeOverride = permanentEye
             eyeOverrideUntil = Double.POSITIVE_INFINITY
@@ -300,7 +300,7 @@ class MochiEngine(
 
     fun triggerEmote(emote: BotEmote, duration: Double = 1.8) {
         val t = now()
-        eyeOverride = MochiConst.EMOTE_EYE.getValue(emote)
+        eyeOverride = DayConst.EMOTE_EYE.getValue(emote)
         eyeOverrideUntil = t + duration
 
         when (emote) {
@@ -364,8 +364,8 @@ class MochiEngine(
     }
 
     /**
-     * Dresses Mochi. Animated: the old outfit leaves (180 ms), the new one drops in (350 ms) and Mochi does a
-     * little squash (BotEngine.setOutfit on the Mac, setOutfit in windows/src/mochi/engine.ts).
+     * Dresses Day. Animated: the old outfit leaves (180 ms), the new one drops in (350 ms) and Day does a
+     * little squash (BotEngine.setOutfit on the Mac, setOutfit in windows/src/Day/engine.ts).
      */
     fun setOutfit(next: Outfit, animated: Boolean = true) {
         if (next == outfitTarget) return

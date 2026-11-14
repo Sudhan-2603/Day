@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import com.coucou.android.core.HomeText
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.TypeScale
-import com.coucou.android.mochi.MochiConst
+import com.Day.android.core.HomeText
+import com.Day.android.core.IconKind
+import com.Day.android.core.TypeScale
+import com.Day.android.Day.DayConst
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,14 +30,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.core.HomePanel
-import com.coucou.android.core.Pills
-import com.coucou.android.core.ToolLabels
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.core.HomePanel
+import com.Day.android.core.Pills
+import com.Day.android.core.ToolLabels
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
 
 /**
  * One agent in detail, from what the computer sends with "Show session details on the phone": the project's
@@ -48,7 +48,7 @@ import com.coucou.android.mochi.MochiView
 fun SessionScreen(model: AppModel, pillId: String, onBack: () -> Unit) {
     val s = model.sessions.firstOrNull { it.pillId == pillId }
     val clock = remember { { SystemClock.elapsedRealtimeNanos() / 1e6 } }
-    val engine = remember(pillId) { MochiEngine(clock) }
+    val engine = remember(pillId) { DayEngine(clock) }
     if (s == null) {
         Column(Modifier.fillMaxSize().padding(horizontal = Gutter)) {
             ScreenTitle(stringResource(R.string.session_details), onBack)
@@ -57,7 +57,7 @@ fun SessionScreen(model: AppModel, pillId: String, onBack: () -> Unit) {
         return
     }
     if (engine.state != s.state) engine.setState(s.state)
-    // Its own colour, like on Home: the Mochi's body, the glow's state colour stays Louis's.
+    // Its own colour, like on Home: the Day's body, the glow's state colour stays Sudhan-2603's.
     engine.bodyColor = HomePanel.colorHex(s)?.let { HomePanel.rgb(it) }
     val name = s.agent.ifBlank { Pills.byId(s.pillId)?.name.orEmpty() }
     val accent = HomePanel.colorHex(s)?.let { HomePanel.rgb(it) }?.let(::rgbColor) ?: tokens().text.c()
@@ -67,9 +67,9 @@ fun SessionScreen(model: AppModel, pillId: String, onBack: () -> Unit) {
     LazyColumn(Modifier.fillMaxSize().padding(horizontal = Gutter), verticalArrangement = Arrangement.spacedBy(Gap)) {
         item { ScreenTitle(name, onBack) }
         item {
-            Panel(wash = MochiConst.STATES[s.state]?.color?.let(::rgbColor)) {
+            Panel(wash = DayConst.STATES[s.state]?.color?.let(::rgbColor)) {
                 Row(Modifier.padding(Gutter), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Gutter)) {
-                    MochiView(engine, Modifier.size(96.dp))
+                    DayView(engine, Modifier.size(96.dp))
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             HomeText.line(s) ?: stringResource(stateLabel(s.state)), style = TypeScale.HEADLINE.style(t.text.c()),
@@ -83,7 +83,7 @@ fun SessionScreen(model: AppModel, pillId: String, onBack: () -> Unit) {
         if (!s.finalLine.isNullOrBlank()) {
             item { SectionHeading(stringResource(R.string.session_last)) }
             item {
-                Panel(wash = MochiConst.STATES[BotState.FINISHED]?.color?.let(::rgbColor)) {
+                Panel(wash = DayConst.STATES[BotState.FINISHED]?.color?.let(::rgbColor)) {
                     SelectionContainer { Text(s.finalLine, Modifier.padding(Gutter), style = TypeScale.BODY.style(t.text.c())) }
                 }
             }
@@ -134,7 +134,7 @@ fun SessionScreen(model: AppModel, pillId: String, onBack: () -> Unit) {
                                 ) {
                                     // Done steps carry a check; the one being worked on carries the agent's dot.
                                     if (current) StateDot(accent, Modifier.padding(horizontal = 7.dp))
-                                    else CoucouIcon(IconKind.CHECK, tint = if (i == 0) StatusColors.online else t.textFaint.c(), size = 22.dp)
+                                    else DayIcon(IconKind.CHECK, tint = if (i == 0) StatusColors.online else t.textFaint.c(), size = 22.dp)
                                     // Free text is never shown (it can hold a command or a path), so a step the label cannot name
                                     // gets a neutral word instead of an empty row.
                                     Text(

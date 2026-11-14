@@ -27,10 +27,10 @@ final class IslandWindowController: NSWindowController {
     // Voice result auto-dismiss timer
     #if !APPSTORE
     private var voiceResultWork: DispatchWorkItem?
-    /// True only while Coucou listens for the answer to a question it asked.
+    /// True only while Day listens for the answer to a question it asked.
     private var isInConversation = false
     /// Context (last action, on-device model session) is kept a little after a turn so
-    /// "OK Coucou, et Stripe aussi" still works; this resets it.
+    /// "OK Day, et Stripe aussi" still works; this resets it.
     private var voiceContextExpiry: DispatchWorkItem?
     private var conversationContext = ConversationContext()
     private var consecutiveFailures = 0
@@ -58,7 +58,7 @@ final class IslandWindowController: NSWindowController {
     private var dragGhostSize: CGFloat = 0
     private var ghostCurrentOrigin: NSPoint = .zero
     private var highlightPanel: NSPanel? = nil
-    /// While Mochi is dragged near a corner (or the top centre): the place he will take.
+    /// While Day is dragged near a corner (or the top centre): the place he will take.
     private var snapPanel: NSPanel? = nil
     private var snapShown: IslandPlacement? = nil
     private var lastGhostTick: CFTimeInterval = 0
@@ -227,7 +227,7 @@ final class IslandWindowController: NSWindowController {
                 self?.moveToTargetScreen(choice: choice)
             }
 
-        // The notch or a corner (Settings, or Mochi dropped near a corner).
+        // The notch or a corner (Settings, or Day dropped near a corner).
         placementSubscription = state.$islandPlacement
             .dropFirst()
             .removeDuplicates()
@@ -309,7 +309,7 @@ final class IslandWindowController: NSWindowController {
                 self.setMode(.hidden)
 
             case .petit:
-                if from == .coucou {
+                if from == .Day {
                     // Fire interrupt first so canvas collapse starts before mode change
                     NotificationCenter.default.post(name: .greetingInterrupt, object: nil)
                 } else if from == .hidden {
@@ -327,9 +327,9 @@ final class IslandWindowController: NSWindowController {
                 // setMode BEFORE changing view: onChange(of: state.view) guards on .expanded,
                 // so setting view while already compact won't trigger a spurious open animation.
                 self.setMode(.compact)
-                // Reset view when leaving .coucou or .listening so stale views
+                // Reset view when leaving .Day or .listening so stale views
                 // (e.g. .voiceResult) never linger on a collapsed island.
-                if from == .coucou || from == .listening { self.state.view = self.defaultView() }
+                if from == .Day || from == .listening { self.state.view = self.defaultView() }
                 // Start 60s hide timer if mouse is not currently over the island
                 if !self.wasInIsland { self.fsm.mouseLeft() }
 
@@ -340,7 +340,7 @@ final class IslandWindowController: NSWindowController {
                     self.fsm.mouseLeft()
                 }
 
-            case .coucou:
+            case .Day:
                 self.expand(to: .greeting)
 
             case .listening:
@@ -381,7 +381,7 @@ final class IslandWindowController: NSWindowController {
                 self?.voiceContextExpiry?.cancel()
                 if !isDirect {
                     VoiceActionRunner.shared.pendingQuestion = nil
-                    // The island stays compact now: the tick says "I heard OK Coucou".
+                    // The island stays compact now: the tick says "I heard OK Day".
                     if AppState.shared.soundEnabled { SoundEngine.shared.play("tick") }
                 }
                 self?.fsm.voiceWoke()
@@ -411,7 +411,7 @@ final class IslandWindowController: NSWindowController {
                         self.expand(to: .voiceResult)
                         self.scheduleVoiceDismiss(delay: 1.5)
                     } else if self.isInConversation {
-                        // No answer to Coucou's question: stop listening.
+                        // No answer to Day's question: stop listening.
                         self.closeVoiceTurn()
                     } else {
                         self.fsm.voiceFinished()
@@ -425,12 +425,12 @@ final class IslandWindowController: NSWindowController {
     }
 
     // MARK: - Polling loop
-    // 60 Hz while the island is on screen, Mochi is on the desktop, a drag is under way or the
+    // 60 Hz while the island is on screen, Day is on the desktop, a drag is under way or the
     // pointer is near the island; 8 Hz (with timer tolerance) while it is hidden and the pointer
     // is elsewhere, so a hidden island costs next to nothing (CLAUDE.md: 0 % CPU when hidden).
 
     private static let fastPoll: TimeInterval = 1.0 / 60.0
-    /// Mochi held by the pointer: 120 Hz, so he glides on a ProMotion screen.
+    /// Day held by the pointer: 120 Hz, so he glides on a ProMotion screen.
     private static let dragPoll: TimeInterval = 1.0 / 120.0
     private static let nearPoll: TimeInterval = 1.0 / 20.0
     private static let idlePoll: TimeInterval = 1.0 / 8.0
@@ -458,16 +458,16 @@ final class IslandWindowController: NSWindowController {
     /// Three rates for a hidden or resting island: 60 Hz close to the island itself, 20 Hz in the
     /// wide band around the panel (a pointer flicked up still reaches the close zone
     /// within one tick), 8 Hz elsewhere. Before, the whole band ran at 60 Hz, so a hidden
-    /// island polled at 60 Hz most of the time. Desktop Mochi has its own poll.
+    /// island polled at 60 Hz most of the time. Desktop Day has its own poll.
     private func adjustPollRate(mouse: NSPoint, panelFrame: NSRect, islandRect: NSRect) {
         let island = islandRect.offsetBy(dx: panelFrame.minX, dy: panelFrame.minY)
         let nearIsland = island.insetBy(dx: -200, dy: -160).contains(mouse)
         let inBand = panelFrame.insetBy(dx: -120, dy: -120).contains(mouse)
-        // The resting (compact) island is treated like the hidden one: Mochi reads the
+        // The resting (compact) island is treated like the hidden one: Day reads the
         // pointer itself every frame, so only hover and clicks need this poll, and those
         // only near the island. 60 Hz while open, dragging or close to it.
         let busy = state.mode == .expanded || inAttachDrag || attachDragStart != nil
-            || fsm.state == .home || fsm.state == .coucou || fsm.state == .listening || nearIsland
+            || fsm.state == .home || fsm.state == .Day || fsm.state == .listening || nearIsland
         let wanted = inAttachDrag ? Self.dragPoll : busy ? Self.fastPoll : inBand ? Self.nearPoll : Self.idlePoll
         if wanted != pollInterval { startPolling(interval: wanted) }
     }
@@ -528,8 +528,8 @@ final class IslandWindowController: NSWindowController {
         wasInIsland = inIsland
         if inIsland && !previouslyInIsland {
             guard !inAttachDrag else { return }
-            // If in coucou: tell greeting to stay open (tc → infinity)
-            if fsm.state == .coucou {
+            // If in Day: tell greeting to stay open (tc → infinity)
+            if fsm.state == .Day {
                 NotificationCenter.default.post(name: .greetingHover, object: nil)
             }
             fsm.mouseEntered()
@@ -543,7 +543,7 @@ final class IslandWindowController: NSWindowController {
         if overBot && !botHovering { botHoverIn(mousePos: NSEvent.mouseLocation) }
         if !overBot && botHovering { botHoverOut() }
         botHovering = overBot
-        // The pointer on Mochi (or on the resting island): the line about the Mac shows under it.
+        // The pointer on Day (or on the resting island): the line about the Mac shows under it.
         let vitalsHover = (state.mode == .compact && inIsland) || overBot
         if MachineVitals.shared.hovered != vitalsHover { MachineVitals.shared.hovered = vitalsHover }
         if botHovering {
@@ -556,7 +556,7 @@ final class IslandWindowController: NSWindowController {
             }
         }
 
-        // Ghost Mochi follows cursor + window highlight during drag (60 Hz, no throttle)
+        // Ghost Day follows cursor + window highlight during drag (60 Hz, no throttle)
         if inAttachDrag {
             updateDragGhost()
             updateWindowHighlight()
@@ -687,7 +687,7 @@ final class IslandWindowController: NSWindowController {
             AppState.shared.voiceActive = false
         }
         #endif
-        // Keep the FSM in step with what is on screen (home/coucou → petit now).
+        // Keep the FSM in step with what is on screen (home/Day → petit now).
         fsm.collapse()
         setMode(.compact)
         window?.resignKey()
@@ -752,7 +752,7 @@ final class IslandWindowController: NSWindowController {
                 object: state.soundEnabled ? BotEmote.happy : BotEmote.annoyed)
 
         case .desktopToggle:
-            DesktopMochiController.shared.flyOutOrHome()
+            DesktopDayController.shared.flyOutOrHome()
 
         case .wardrobeToggle:
             if state.mode == .expanded && state.view == .wardrobe {
@@ -762,7 +762,7 @@ final class IslandWindowController: NSWindowController {
                 expand(to: .wardrobe)
             }
 
-        case .talkToCoucou:
+        case .talkToDay:
             #if !APPSTORE
             VoiceSpeaker.shared.stop()
             VoiceEngine.shared.startListeningDirectly()
@@ -964,7 +964,7 @@ final class IslandWindowController: NSWindowController {
             self?.collapse()
         }
 
-        // Wardrobe open/close from desktop Mochi right-click (does NOT post .hookExpand)
+        // Wardrobe open/close from desktop Day right-click (does NOT post .hookExpand)
         NotificationCenter.default.addObserver(forName: .openWardrobeFromDesktop, object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
             if self.state.mode == .expanded && self.state.view == .wardrobe {
@@ -981,7 +981,7 @@ final class IslandWindowController: NSWindowController {
             self?.handleDizzy()
         }
 
-        // Eye tracking at the mouse's own rate: Mochi's look target follows every mouse move
+        // Eye tracking at the mouse's own rate: Day's look target follows every mouse move
         // instead of the island poll (8 to 20 Hz away from the island, which made the head step).
         // Nothing runs while the mouse is still, and a hidden island skips the work.
         NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { _ in
@@ -1006,8 +1006,8 @@ final class IslandWindowController: NSWindowController {
                 self.botHovering = false
                 // Drag only starts when clicking directly on the bot head
                 guard self.isBotHit(event.locationInWindow) else { return }
-                // Notch Mochi is invisible when on desktop — no drag, no slap
-                guard !self.state.mochiOnDesktop else { return }
+                // Notch Day is invisible when on desktop — no drag, no slap
+                guard !self.state.DayOnDesktop else { return }
                 self.attachDragStart = NSEvent.mouseLocation
                 // Post slap only when expanded
                 guard self.state.mode == .expanded else { return }
@@ -1062,14 +1062,14 @@ final class IslandWindowController: NSWindowController {
                     NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.happy)
                     self.expand(to: .prompt)
                 } else if !inNotchZone {
-                    // Drop outside notch zone → install Mochi on the desktop.
+                    // Drop outside notch zone → install Day on the desktop.
                     // Prevent hideDragGhost from closing the ghost panel so we can promote it.
                     let ghost = self.dragGhostPanel
                     self.dragGhostPanel = nil   // nil first so hideDragGhost skips close
                     self.hideDragGhost()        // resets isDraggingBot, closes highlight panel
-                    DesktopMochiController.shared.install(ghostPanel: ghost, at: mouse)
+                    DesktopDayController.shared.install(ghostPanel: ghost, at: mouse)
                 } else {
-                    // Drop back in notch zone → Mochi returns to notch
+                    // Drop back in notch zone → Day returns to notch
                     self.hideDragGhost()
                 }
                 #else
@@ -1078,7 +1078,7 @@ final class IslandWindowController: NSWindowController {
                     let ghost = self.dragGhostPanel
                     self.dragGhostPanel = nil
                     self.hideDragGhost()
-                    DesktopMochiController.shared.install(ghostPanel: ghost, at: mouse)
+                    DesktopDayController.shared.install(ghostPanel: ghost, at: mouse)
                 } else {
                     self.hideDragGhost()
                 }
@@ -1115,7 +1115,7 @@ final class IslandWindowController: NSWindowController {
             guard let self else { return event }
             MainActor.assumeIsolated {
                 guard self.wasInIsland, self.isBotHit(event.locationInWindow) else { return }
-                guard !self.state.mochiOnDesktop else { return }
+                guard !self.state.DayOnDesktop else { return }
                 if self.state.mode == .expanded && self.state.view == .wardrobe {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         self.state.view = .overview
@@ -1141,7 +1141,7 @@ final class IslandWindowController: NSWindowController {
         }
     }
 
-    // MARK: - Drag ghost window (Mochi follows cursor during drag)
+    // MARK: - Drag ghost window (Day follows cursor during drag)
 
     private func showDragGhost() {
         guard dragGhostPanel == nil else { return }
@@ -1207,7 +1207,7 @@ final class IslandWindowController: NSWindowController {
         lastGhostTick = now
         var target = NSPoint(x: mouse.x - s/2, y: mouse.y - s/2)
         // Near a corner (or the top centre): the place shows, and the nearer the pointer gets,
-        // the harder Mochi is pulled into it (a gradual magnet, no jump at the zone's edge).
+        // the harder Day is pulled into it (a gradual magnet, no jump at the zone's edge).
         if let snap = snapTarget(at: mouse) {
             let rect = snap.1
             showSnapTarget(snap.0, rect: rect)
@@ -1227,7 +1227,7 @@ final class IslandWindowController: NSWindowController {
         panel.setFrameOrigin(ghostCurrentOrigin)
     }
 
-    /// Mochi's centre on the screen, where the island draws him now.
+    /// Day's centre on the screen, where the island draws him now.
     private func botScreenCenter() -> NSPoint? {
         let s = state
         let (w, h) = islandSize(mode: s.mode, view: s.view, progress: s.uploadProgress, nw: notchW, nh: notchH)
@@ -1426,7 +1426,7 @@ final class IslandWindowController: NSWindowController {
         // A question left on screen behind another view (#852) still waits: opening shows it.
         if state.pendingQuestion != nil { return .question }
         #if !APPSTORE
-        // Mochi is blue: a new Coucou waits, and that is the first thing the island shows.
+        // Day is blue: a new Day waits, and that is the first thing the island shows.
         if state.pendingQuestion == nil, MacUpdater.shared.hintActive {
             MacUpdater.shared.prepareCard()
             return .update
@@ -1522,16 +1522,16 @@ final class IslandWindowController: NSWindowController {
     /// Top of the menu-bar screen in AppKit coordinates: origin of `DesktopSpace`.
     static var desktopTop: CGFloat { NSScreen.screens.first?.frame.maxY ?? 0 }
 
-    /// Mochi's look target from the current mouse position (see the mouse-moved monitors).
+    /// Day's look target from the current mouse position (see the mouse-moved monitors).
     static func trackMouseLook() {
         let app = AppState.shared
-        guard app.mode != .hidden || app.mochiOnDesktop else { return }
+        guard app.mode != .hidden || app.DayOnDesktop else { return }
         let pos = DesktopSpace.topDown(NSEvent.mouseLocation, desktopTop: desktopTop)
         let cur = app.mousePosition
         if abs(pos.x - cur.x) > 1 || abs(pos.y - cur.y) > 1 { app.mousePosition = pos }
     }
 
-    /// Screen the island currently sits on (Settings window, desktop Mochi flights).
+    /// Screen the island currently sits on (Settings window, desktop Day flights).
     private(set) static var currentScreen: NSScreen?
     /// The island panel's frame on the screen (set where it is placed).
     private(set) static var panelFrame: NSRect = .zero
@@ -1542,7 +1542,7 @@ final class IslandWindowController: NSWindowController {
             .offsetBy(dx: panelFrame.minX, dy: panelFrame.minY)
     }
 
-    /// Where Mochi leaves from and flies back to (a square of side `s`): the top centre at the
+    /// Where Day leaves from and flies back to (a square of side `s`): the top centre at the
     /// notch, the resting island in a corner.
     static func homeOrigin(size s: CGFloat) -> NSPoint {
         let app = AppState.shared
@@ -1555,7 +1555,7 @@ final class IslandWindowController: NSWindowController {
     }
 
     /// The resting island for `screen`: the notch's size at the notch, or the small bar of a
-    /// screen without a notch when the island lives in a corner (it floats, Mochi in sight).
+    /// screen without a notch when the island lives in a corner (it floats, Day in sight).
     static func restingGeometry(for screen: NSScreen) -> IslandScreenGeometry {
         guard AppState.shared.islandPlacement.isCorner else { return screenGeometry(for: screen) }
         return IslandScreenGeometry(screenWidth: screen.frame.width, safeAreaTop: 0,
@@ -1680,11 +1680,11 @@ extension IslandWindowController {
             return
         }
 
-        // Mochi transitions to "thinking" while we process
+        // Day transitions to "thinking" while we process
         AppState.shared.voiceSubState = .thinking
 
         // ── Claude as the brain (Settings → Voice, the user's Anthropic key) ───────
-        // Every phrase goes to Claude, which acts with Coucou's tools. Only when Claude
+        // Every phrase goes to Claude, which acts with Day's tools. Only when Claude
         // can't be reached does the phrase parser below take over.
         if runner.pendingQuestion == nil, ClaudeVoiceBrain.isActive {
             if await handleWithClaude(transcript) { return }
@@ -1694,7 +1694,7 @@ extension IslandWindowController {
         // ── Short noise / spurious activation guard (conversation mode only) ────────
         // A transcript shorter than 2 words that isn't a pill name or known command
         // is almost certainly a false activation. Silently re-listen without feedback.
-        // A one-word reply to Coucou's own question ("Tana", "non", "yes" after "want the
+        // A one-word reply to Day's own question ("Tana", "non", "yes" after "want the
         // details?") is expected, not noise.
         if isInConversation && runner.pendingQuestion == nil && !runner.hasWebThread {
             let normWords = normTranscript.split(separator: " ").map(String.init)
@@ -1896,7 +1896,7 @@ extension IslandWindowController {
         }
 
         // Mid-conversation, a phrase with no command in it (talking to someone else,
-        // "on s'en fout c'est"…) is dropped silently: no dizzy Mochi, no "pas compris".
+        // "on s'en fout c'est"…) is dropped silently: no dizzy Day, no "pas compris".
         // Two in a row end the conversation.
         if case .unknown = effectiveIntent, result.outcome == .failure {
             if isInConversation {
@@ -1905,7 +1905,7 @@ extension IslandWindowController {
                 closeVoiceTurn()
                 return
             }
-            // First miss right after "OK Coucou": ask once, like a person would
+            // First miss right after "OK Day": ask once, like a person would
             // ("Pardon, tu peux répéter ?"), then listen for the repeat.
             let again = VoiceActionResult(
                 outcome: .success,
@@ -1916,7 +1916,7 @@ extension IslandWindowController {
             return
         }
 
-        // Mochi reaction + consecutive failure tracking
+        // Day reaction + consecutive failure tracking
         switch result.outcome {
         case .success:
             conversationContext.update(effectiveIntent)
@@ -1925,7 +1925,7 @@ extension IslandWindowController {
             voiceMissReaction()
             if isInConversation { consecutiveFailures += 1 }
         case .question:
-            break   // Mochi will show listening after re-open
+            break   // Day will show listening after re-open
         }
 
         // After 2 consecutive failures in conversation mode: end without speaking
@@ -1977,7 +1977,7 @@ extension IslandWindowController {
     }
 
     /// Speak the result, then stop listening — unless the answer is a question, in which
-    /// case listen once for the reply. Coucou cannot tell whether I am talking to it or
+    /// case listen once for the reply. Day cannot tell whether I am talking to it or
     /// to someone else, so it only keeps the mic open when it asked something.
     @MainActor
     private func speakAndContinueConversation(_ result: VoiceActionResult) {
@@ -2014,7 +2014,7 @@ extension IslandWindowController {
         }
     }
 
-    /// A question Coucou asked: an explicit follow-up, or an answer ending with "?".
+    /// A question Day asked: an explicit follow-up, or an answer ending with "?".
     private static func isQuestion(_ result: VoiceActionResult?) -> Bool {
         guard let result else { return false }
         if case .question = result.outcome { return true }
@@ -2022,10 +2022,10 @@ extension IslandWindowController {
         return t.hasSuffix("?") || t.hasSuffix("？") || t.hasSuffix("؟")
     }
 
-    /// Listen once for the reply to Coucou's question, or close the turn.
+    /// Listen once for the reply to Day's question, or close the turn.
     @MainActor
     private func finishVoiceTurn(expectAnswer: Bool) {
-        // First time I speak one language and Coucou answers in another: offer once to
+        // First time I speak one language and Day answers in another: offer once to
         // answer in mine ("You're speaking French. Want me to answer in French?").
         if !expectAnswer, !ClaudeVoiceBrain.isActive, !VoiceSettings.languageOfferDone,
            let spoken = VoiceEngine.shared.speechLocale?.language.languageCode?.identifier,
@@ -2083,10 +2083,10 @@ extension IslandWindowController {
     }
 
     /// A file dropped on the notch while the voice email card is open: it becomes the
-    /// attachment, and Coucou says so.
+    /// attachment, and Day says so.
     @MainActor
     func attachToVoiceMailCard(_ url: URL) {
-        // Not listening any more: Coucou's own "attached" must not come back as a turn.
+        // Not listening any more: Day's own "attached" must not come back as a turn.
         VoiceEngine.shared.cancelListening()
         if isInConversation || AppState.shared.voiceActive { closeVoiceTurn() }
         let state = AppState.shared
@@ -2107,22 +2107,22 @@ extension IslandWindowController {
         }
     }
 
-    /// A voice command that failed: a small "huh?" from Mochi. Not .botDizzy, which is the
+    /// A voice command that failed: a small "huh?" from Day. Not .botDizzy, which is the
     /// slap reaction and opened the "Too many hits at once" card in the middle of a mail.
     @MainActor
     func voiceMissReaction() {
         NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.surprised)
     }
 
-    /// Seconds to wait for the first word of a reply: longer while Coucou waits for a
+    /// Seconds to wait for the first word of a reply: longer while Day waits for a
     /// file, since finding it in Finder and dragging it takes a moment.
     @MainActor
     static func answerWait(_ normal: TimeInterval) -> TimeInterval {
         VoiceActionRunner.shared.isWaitingForAttachment ? 20.0 : normal
     }
 
-    /// A file dropped on the notch while Coucou asked for an attachment: stop listening,
-    /// a little gulp, then the filled-in mail card and Coucou says so.
+    /// A file dropped on the notch while Day asked for an attachment: stop listening,
+    /// a little gulp, then the filled-in mail card and Day says so.
     @MainActor
     func attachVoiceMailFile(_ url: URL) async {
         VoiceEngine.shared.cancelListening()
@@ -2139,7 +2139,7 @@ extension IslandWindowController {
     }
 
     /// Stop listening and let the island settle. The context (last action, model session)
-    /// stays 90 s so a new "OK Coucou, et Stripe aussi" still understands "aussi".
+    /// stays 90 s so a new "OK Day, et Stripe aussi" still understands "aussi".
     @MainActor
     private func closeVoiceTurn() {
         isInConversation = false
@@ -2173,7 +2173,7 @@ extension IslandWindowController {
         VoiceCaptionManager.shared.hide(after: delay)
         let item = DispatchWorkItem { [weak self] in
             guard let self else { return }
-            // Mochi winks as the exchange ends — but only when the sub-state is still .speaking
+            // Day winks as the exchange ends — but only when the sub-state is still .speaking
             // (not if voiceActive was already cleared by a collapse).
             if AppState.shared.voiceActive {
                 NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.wink)
@@ -2246,7 +2246,7 @@ func islandSize(mode: IslandMode, view: IslandView,
                 nh: CGFloat = IslandConst.notchHeight) -> (CGFloat, CGFloat) {
     let corner = IslandPlacement.current.isCorner
     switch mode {
-    // In a corner, resting or compact: a square tile with Mochi alone.
+    // In a corner, resting or compact: a square tile with Day alone.
     case .hidden:   return corner ? (IslandPlacement.tile, IslandPlacement.tile) : (nw, nh)
     case .compact:  return corner ? (IslandPlacement.tile, IslandPlacement.tile) : (nw + 160, nh)
     case .expanded:

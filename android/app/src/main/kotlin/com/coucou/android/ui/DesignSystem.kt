@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,17 +35,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.coucou.android.core.MotionPolicy
-import com.coucou.android.core.MotionState
-import com.coucou.android.core.Radii
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.Tokens
-import com.coucou.android.core.TypeScale
-import com.coucou.android.core.TypeStep
+import com.Day.android.core.MotionPolicy
+import com.Day.android.core.MotionState
+import com.Day.android.core.Radii
+import com.Day.android.core.Spacing
+import com.Day.android.core.Tokens
+import com.Day.android.core.TypeScale
+import com.Day.android.core.TypeStep
 
 // The app's building blocks: panels, pill buttons, the hero panel, the tokens of the (dark) theme.
 
-/** The tokens of the current theme; CoucouTheme provides them. */
+/** The tokens of the current theme; DayTheme provides them. */
 val LocalTokens = staticCompositionLocalOf { Tokens.DARK }
 
 @Composable
@@ -56,7 +56,7 @@ internal fun Long.c() = Color(this)
 
 /**
  * True when motion is reduced: Android's "Remove animations" (unless the user chose otherwise in Settings > Reduce motion), or the
- * Settings choice to always reduce it. Springs and slides become plain fades or jumps, and Mochi stops his idle animations.
+ * Settings choice to always reduce it. Springs and slides become plain fades or jumps, and Day stops his idle animations.
  */
 @Composable
 fun reducedMotion(): Boolean {

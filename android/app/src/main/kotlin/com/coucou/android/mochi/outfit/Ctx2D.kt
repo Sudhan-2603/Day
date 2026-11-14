@@ -1,4 +1,4 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
 import kotlin.math.PI
 import kotlin.math.abs
@@ -8,7 +8,7 @@ import kotlin.math.tan
 
 /**
  * A small stateful 2D context shaped like the browser's CanvasRenderingContext2D, so the outfit drawing of
- * windows/src/mochi/outfits.ts can be ported line by line. Pure Kotlin: the real drawing is done by a [Gfx]
+ * windows/src/Day/outfits.ts can be ported line by line. Pure Kotlin: the real drawing is done by a [Gfx]
  * (Compose canvas on the phone, a recorder in the tests, which compare it with the TypeScript original).
  */
 

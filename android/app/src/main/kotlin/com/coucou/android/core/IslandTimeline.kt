@@ -1,6 +1,6 @@
-package com.coucou.android.core
+package com.Day.android.core
 
-import com.coucou.android.mochi.BotState
+import com.Day.android.Day.BotState
 
 /** What the island shows. [pillId] is the session it is about (or the request's pill). */
 data class IslandSpec(
@@ -70,7 +70,7 @@ class IslandTimeline(private val clockMs: () -> Double) {
         refresh()
     }
 
-    /** Close at once (Coucou came to the front, the switch went off, the link dropped). */
+    /** Close at once (Day came to the front, the switch went off, the link dropped). */
     fun dismiss() {
         swiped = null
         active = null

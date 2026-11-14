@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import java.io.File
 import org.junit.Assert.assertEquals
@@ -25,7 +25,7 @@ class ReleaseBuildTest {
     }
 
     @Test fun signingComesFromTheEnvironmentOrGradlePropertiesNeverFromTheRepository() {
-        for (name in listOf("COUCOU_KEYSTORE_FILE", "COUCOU_KEYSTORE_PASSWORD", "COUCOU_KEY_ALIAS", "COUCOU_KEY_PASSWORD")) assertTrue(name, gradle.contains("\"$name\""))
+        for (name in listOf("Day_KEYSTORE_FILE", "Day_KEYSTORE_PASSWORD", "Day_KEY_ALIAS", "Day_KEY_PASSWORD")) assertTrue(name, gradle.contains("\"$name\""))
         assertTrue(gradle.contains("System.getenv(name) ?: providers.gradleProperty(name)"))
         // no literal password, no key file path, and never the debug key for a release
         assertFalse(Regex("""(storePassword|keyPassword)\s*=\s*"[^"]""").containsMatchIn(gradle))
@@ -70,7 +70,7 @@ class ReleaseBuildTest {
         assertTrue(gradle.contains("tasks.matching { it.name == \"lint\" }.configureEach { dependsOn(verifyReleaseNoLogs) }"))
         assertTrue(gradle.contains("dependsOn(\"assembleRelease\")"))
         // the tags and messages that must not survive in the dex are the ones the sources use
-        val tags = Regex("""(?<![A-Z_])TAG = "(\w+)"|Log\.\w\("(Coucou\w+)"""").findAll(sources().joinToString("\n") { it.readText() })
+        val tags = Regex("""(?<![A-Z_])TAG = "(\w+)"|Log\.\w\("(Day\w+)"""").findAll(sources().joinToString("\n") { it.readText() })
             .flatMap { m -> m.groupValues.drop(1).filter { it.isNotEmpty() } }.toSet()
         for (tag in tags) assertTrue("verifyReleaseNoLogs must look for $tag", gradle.contains("\"$tag\""))
     }

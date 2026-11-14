@@ -1,12 +1,12 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.GlanceBuilder
-import com.coucou.android.core.UsageTone
-import com.coucou.android.core.WidgetData
-import com.coucou.android.core.WidgetTone
-import com.coucou.android.link.LinkState
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.GlanceBuilder
+import com.Day.android.core.UsageTone
+import com.Day.android.core.WidgetData
+import com.Day.android.core.WidgetTone
+import com.Day.android.link.LinkState
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -16,7 +16,7 @@ import org.junit.Test
 /** One palette for every Widget: the same state gives the same colour everywhere, nothing picks a colour of its own, and text stays readable. */
 class WidgetPaletteTest {
     private val res = "src/main/res/"
-    private val main = "src/main/kotlin/com/coucou/android/"
+    private val main = "src/main/kotlin/com/Day/android/"
     private fun read(p: String) = File(p).readText()
 
     // ── One state, one colour, the most urgent agent wins ───────────────────────────────────────────
@@ -123,7 +123,7 @@ class WidgetPaletteTest {
     }
 
     private val widgetSources = listOf(
-        "SoloWidget", "ListWidget", "MochiBigWidget", "StatusPillWidget", "WaitingAlertWidget", "UsageRingWidget", "TodayWidget", "MoodWidget", "TeamWidget", "GlanceWidget",
+        "SoloWidget", "ListWidget", "DayBigWidget", "StatusPillWidget", "WaitingAlertWidget", "UsageRingWidget", "TodayWidget", "MoodWidget", "TeamWidget", "GlanceWidget",
     ).associateWith { read("${main}app/$it.kt") }
 
     @Test fun noWidgetSourceHardCodesAColour() {
@@ -132,7 +132,7 @@ class WidgetPaletteTest {
             for (call in listOf("Color(", "Color.", "parseColor", "setTextColor(", "argb(")) assertFalse("$name uses $call", src.contains(call))
         }
         // The pictures keep only their neutral track and glow strength, named.
-        for (f in listOf("BarBitmap", "RingBitmap", "MochiBitmap")) {
+        for (f in listOf("BarBitmap", "RingBitmap", "DayBitmap")) {
             for (line in read("${main}app/$f.kt").lines().filter { Regex("""0x[0-9A-Fa-f]{6,8}""").containsMatchIn(it) }) assertTrue("$f: $line", line.contains("TRACK"))
         }
     }
@@ -140,36 +140,36 @@ class WidgetPaletteTest {
     @Test fun everyWidgetPaintsThroughTheHubAndNeverSetsItsOwnCard() {
         for ((name, src) in widgetSources) {
             assertTrue("$name does not paint through the hub", src.contains("WidgetHub.paint(") || src.contains("WidgetHub.paintUsage("))
-            if (name != "MochiBigWidget") assertFalse("$name sets a background itself", src.contains("setBackgroundResource"))
+            if (name != "DayBigWidget") assertFalse("$name sets a background itself", src.contains("setBackgroundResource"))
         }
         // The plan-usage card uses the usage palette, and a Widget with no usage never borrows the orange.
         assertTrue(widgetSources.getValue("UsageRingWidget").contains("WidgetHub.paintUsage(v, R.id.ring_root, R.id.ring_tint, ring.tone)"))
         assertTrue(widgetSources.getValue("UsageRingWidget").contains("if (c.connected) WidgetTone.IDLE else WidgetTone.MUTED"))
     }
 
-    @Test fun mochisGlowAlwaysFollowsTheCardsTone() {
+    @Test fun DaysGlowAlwaysFollowsTheCardsTone() {
         for ((name, src) in widgetSources) {
-            for (line in src.lines().filter { it.contains("MochiBitmap.of(") && it.contains("glow = true") }) assertTrue("$name: $line", line.contains("tone ="))
+            for (line in src.lines().filter { it.contains("DayBitmap.of(") && it.contains("glow = true") }) assertTrue("$name: $line", line.contains("tone ="))
         }
-        val bitmap = read(main + "app/MochiBitmap.kt")
+        val bitmap = read(main + "app/DayBitmap.kt")
         assertTrue(bitmap.contains("tone: WidgetTone = WidgetTone.of(state)"))
         assertTrue(bitmap.contains("val tone: WidgetTone)"))
     }
 
     @Test fun theNotConnectedIconIsOnEveryWidgetThatShowsAStatus() {
-        for ((name, layout) in listOf("SoloWidget" to "widget_solo", "ListWidget" to "widget_list", "MochiBigWidget" to "widget_big", "WaitingAlertWidget" to "widget_alert", "MoodWidget" to "widget_mood", "GlanceWidget" to "widget_glance")) {
+        for ((name, layout) in listOf("SoloWidget" to "widget_solo", "ListWidget" to "widget_list", "DayBigWidget" to "widget_big", "WaitingAlertWidget" to "widget_alert", "MoodWidget" to "widget_mood", "GlanceWidget" to "widget_glance")) {
             // In the layout, or set from code when the computer is not there (the List swaps its dot for it).
             assertTrue("$layout has no not-connected icon", read("${res}layout/$layout.xml").contains("@drawable/ic_widget_offline") || widgetSources.getValue(name).contains("R.drawable.ic_widget_offline"))
             assertTrue("$name never shows it", widgetSources.getValue(name).contains("connected"))
         }
         assertTrue(widgetSources.getValue("StatusPillWidget").contains("R.drawable.ic_widget_offline"))
-        for (id in listOf("big_offline" to "MochiBigWidget", "alert_offline" to "WaitingAlertWidget", "mood_offline" to "MoodWidget", "glance_offline" to "GlanceWidget")) {
+        for (id in listOf("big_offline" to "DayBigWidget", "alert_offline" to "WaitingAlertWidget", "mood_offline" to "MoodWidget", "glance_offline" to "GlanceWidget")) {
             assertTrue(id.first, widgetSources.getValue(id.second).contains("R.id.${id.first}"))
         }
     }
 
     @Test fun theButtonTilesAreOrangeOnlyWhileSomethingWaits() {
-        val big = widgetSources.getValue("MochiBigWidget")
+        val big = widgetSources.getValue("DayBigWidget")
         assertTrue(big.contains("if (c.look == WidgetTone.ATTENTION) R.drawable.widget_tile_bg_attention else R.drawable.widget_tile_bg"))
         assertFalse("the pill's round buttons never turn orange", widgetSources.getValue("StatusPillWidget").contains("tile_bg"))
         assertTrue(read(res + "drawable/widget_tile_bg.xml").contains("@color/widget_button"))

@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.HomePanel
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.HomePanel
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -49,7 +49,7 @@ class HomePanelTest {
         assertEquals(HomePanel.Link.NONE, HomePanel.link(paired = false, demo = true, hasApproval = false))
     }
 
-    @Test fun pillColoursBecomeMochiBodies() {
+    @Test fun pillColoursBecomeDayBodies() {
         val c = HomePanel.rgb("#8AB4F8")!!
         assertEquals(0x8A / 255.0, c.r, 1e-9)
         assertEquals(0xB4 / 255.0, c.g, 1e-9)

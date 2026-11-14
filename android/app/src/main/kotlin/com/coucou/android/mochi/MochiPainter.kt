@@ -1,4 +1,4 @@
-package com.coucou.android.mochi
+package com.Day.android.Day
 
 import android.graphics.Typeface
 import androidx.compose.ui.geometry.Offset
@@ -14,15 +14,15 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
-import com.coucou.android.mochi.outfit.ComposeGfx
-import com.coucou.android.mochi.outfit.Ctx2D
-import com.coucou.android.mochi.outfit.Outfit
-import com.coucou.android.mochi.outfit.OutfitState
-import com.coucou.android.mochi.outfit.PUMPKIN_BODY
-import com.coucou.android.mochi.outfit.Css
-import com.coucou.android.mochi.outfit.drawOutfitBehind
-import com.coucou.android.mochi.outfit.drawOutfitFront
-import com.coucou.android.mochi.outfit.makeHead
+import com.Day.android.Day.outfit.ComposeGfx
+import com.Day.android.Day.outfit.Ctx2D
+import com.Day.android.Day.outfit.Outfit
+import com.Day.android.Day.outfit.OutfitState
+import com.Day.android.Day.outfit.PUMPKIN_BODY
+import com.Day.android.Day.outfit.Css
+import com.Day.android.Day.outfit.drawOutfitBehind
+import com.Day.android.Day.outfit.drawOutfitFront
+import com.Day.android.Day.outfit.makeHead
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -32,10 +32,10 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 /**
- * Compose Canvas port of MochiEngine.draw() in windows/src/mochi/engine.ts.
- * Draws hands, body, blush, eyes, mouth, badge, particles and the outfits (mochi/outfit, checked against the PC's drawing).
+ * Compose Canvas port of DayEngine.draw() in windows/src/Day/engine.ts.
+ * Draws hands, body, blush, eyes, mouth, badge, particles and the outfits (Day/outfit, checked against the PC's drawing).
  */
-object MochiPainter {
+object DayPainter {
     private val INK = Color(26, 20, 18)
     private val MINI_INK = Color(16, 19, 26)
 
@@ -49,16 +49,16 @@ object MochiPainter {
         color = c; isAntiAlias = true; style = PaintingStyle.Stroke; strokeWidth = w; strokeCap = StrokeCap.Round
     }
 
-    fun bodyPath(e: MochiEngine, rx: Double, ry: Double, r: Double): Path {
-        val pts = MochiGeometry.bodyPoints(rx, ry, r, e.morph)
+    fun bodyPath(e: DayEngine, rx: Double, ry: Double, r: Double): Path {
+        val pts = DayGeometry.bodyPoints(rx, ry, r, e.morph)
         return Path().apply {
             pts.forEachIndexed { i, p -> if (i == 0) moveTo(p.x.toFloat(), p.y.toFloat()) else lineTo(p.x.toFloat(), p.y.toFloat()) }
             close()
         }
     }
 
-    /** Draws Mochi centred in this DrawScope. `nowSec` drives spirals, wave and badge pulses. */
-    fun DrawScope.drawMochi(e: MochiEngine, nowSec: Double) {
+    /** Draws Day centred in this DrawScope. `nowSec` drives spirals, wave and badge pulses. */
+    fun DrawScope.drawDay(e: DayEngine, nowSec: Double) {
         val w = size.width.toDouble()
         val h = size.height.toDouble()
         val r = w * 0.3
@@ -121,7 +121,7 @@ object MochiPainter {
         }
     }
 
-    private fun drawBody(c: Canvas, e: MochiEngine, body: Path, r: Double, rx: Double, ry: Double) {
+    private fun drawBody(c: Canvas, e: DayEngine, body: Path, r: Double, rx: Double, ry: Double) {
         val bodyColor = e.bodyColor
         if (bodyColor != null) {
             c.drawPath(body, fillPaint(bodyColor.color()))
@@ -130,7 +130,7 @@ object MochiPainter {
                 isAntiAlias = true
                 shader = LinearGradientShader(
                     Offset((rx * 0.7).toFloat(), (-ry * 0.85).toFloat()), Offset((-rx * 0.8).toFloat(), (ry * 0.9).toFloat()),
-                    listOf(MochiConst.BASE_TOP.color(), MochiConst.BASE_BOTTOM.color()),
+                    listOf(DayConst.BASE_TOP.color(), DayConst.BASE_BOTTOM.color()),
                 )
             }
             c.drawPath(body, p)
@@ -188,7 +188,7 @@ object MochiPainter {
         c.drawPath(body, hl)
     }
 
-    private fun drawEyes(c: Canvas, e: MochiEngine, nowSec: Double, body: Path, r: Double, rx: Double, ry: Double) {
+    private fun drawEyes(c: Canvas, e: DayEngine, nowSec: Double, body: Path, r: Double, rx: Double, ry: Double) {
         var shape = e.eyeOverride ?: e.cfg.eye
         if (e.morph > 0.5) {
             if (e.isChewing) shape = EyeShape.HAPPY
@@ -199,9 +199,9 @@ object MochiPainter {
         val ink = if (e.isMini) MINI_INK else INK
 
         for (sd in intArrayOf(-1, 1)) {
-            val eyeYaw = sd * MochiConst.EYE_SP + e.yaw
+            val eyeYaw = sd * DayConst.EYE_SP + e.yaw
             // Rolling with an outfit on, the whole body turns: the eyes must not roll again.
-            var eyePitch = MochiConst.EYE_P + e.pitch + (if (e.rigidRoll) 0.0 else e.roll)
+            var eyePitch = DayConst.EYE_P + e.pitch + (if (e.rigidRoll) 0.0 else e.roll)
             eyePitch = (((eyePitch + PI) % (PI * 2)) + PI * 2) % (PI * 2) - PI
             val cp = cos(eyePitch)
             if (cos(eyeYaw) * cp <= 0.04) continue
@@ -211,8 +211,8 @@ object MochiPainter {
             val fx = lerpD(max(0.18, cos(eyeYaw)), 1.0, e.morph * 0.7)
             val fy = lerpD(max(0.18, cp), 1.0, e.morph * 0.7)
             val mult = if (e.isMini) 1.9 else 1.0
-            val ew = r * MochiConst.EYE_W * e.es * mult
-            val eh = r * MochiConst.EYE_H * e.es * mult
+            val ew = r * DayConst.EYE_W * e.es * mult
+            val eh = r * DayConst.EYE_H * e.es * mult
 
             c.save()
             c.translate(ex.toFloat(), ey.toFloat())
@@ -257,7 +257,7 @@ object MochiPainter {
         close()
     }
 
-    private fun drawEyeShape(c: Canvas, e: MochiEngine, nowSec: Double, shape: EyeShape, w: Double, h: Double, sd: Int, ink: Color) {
+    private fun drawEyeShape(c: Canvas, e: DayEngine, nowSec: Double, shape: EyeShape, w: Double, h: Double, sd: Int, ink: Color) {
         val fill = fillPaint(ink)
         when (shape) {
             EyeShape.WIDE -> drawEyeShape(c, e, nowSec, EyeShape.PILL, w * 1.16, h * 1.12, sd, ink)
@@ -325,7 +325,7 @@ object MochiPainter {
     }
 
     /** Mailbox slot: dark pill cut into the box face, with rim and lip highlights. */
-    private fun drawMouth(c: Canvas, e: MochiEngine, body: Path, r: Double) {
+    private fun drawMouth(c: Canvas, e: DayEngine, body: Path, r: Double) {
         val m = e.morph
         val hW = r * 1.8 * m
         val hH = e.slotH * r * m
@@ -361,7 +361,7 @@ object MochiPainter {
     }
 
     /** Hands sit behind the body, so they are drawn first, in world coordinates. */
-    private fun drawHandsBehind(c: Canvas, e: MochiEngine, n: Double, r: Double, rx: Double, ry: Double, cx: Double, cy: Double) {
+    private fun drawHandsBehind(c: Canvas, e: DayEngine, n: Double, r: Double, rx: Double, ry: Double, cx: Double, cy: Double) {
         if (e.hands <= 0.01 || e.isMini) return
         if (r <= 14) return // meaningless at compact sizes
 
@@ -407,8 +407,8 @@ object MochiPainter {
             c.save()
             c.translate(worldX.toFloat(), worldY.toFloat())
             if (handRot != 0.0) c.rotate((handRot * 180 / PI).toFloat())
-            val top = e.bodyColor?.mix(Rgb(1.0, 1.0, 1.0), 0.35) ?: MochiConst.BASE_TOP
-            val bottom = e.bodyColor ?: MochiConst.BASE_BOTTOM
+            val top = e.bodyColor?.mix(Rgb(1.0, 1.0, 1.0), 0.35) ?: DayConst.BASE_TOP
+            val bottom = e.bodyColor ?: DayConst.BASE_BOTTOM
             val fill = Paint().apply {
                 isAntiAlias = true
                 shader = LinearGradientShader(
@@ -423,7 +423,7 @@ object MochiPainter {
         }
     }
 
-    private fun drawBadge(c: Canvas, e: MochiEngine, t: Double, badge: Badge, r: Double, cx: Double, cy: Double) {
+    private fun drawBadge(c: Canvas, e: DayEngine, t: Double, badge: Badge, r: Double, cx: Double, cy: Double) {
         val bs = e.badgeS * (if (e.isMini) 1.25 else 1.0)
         val bx = cx - r * 0.72 * e.sx
         val by = cy - r * 0.72 * e.sy
@@ -477,7 +477,7 @@ object MochiPainter {
         c.nativeCanvas.drawText(s, x, centred, p)
     }
 
-    private fun drawParticles(c: Canvas, e: MochiEngine, r: Double, cx: Double, cy: Double) {
+    private fun drawParticles(c: Canvas, e: DayEngine, r: Double, cx: Double, cy: Double) {
         for (p in e.particles) {
             if (p.age <= 0) continue
             val k = p.age / p.life

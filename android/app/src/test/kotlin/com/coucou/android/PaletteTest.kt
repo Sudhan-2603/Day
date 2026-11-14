@@ -1,6 +1,6 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Palette
+import com.Day.android.core.Palette
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

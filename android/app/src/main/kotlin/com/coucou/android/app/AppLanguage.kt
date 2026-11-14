@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.Activity
 import android.app.LocaleManager
@@ -7,17 +7,17 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import android.os.LocaleList
-import com.coucou.android.core.Languages
-import com.coucou.android.core.Texts
+import com.Day.android.core.Languages
+import com.Day.android.core.Texts
 import java.util.Locale
 
 /**
  * The language of the app: the phone's own, or one of [Languages.ALL]. On Android 13 and later the choice is Android's per-app language
- * (LocaleManager), so it also shows in Android's own settings (Apps, Coucou for Android, Language). On Android 11 and 12 there is no such
+ * (LocaleManager), so it also shows in Android's own settings (Apps, Day for Android, Language). On Android 11 and 12 there is no such
  * thing, so the choice is kept in the app and applied to the app's resources (and to the activity when it starts).
  */
 object AppLanguage {
-    private const val PREFS = "coucou_ui"
+    private const val PREFS = "Day_ui"
     private const val KEY = "app_language"
 
     /** The language in force: a tag of [Languages.ALL], or [Languages.SYSTEM] for the phone's own. */

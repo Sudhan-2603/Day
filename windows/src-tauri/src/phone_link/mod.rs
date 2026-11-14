@@ -1,5 +1,5 @@
-// Copyright (c) 2026 Rhytam Biswas. MIT License, like the rest of Coucou; see android/LICENSE for the text.
-// The phone link: lets the Android app ("Coucou for Android") see the agents'
+// Copyright (c) 2026 Rhytam Biswas. MIT License, like the rest of Day; see android/LICENSE for the text.
+// The phone link: lets the Android app ("Day for Android") see the agents'
 // sessions and answer permission requests from the phone.
 // Protocol: docs/ANDROID_LINK.md.
 //
@@ -11,7 +11,7 @@
 // The island keeps owning the sessions and the pending request. It publishes a
 // picture of them (`phone_link_publish`), the hub works out what changed, and a
 // phone's decision comes back through `TauriHost`, which answers the waiting
-// `coucou-hook` exactly as a click on the island would — but only for the request
+// `Day-hook` exactly as a click on the island would — but only for the request
 // that is still pending (hub.rs). The desktop's own card keeps working all along.
 
 mod admission;
@@ -391,13 +391,13 @@ pub struct RelayStatus {
     pub has_access: bool,
     pub state: relay_client::State,
     /// The "Away from home Wi-Fi" block is shown in Settings. It stays hidden until a relay is ready to use, except for
-    /// testers who start Coucou with `COUCOU_RELAY_SETTINGS=1`, and for a relay that is already turned on.
+    /// testers who start Day with `Day_RELAY_SETTINGS=1`, and for a relay that is already turned on.
     pub shown: bool,
 }
 
-/// Testers start Coucou with `COUCOU_RELAY_SETTINGS=1` to see the relay settings (docs/RELAY_DEPLOY.md).
+/// Testers start Day with `Day_RELAY_SETTINGS=1` to see the relay settings (docs/RELAY_DEPLOY.md).
 fn relay_settings_for_testers() -> bool {
-    std::env::var("COUCOU_RELAY_SETTINGS").map(|v| v == "1").unwrap_or(false)
+    std::env::var("Day_RELAY_SETTINGS").map(|v| v == "1").unwrap_or(false)
 }
 
 fn relay_status_of(link: &PhoneLink, shared: &Shared) -> RelayStatus {
@@ -872,7 +872,7 @@ pub fn phone_link_publish_question(window: WebviewWindow, link: State<PhoneLink>
     Ok(())
 }
 
-/// What Mochi wears on the computer, for phones that asked for `prefs`.
+/// What Day wears on the computer, for phones that asked for `prefs`.
 #[tauri::command]
 pub fn phone_link_publish_prefs(window: WebviewWindow, link: State<PhoneLink>, outfit: String) -> Result<(), String> {
     only_island(&window)?;

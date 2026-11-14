@@ -1,13 +1,13 @@
-package com.coucou.android.sound
+package com.Day.android.sound
 
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
-import com.coucou.android.R
-import com.coucou.android.mochi.SoundSink
+import com.Day.android.R
+import com.Day.android.Day.SoundSink
 
 /**
- * Plays Mochi's sounds (the .wav files in res/raw, (c) Louis Raillé, used with permission) through a
+ * Plays Day's sounds (the .wav files in res/raw, (c) Sudhan-2603 Raillé, used with permission) through a
  * SoundPool. Short clips, no streaming; a sound that is not found is silently ignored.
  */
 class SoundPlayer(private val context: Context) : SoundSink {

@@ -1,4 +1,4 @@
-package com.coucou.android.link
+package com.Day.android.link
 
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -8,7 +8,7 @@ import javax.net.ssl.SSLContext
 
 /**
  * Finding the paired computer again when its address changed (another Wi-Fi, a hotspot). The computer announces
- * `_coucou._tcp` on the local network while its phone link is on (docs/ANDROID_LINK.md, "Finding the computer").
+ * `_Day._tcp` on the local network while its phone link is on (docs/ANDROID_LINK.md, "Finding the computer").
  *
  * The announcement is a hint, never a credential: it carries the protocol version and the first 16 hex characters of the
  * certificate's SHA-256. The phone matches on that id, then checks the **full** pinned certificate with a bare TLS
@@ -35,7 +35,7 @@ interface DiscoverySource {
 }
 
 object Discovery {
-    const val SERVICE_TYPE = "_coucou._tcp"
+    const val SERVICE_TYPE = "_Day._tcp"
     const val FP_ID_LEN = 16
     const val TXT_VERSION = "1"
     const val DEFAULT_PORT = 47821

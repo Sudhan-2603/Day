@@ -1,7 +1,7 @@
 import Foundation
 
-// The chat's mail actions: the plan the AI writes (a ```coucou-mail JSON block in its answer),
-// what Coucou tells the AI, the matching of PDF pages to recipients and the scripts that send.
+// The chat's mail actions: the plan the AI writes (a ```Day-mail JSON block in its answer),
+// what Day tells the AI, the matching of PDF pages to recipients and the scripts that send.
 // Pure Foundation, tested on any machine (scripts/test-mail-triage.sh). Nothing in a plan
 // happens until the user clicks Run on its card (MailAgent.swift).
 
@@ -63,7 +63,7 @@ struct MailPlan: Equatable, Sendable {
 }
 
 enum MailPlanParser {
-    static let fence = "```coucou-mail"
+    static let fence = "```Day-mail"
 
     /// The answer without its plan block, the plan, and why the block could not be read.
     static func extract(_ text: String) -> (prose: String, plan: MailPlan?, error: String?) {
@@ -240,8 +240,8 @@ enum MailAgentPrompt {
     static let instructions = """
 
 
-    The user turned on Mail: you can act on their Apple Mail through Coucou. Their latest messages are listed under their request, each with a number [n]; some come with their text and attachments.
-    When they ask you to DO something with their mail, answer in one or two short sentences, then give ONE plan in a fenced code block tagged coucou-mail, holding JSON:
+    The user turned on Mail: you can act on their Apple Mail through Day. Their latest messages are listed under their request, each with a number [n]; some come with their text and attachments.
+    When they ask you to DO something with their mail, answer in one or two short sentences, then give ONE plan in a fenced code block tagged Day-mail, holding JSON:
     {"summary": "what the plan does, in the user's language", "actions": [ ... ]}
     Actions:
     - {"type": "flag" | "junk" | "read" | "move", "messages": [n, ...], "mailbox": "only for move"}

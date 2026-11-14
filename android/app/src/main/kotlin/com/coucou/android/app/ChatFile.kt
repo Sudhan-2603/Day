@@ -1,6 +1,6 @@
-package com.coucou.android.app
+package com.Day.android.app
 
-import com.coucou.android.core.TextFile
+import com.Day.android.core.TextFile
 import java.io.File
 
 /**

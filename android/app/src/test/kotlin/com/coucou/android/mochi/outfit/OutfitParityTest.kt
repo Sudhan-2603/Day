@@ -1,6 +1,6 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
-import com.coucou.android.ReferenceFiles
+import com.Day.android.ReferenceFiles
 import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -64,7 +64,7 @@ class RecGfx : Gfx {
 }
 
 /**
- * The Kotlin outfits against the TypeScript ones: android/tools/outfit-trace.mjs runs windows/src/mochi/outfits.ts
+ * The Kotlin outfits against the TypeScript ones: android/tools/outfit-trace.mjs runs windows/src/Day/outfits.ts
  * on 297 cases (every outfit, five head poses, the fade and drop-in states, the wardrobe icons) and this test
  * replays the same cases with the port and compares every drawing call, number by number. Skipped without node.
  */
@@ -92,7 +92,7 @@ class OutfitParityTest {
         val ctx = Ctx2D(rec)
         val outfit = Outfit.entries.first { it.id == c.getString("outfit") }
         when (c.getString("kind")) {
-            "icon" -> drawIconMochi(ctx, c.getDouble("size"), outfit)
+            "icon" -> drawIconDay(ctx, c.getDouble("size"), outfit)
             else -> {
                 val hd = c.getJSONObject("head")
                 val st = c.getJSONObject("state")

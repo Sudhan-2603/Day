@@ -1,7 +1,7 @@
-package com.coucou.android.link
+package com.Day.android.link
 
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.outfit.Wardrobe
+import com.Day.android.Day.BotState
+import com.Day.android.Day.outfit.Wardrobe
 import java.security.MessageDigest
 import org.json.JSONArray
 import org.json.JSONException
@@ -24,7 +24,7 @@ object Protocol {
     const val CAP_DETAILS = "details"
     /** Answering the questions Claude Code asks, from the phone (each answer confirmed with the screen lock). */
     const val CAP_ANSWERS = "answers"
-    /** What Mochi wears on the computer (no switch there: it is no secret). */
+    /** What Day wears on the computer (no switch there: it is no secret). */
     const val CAP_PREFS = "prefs"
     /** The files an agent changed (a list on each session) and, when asked for one, its lines. */
     const val CAP_DIFFS = "diffs"
@@ -140,7 +140,7 @@ sealed interface ServerMsg {
     data class Approval(val request: ApprovalRequest) : ServerMsg
     data class ApprovalResolved(val fingerprint: String) : ServerMsg
     data class Question(val request: QuestionRequest) : ServerMsg
-    /** What Mochi wears on the computer: "auto" or an outfit, exactly one of [com.coucou.android.mochi.outfit.Wardrobe.SELECTIONS]. */
+    /** What Day wears on the computer: "auto" or an outfit, exactly one of [com.Day.android.Day.outfit.Wardrobe.SELECTIONS]. */
     data class Prefs(val outfit: String) : ServerMsg
     /** The relay's access key was replaced on the computer (only with the `relay` capability). */
     data class RelayAccess(val access: String) : ServerMsg

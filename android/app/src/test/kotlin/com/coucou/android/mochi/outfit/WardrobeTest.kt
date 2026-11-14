@@ -1,12 +1,12 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
-import com.coucou.android.ReferenceFiles
+import com.Day.android.ReferenceFiles
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Mirrors windows/tests/wardrobe.test.mjs so the phone and the PC dress Mochi alike. */
+/** Mirrors windows/tests/wardrobe.test.mjs so the phone and the PC dress Day alike. */
 class WardrobeTest {
     private fun season(y: Int, m: Int, d: Int) = Wardrobe.seasonal(LocalDate.of(y, m, d))
 
@@ -70,7 +70,7 @@ class WardrobeTest {
     }
 
     @Test fun theListsAreTheSameAsOnTheComputer() {
-        val ts = ReferenceFiles.read("windows/src/mochi/wardrobe.ts")
+        val ts = ReferenceFiles.read("windows/src/Day/wardrobe.ts")
         val body = ts.substringAfter("export const OUTFIT_SELECTIONS = [").substringBefore("] as const")
         val ids = Regex("\"(\\w+)\"").findAll(body).map { it.groupValues[1] }.toList()
         assertEquals(ids, Wardrobe.SELECTIONS)

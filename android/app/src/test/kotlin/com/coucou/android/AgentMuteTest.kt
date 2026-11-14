@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.AgentMute
-import com.coucou.android.core.StatusPolicy
-import com.coucou.android.core.UserSettings
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.AgentMute
+import com.Day.android.core.StatusPolicy
+import com.Day.android.core.UserSettings
+import com.Day.android.Day.BotState
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -21,7 +21,7 @@ class AgentMuteTest {
 
     @Test fun aMutedAgentIsQuietWhenItFinishesFailsOrHitsALimit() {
         for (state in listOf(BotState.FINISHED, BotState.ERROR, BotState.RATELIMIT)) {
-            assertEquals(state.name, com.coucou.android.core.Announce.NONE, announce(state, muted, "agent_codex"))
+            assertEquals(state.name, com.Day.android.core.Announce.NONE, announce(state, muted, "agent_codex"))
         }
     }
 
@@ -53,16 +53,16 @@ class AgentMuteTest {
     }
 
     @Test fun theIslandFlashFollowsTheSameRule() {
-        val src = File("src/main/kotlin/com/coucou/android/core/IslandPlan.kt").readText()
+        val src = File("src/main/kotlin/com/Day/android/core/IslandPlan.kt").readText()
         assertTrue(src.contains("pillId = session.pillId"))
-        assertTrue(File("src/main/kotlin/com/coucou/android/app/AppModel.kt").readText().contains("StatusPolicy.announce(prev, s.state, settings, minute, inForeground, s.pillId)"))
+        assertTrue(File("src/main/kotlin/com/Day/android/app/AppModel.kt").readText().contains("StatusPolicy.announce(prev, s.state, settings, minute, inForeground, s.pillId)"))
     }
 
     @Test fun approvalsDoNotReadTheMuteList() {
         for (f in listOf("app/Notifications.kt", "core/ApprovalAlerts.kt", "core/OverlayPolicy.kt")) {
-            assertFalse(f, File("src/main/kotlin/com/coucou/android/$f").readText().contains("mutedAgents"))
+            assertFalse(f, File("src/main/kotlin/com/Day/android/$f").readText().contains("mutedAgents"))
         }
-        val model = File("src/main/kotlin/com/coucou/android/app/AppModel.kt").readText()
+        val model = File("src/main/kotlin/com/Day/android/app/AppModel.kt").readText()
         assertFalse(model.substringAfter("override fun onApproval(").substringBefore("override fun onQuestion").contains("mutedAgents"))
     }
 }

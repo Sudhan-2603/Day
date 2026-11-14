@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.ChatTabState
-import com.coucou.android.core.ShareDraft
-import com.coucou.android.core.ShareDraft.Outcome
-import com.coucou.android.link.Protocol
+import com.Day.android.core.ChatTabState
+import com.Day.android.core.ShareDraft
+import com.Day.android.core.ShareDraft.Outcome
+import com.Day.android.link.Protocol
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -85,7 +85,7 @@ class ShareDraftTest {
 
     // ── The share target (source guards: Android classes only compile in CI) ──────────────────────
 
-    private val main = "src/main/kotlin/com/coucou/android/"
+    private val main = "src/main/kotlin/com/Day/android/"
     private val activity = File(main + "app/ShareActivity.kt").readText()
     private val manifest = File("src/main/AndroidManifest.xml").readText()
 

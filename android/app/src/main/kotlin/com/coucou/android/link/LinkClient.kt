@@ -1,4 +1,4 @@
-package com.coucou.android.link
+package com.Day.android.link
 
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
@@ -34,7 +34,7 @@ interface LinkListener {
     fun onApprovalResolved(fingerprint: String) {}
     /** A question to answer (only with the `answers` capability). It is removed by [onApprovalResolved] with the same fingerprint. */
     fun onQuestion(request: QuestionRequest) {}
-    /** What Mochi wears on the computer: "auto" or an outfit (only with the `prefs` capability). */
+    /** What Day wears on the computer: "auto" or an outfit (only with the `prefs` capability). */
     fun onPrefs(outfit: String) {}
     /** A part of a file's diff the phone asked for (only with the `diffs` capability). */
     fun onDiff(part: ServerMsg.Diff) {}
@@ -164,8 +164,8 @@ class LinkClient(
         if (running) return
         running = true
         fatal = false
-        writer = Executors.newSingleThreadExecutor { r -> Thread(r, "coucou-link-writer").apply { isDaemon = true } }
-        thread = Thread(::loop, "coucou-link").apply { isDaemon = true; start() }
+        writer = Executors.newSingleThreadExecutor { r -> Thread(r, "Day-link-writer").apply { isDaemon = true } }
+        thread = Thread(::loop, "Day-link").apply { isDaemon = true; start() }
     }
 
     @Synchronized override fun stop() {
@@ -200,7 +200,7 @@ class LinkClient(
                     runCatching { s.close() }
                 }
             } catch (_: InterruptedException) { }
-        }, "coucou-link-check").apply { isDaemon = true; start() }
+        }, "Day-link-check").apply { isDaemon = true; start() }
     }
 
     /** Sends allow/deny for a pending approval. False if it is unknown, expired, decided or the link is down. */
@@ -325,7 +325,7 @@ class LinkClient(
         } catch (_: Exception) {
             // interrupted or link closed: the reader notices on its own
         }
-    }, "coucou-link-ping").apply { isDaemon = true; start() }
+    }, "Day-link-ping").apply { isDaemon = true; start() }
 
     private fun read(input: InputStream, onFirstMessage: () -> Unit) {
         var first = true

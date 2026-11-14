@@ -156,7 +156,7 @@ private struct RecapSharePanelView: View {
                 Button("Save…") {
                     guard let img = nsImage else { return }
                     let panel = NSSavePanel()
-                    panel.nameFieldStringValue = "coucou-weekly-recap.png"
+                    panel.nameFieldStringValue = "Day-weekly-recap.png"
                     panel.allowedContentTypes = [.png]
                     panel.begin { result in
                         guard result == .OK, let url = panel.url else { return }
@@ -196,18 +196,18 @@ private struct RecapSharePanelView: View {
 // MARK: - Share image (1080×1920)
 
 struct RecapShareImageView: View {
-    /// Where people can find Coucou, printed under the shared image.
+    /// Where people can find Day, printed under the shared image.
     #if APPSTORE
-    static let footer = "Coucou · louis-cfm.github.io/coucou"
+    static let footer = "Day · Sudhan-2603.github.io/Day"
     #else
-    static let footer = "Coucou · github.com/Louis-CFM/coucou"
+    static let footer = "Day · github.com/Sudhan-2603/Day"
     #endif
 
     let summary: WeeklySummary
     let hideProjects: Bool
 
-    // Static BotEngine for the Mochi snapshot — idle state, no animation needed.
-    @StateObject private var mochiEngine = BotEngine()
+    // Static BotEngine for the Day snapshot — idle state, no animation needed.
+    @StateObject private var DayEngine = BotEngine()
 
     var body: some View {
         ZStack {
@@ -224,14 +224,14 @@ struct RecapShareImageView: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                // Mochi character
+                // Day character
                 Canvas { context, size in
-                    mochiEngine.draw(context: context, size: size)
+                    DayEngine.draw(context: context, size: size)
                 }
                 .frame(width: 200, height: 200)
                 .padding(.bottom, 20)
 
-                Text("Coucou")
+                Text("Day")
                     .font(.system(size: 52, weight: .black, design: .rounded))
                     .foregroundColor(Color(hex: "#F1F2F4"))
                 Text(String(localized: "recap.title"))

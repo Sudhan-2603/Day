@@ -1,6 +1,6 @@
-package com.coucou.android.core
+package com.Day.android.core
 
-import com.coucou.android.link.PlanWindow
+import com.Day.android.link.PlanWindow
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.TextStyle

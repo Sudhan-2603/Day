@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import java.io.File
 import org.junit.Assert.assertFalse
@@ -9,22 +9,22 @@ import org.junit.Test
 class GlanceSurfacesTest {
     private fun read(path: String) = File(path).readText()
     private val manifest get() = read("src/main/AndroidManifest.xml")
-    private val widget get() = read("src/main/kotlin/com/coucou/android/app/GlanceWidget.kt")
-    private val tile get() = read("src/main/kotlin/com/coucou/android/app/GlanceTile.kt")
-    private val notifications get() = read("src/main/kotlin/com/coucou/android/app/Notifications.kt")
-    private val model get() = read("src/main/kotlin/com/coucou/android/app/AppModel.kt")
+    private val widget get() = read("src/main/kotlin/com/Day/android/app/GlanceWidget.kt")
+    private val tile get() = read("src/main/kotlin/com/Day/android/app/GlanceTile.kt")
+    private val notifications get() = read("src/main/kotlin/com/Day/android/app/Notifications.kt")
+    private val model get() = read("src/main/kotlin/com/Day/android/app/AppModel.kt")
 
     @Test fun theWidgetAndTheTileAreRegistered() {
         assertTrue(manifest.contains("""android:name=".app.GlanceWidget""""))
         assertTrue(manifest.contains("android.appwidget.action.APPWIDGET_UPDATE"))
-        assertTrue(manifest.contains("@xml/coucou_widget_info"))
+        assertTrue(manifest.contains("@xml/Day_widget_info"))
         assertTrue(manifest.contains("""android:name=".app.GlanceTile""""))
         assertTrue(manifest.contains("""android:permission="android.permission.BIND_QUICK_SETTINGS_TILE""""))
         assertTrue(manifest.contains("android.service.quicksettings.action.QS_TILE"))
     }
 
     @Test fun theWidgetNeverWakesOnATimer() {
-        val info = read("src/main/res/xml/coucou_widget_info.xml")
+        val info = read("src/main/res/xml/Day_widget_info.xml")
         assertTrue(info.contains("""android:updatePeriodMillis="0""""))
         assertTrue(info.contains("""android:widgetCategory="home_screen""""))
     }

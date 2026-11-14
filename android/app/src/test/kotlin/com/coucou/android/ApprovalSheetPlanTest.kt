@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.ApprovalSheetPlan
-import com.coucou.android.core.OverlayPolicy
-import com.coucou.android.link.ApprovalRequest
+import com.Day.android.core.ApprovalSheetPlan
+import com.Day.android.core.OverlayPolicy
+import com.Day.android.link.ApprovalRequest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

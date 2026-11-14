@@ -219,7 +219,7 @@ extension CLIRelay {
     /// and nothing else that was ever dropped. Removed by the caller once the run is over.
     static func isolate(_ file: URL) throws -> URL {
         let dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("coucou-relay-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("Day-relay-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         try FileManager.default.copyItem(at: file, to: dir.appendingPathComponent(file.lastPathComponent))
         return dir

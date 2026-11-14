@@ -4,8 +4,8 @@
 // Run from repo root:
 //   swift NotchBuddy/Tests/ClaudeHookRemovalTests.swift
 //
-// Covers #854: install and uninstall must remove only Coucou's own nb-hook
-// entries, never whole groups that merely mention "coucou"/"NotchBuddy".
+// Covers #854: install and uninstall must remove only Day's own nb-hook
+// entries, never whole groups that merely mention "Day"/"NotchBuddy".
 // Keep in sync with HookServer.swift (removeNbHookEntries + the per-event
 // cleanup in buildHooksData / uninstallClaudeHooks).
 
@@ -47,7 +47,7 @@ func removeNbHookEntries(from groups: [[String: Any]]) -> [[String: Any]] {
 }
 
 // ── Mirror of the per-event cleanup the Claude paths run ──────────────────────
-// buildHooksData removes Coucou's own previous entries, then appends a fresh one.
+// buildHooksData removes Day's own previous entries, then appends a fresh one.
 let nbCmd = "\"$HOME/Library/Application Support/NotchBuddy/nb-hook\""
 
 func installEvent(_ existing: [[String: Any]], timeout: Int) -> [[String: Any]] {
@@ -56,33 +56,33 @@ func installEvent(_ existing: [[String: Any]], timeout: Int) -> [[String: Any]] 
     return cleaned
 }
 
-// 1. Install keeps a user group whose command only mentions "coucou"
+// 1. Install keeps a user group whose command only mentions "Day"
 let userLint = ["matcher": "Bash",
-                "hooks": [["type": "command", "command": "~/dev/coucou/scripts/lint.sh", "timeout": 5]]] as [String: Any]
-let coucouGroup = ["hooks": [["type": "command", "command": nbCmd, "timeout": 10]]] as [String: Any]
-check("1. install keeps the user's ~/dev/coucou lint group",
-      installEvent([userLint, coucouGroup], timeout: 10),
-      contains: ["~/dev/coucou/scripts/lint.sh", "Bash"])
+                "hooks": [["type": "command", "command": "~/dev/Day/scripts/lint.sh", "timeout": 5]]] as [String: Any]
+let DayGroup = ["hooks": [["type": "command", "command": nbCmd, "timeout": 10]]] as [String: Any]
+check("1. install keeps the user's ~/dev/Day lint group",
+      installEvent([userLint, DayGroup], timeout: 10),
+      contains: ["~/dev/Day/scripts/lint.sh", "Bash"])
 
-// 2. Install replaces Coucou's own previous group without duplicating it
-let installedTwice = installEvent(installEvent([coucouGroup], timeout: 10), timeout: 10)
+// 2. Install replaces Day's own previous group without duplicating it
+let installedTwice = installEvent(installEvent([DayGroup], timeout: 10), timeout: 10)
 let nbPlainCount = installedTwice.flatMap { ($0["hooks"] as? [[String: Any]]) ?? [] }
     .filter { ($0["command"] as? String) == nbCmd }.count
 if nbPlainCount == 1 { passed += 1; print("PASS  2. reinstall leaves exactly one plain nb-hook entry") }
 else { failed += 1; print("FAIL  2. reinstall leaves exactly one plain nb-hook entry (found \(nbPlainCount))") }
 
-// 3. Uninstall keeps a user hook that merely mentions "coucou"
+// 3. Uninstall keeps a user hook that merely mentions "Day"
 let mixed = [["matcher": "n",
-              "hooks": [["type": "command", "command": "echo coucou", "timeout": 5],
+              "hooks": [["type": "command", "command": "echo Day", "timeout": 5],
                         ["type": "command", "command": nbCmd, "timeout": 10]]] as [String: Any]]
-check("3. uninstall keeps \"echo coucou\", drops only the nb-hook entry",
+check("3. uninstall keeps \"echo Day\", drops only the nb-hook entry",
       removeNbHookEntries(from: mixed),
-      contains: ["echo coucou"],
+      contains: ["echo Day"],
       notContains: ["nb-hook"])
 
-// 4. Uninstall drops a group that held only Coucou's hook
-check("4. uninstall drops coucou-only groups entirely",
-      removeNbHookEntries(from: [coucouGroup]),
+// 4. Uninstall drops a group that held only Day's hook
+check("4. uninstall drops Day-only groups entirely",
+      removeNbHookEntries(from: [DayGroup]),
       expectEmpty: true)
 
 // 5. Uninstall keeps a user hook whose path mentions NotchBuddy but not nb-hook

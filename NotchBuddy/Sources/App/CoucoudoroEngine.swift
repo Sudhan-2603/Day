@@ -1,56 +1,56 @@
 import Foundation
 
-// MARK: - Coucoudoro clock
+// MARK: - Daydoro clock
 
 /// Work and rest lengths, in seconds. A phase runs until its deadline, then the next one starts.
-struct CoucoudoroConfig: Equatable, Sendable {
+struct DaydoroConfig: Equatable, Sendable {
     var work: TimeInterval
     var rest: TimeInterval
 }
 
-enum CoucoudoroPhase: Equatable, Sendable {
+enum DaydoroPhase: Equatable, Sendable {
     case idle, work, rest
 }
 
 /// The moment a phase begins.
-enum CoucoudoroEvent: Equatable, Sendable {
+enum DaydoroEvent: Equatable, Sendable {
     case restStarts, workStarts
 }
 
 /// The session, anchored to a deadline so a late tick does not drift.
-struct CoucoudoroSnapshot: Equatable, Sendable {
-    var phase: CoucoudoroPhase
+struct DaydoroSnapshot: Equatable, Sendable {
+    var phase: DaydoroPhase
     var paused: Bool
     var deadline: Date?
     /// Seconds left, frozen while paused. The deadline is cleared until resume.
     var pausedRemaining: TimeInterval?
-    var notice: CoucoudoroEvent?
+    var notice: DaydoroEvent?
 
-    static let idle = CoucoudoroSnapshot(phase: .idle, paused: false, deadline: nil,
+    static let idle = DaydoroSnapshot(phase: .idle, paused: false, deadline: nil,
                                     pausedRemaining: nil, notice: nil)
 }
 
 /// The countdown. Pure: no clock of its own, no pill, no defaults.
-enum CoucoudoroEngine {
+enum DaydoroEngine {
     /// Lengths under a second are pulled up to one second.
-    static func sanitize(_ raw: CoucoudoroConfig) -> CoucoudoroConfig {
-        CoucoudoroConfig(work: max(raw.work, 1),
+    static func sanitize(_ raw: DaydoroConfig) -> DaydoroConfig {
+        DaydoroConfig(work: max(raw.work, 1),
                     rest: max(raw.rest, 1))
     }
 
     /// A fresh work phase, from the full work length, whatever came before.
-    static func start(config raw: CoucoudoroConfig, now: Date) -> (CoucoudoroSnapshot, [CoucoudoroEvent]) {
+    static func start(config raw: DaydoroConfig, now: Date) -> (DaydoroSnapshot, [DaydoroEvent]) {
         let config = sanitize(raw)
         let deadline = now.addingTimeInterval(config.work)
-        let snap = CoucoudoroSnapshot(phase: .work, paused: false,
+        let snap = DaydoroSnapshot(phase: .work, paused: false,
                                  deadline: deadline,
                                  pausedRemaining: nil, notice: .workStarts)
         return (snap, [.workStarts])
     }
 
-    static func stop() -> CoucoudoroSnapshot { .idle }
+    static func stop() -> DaydoroSnapshot { .idle }
 
-    static func pause(_ s: CoucoudoroSnapshot, now: Date) -> CoucoudoroSnapshot {
+    static func pause(_ s: DaydoroSnapshot, now: Date) -> DaydoroSnapshot {
         guard s.phase != .idle, !s.paused else { return s }
         var n = s
         n.paused = true
@@ -59,7 +59,7 @@ enum CoucoudoroEngine {
         return n
     }
 
-    static func resume(_ s: CoucoudoroSnapshot, now: Date) -> CoucoudoroSnapshot {
+    static func resume(_ s: DaydoroSnapshot, now: Date) -> DaydoroSnapshot {
         guard s.paused else { return s }
         var n = s
         let left = max(0, s.pausedRemaining ?? 0)
@@ -72,7 +72,7 @@ enum CoucoudoroEngine {
     /// Move the session to `now`. A phase runs until its deadline, then the next one
     /// starts and is announced once. If the Mac slept, missed phases are not replayed:
     /// only the phase that contains `now`.
-    static func tick(_ s: CoucoudoroSnapshot, config raw: CoucoudoroConfig, now: Date) -> (CoucoudoroSnapshot, [CoucoudoroEvent]) {
+    static func tick(_ s: DaydoroSnapshot, config raw: DaydoroConfig, now: Date) -> (DaydoroSnapshot, [DaydoroEvent]) {
         guard s.phase != .idle, !s.paused, let deadline = s.deadline else { return (s, []) }
         guard now >= deadline else { return (s, []) }
         let config = sanitize(raw)
@@ -84,7 +84,7 @@ enum CoucoudoroEngine {
         return (n, [landed.event])
     }
 
-    static func remaining(_ s: CoucoudoroSnapshot, now: Date) -> TimeInterval? {
+    static func remaining(_ s: DaydoroSnapshot, now: Date) -> TimeInterval? {
         if s.paused { return s.pausedRemaining }
         guard s.phase != .idle, let deadline = s.deadline else { return nil }
         return max(0, deadline.timeIntervalSince(now))
@@ -104,8 +104,8 @@ enum CoucoudoroEngine {
     /// From a phase that ended at `phaseEnd`, the phase that contains `now`.
     /// The next deadline stays on the original schedule (`phaseEnd` plus whole lengths),
     /// not `now` plus a length, so a late tick does not stretch the session.
-    private static func land(from phase: CoucoudoroPhase, phaseEnd: Date, now: Date,
-                             config: CoucoudoroConfig) -> (phase: CoucoudoroPhase, deadline: Date, event: CoucoudoroEvent) {
+    private static func land(from phase: DaydoroPhase, phaseEnd: Date, now: Date,
+                             config: DaydoroConfig) -> (phase: DaydoroPhase, deadline: Date, event: DaydoroEvent) {
         let work = max(1, Int(config.work.rounded()))
         let rest = max(1, Int(config.rest.rounded()))
         switch phase {
@@ -147,11 +147,11 @@ enum CoucoudoroEngine {
 // MARK: - Stored lengths
 
 /// Minutes in UserDefaults, the same store as the other integration settings.
-enum CoucoudoroSettings {
-    static let pillId = "integration_coucoudoro"
+enum DaydoroSettings {
+    static let pillId = "integration_Daydoro"
 
-    static let workKey = "coucoudoroWorkMinutes"
-    static let restKey = "coucoudoroRestMinutes"
+    static let workKey = "DaydoroWorkMinutes"
+    static let restKey = "DaydoroRestMinutes"
 
     static let defaultWork = 25
     static let defaultRest = 5
@@ -171,8 +171,8 @@ enum CoucoudoroSettings {
     static var workMinutes: Int { clampWork(storedMinutes(workKey, fallback: defaultWork)) }
     static var restMinutes: Int { clampRest(storedMinutes(restKey, fallback: defaultRest)) }
 
-    static var config: CoucoudoroConfig {
-        CoucoudoroConfig(work: TimeInterval(workMinutes * 60),
+    static var config: DaydoroConfig {
+        DaydoroConfig(work: TimeInterval(workMinutes * 60),
                     rest: TimeInterval(restMinutes * 60))
     }
 

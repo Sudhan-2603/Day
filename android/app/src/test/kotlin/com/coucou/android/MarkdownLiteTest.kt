@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.MarkdownLite
-import com.coucou.android.core.MdBlock
-import com.coucou.android.core.MdSpan
+import com.Day.android.core.MarkdownLite
+import com.Day.android.core.MdBlock
+import com.Day.android.core.MdSpan
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

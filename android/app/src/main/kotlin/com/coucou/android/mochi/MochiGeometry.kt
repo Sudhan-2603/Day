@@ -1,6 +1,6 @@
-package com.coucou.android.mochi
+package com.Day.android.Day
 
-import com.coucou.android.core.lerp
+import com.Day.android.core.lerp
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -10,7 +10,7 @@ import kotlin.math.sqrt
 
 data class Pt(val x: Double, val y: Double)
 
-object MochiGeometry {
+object DayGeometry {
     const val BODY_SEGMENTS = 72
     private const val EXP_N = 2.0 / 2.7
 

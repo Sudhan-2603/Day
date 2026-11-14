@@ -1,24 +1,24 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Glance
-import com.coucou.android.core.GlanceBuilder
-import com.coucou.android.core.PlanUsageLook
-import com.coucou.android.core.UsageRing
-import com.coucou.android.core.UsageTone
-import com.coucou.android.core.UsageSide
-import com.coucou.android.core.WidgetData
-import com.coucou.android.core.WidgetSample
-import com.coucou.android.core.WidgetTone
-import com.coucou.android.link.LinkState
-import com.coucou.android.link.PlanUsage
-import com.coucou.android.link.PlanWindow
-import com.coucou.android.link.UsageSnapshot
+import com.Day.android.core.Glance
+import com.Day.android.core.GlanceBuilder
+import com.Day.android.core.PlanUsageLook
+import com.Day.android.core.UsageRing
+import com.Day.android.core.UsageTone
+import com.Day.android.core.UsageSide
+import com.Day.android.core.WidgetData
+import com.Day.android.core.WidgetSample
+import com.Day.android.core.WidgetTone
+import com.Day.android.link.LinkState
+import com.Day.android.link.PlanUsage
+import com.Day.android.link.PlanWindow
+import com.Day.android.link.UsageSnapshot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** The plan-usage side of Mochi Big, in pure Kotlin: which rows, which colour, and which of the three things it shows. */
+/** The plan-usage side of Day Big, in pure Kotlin: which rows, which colour, and which of the three things it shows. */
 class WidgetUsageSideTest {
     private val now = 1_000_000L
     private val later = now + 3_600_000

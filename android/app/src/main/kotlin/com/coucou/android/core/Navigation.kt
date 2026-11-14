@@ -1,4 +1,4 @@
-package com.coucou.android.core
+package com.Day.android.core
 
 /** The three places the bottom bar leads to. */
 enum class Tab { HOME, CHAT, SETTINGS }

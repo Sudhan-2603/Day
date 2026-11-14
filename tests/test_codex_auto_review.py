@@ -352,7 +352,7 @@ class RelaySubprocessTests(unittest.TestCase):
         received, out, code = self.run_relay_with_ask(self.payload())
         self.assertEqual(code, 0)
         self.assertEqual(out, b'')
-        self.assertEqual(received['coucou_agent'], 'codex')
+        self.assertEqual(received['Day_agent'], 'codex')
         self.assertEqual(received['hook_event_name'], 'PermissionRequest')
         self.assertEqual(received['session_id'], 'root')
         self.assertEqual(received['tool_name'], 'Bash')

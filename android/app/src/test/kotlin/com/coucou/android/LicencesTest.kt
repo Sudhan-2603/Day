@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Licences
-import com.coucou.android.core.Nav
-import com.coucou.android.core.Screen
-import com.coucou.android.core.Tab
+import com.Day.android.core.Licences
+import com.Day.android.core.Nav
+import com.Day.android.core.Screen
+import com.Day.android.core.Tab
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -13,11 +13,11 @@ import org.junit.Test
 /** Settings > About > Licences: the texts that ship are the real ones, every library in the build is covered, and the screen is reachable. */
 class LicencesTest {
     private fun asset(name: String) = File("src/main/assets/licenses/$name").readText()
-    private fun src(name: String) = File("src/main/kotlin/com/coucou/android/$name").readText()
+    private fun src(name: String) = File("src/main/kotlin/com/Day/android/$name").readText()
 
     @Test fun theMitTextIsTheRepositorysLicenceFileWord_for_word() {
         assertEquals(ReferenceFiles.file("LICENSE").readText(), asset("MIT.txt"))
-        assertTrue(asset("MIT.txt").contains("Copyright (c) 2026 Louis Raillé"))
+        assertTrue(asset("MIT.txt").contains("Copyright (c) 2026 Sudhan-2603 Raillé"))
         assertTrue(asset("MIT.txt").contains("Permission is hereby granted, free of charge"))
         assertTrue(asset("MIT.txt").contains("THE SOFTWARE IS PROVIDED \"AS IS\""))
     }
@@ -33,8 +33,8 @@ class LicencesTest {
 
     @Test fun theNoticesNameWhoOwnsWhatAndTheArtworkIsNotMit() {
         val n = asset("NOTICES.txt")
-        assertTrue(n.contains("part of Coucou by Louis Raillé"))
-        assertTrue(n.contains("https://github.com/Louis-CFM/coucou"))
+        assertTrue(n.contains("part of Day by Sudhan-2603 Raillé"))
+        assertTrue(n.contains("https://github.com/Sudhan-2603/Day"))
         assertTrue(n.contains("released under the MIT License"))
         assertTrue(n.contains("NOT covered by the MIT License"))
         assertTrue(n.contains("LICENSE-ASSETS.md"))

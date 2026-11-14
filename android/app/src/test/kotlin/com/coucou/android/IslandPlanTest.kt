@@ -1,14 +1,14 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.IslandGeometry
-import com.coucou.android.core.IslandPlan
-import com.coucou.android.core.IslandSpec
-import com.coucou.android.core.PxRect
-import com.coucou.android.core.QuietHours
-import com.coucou.android.core.UserSettings
-import com.coucou.android.link.ApprovalRequest
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.IslandGeometry
+import com.Day.android.core.IslandPlan
+import com.Day.android.core.IslandSpec
+import com.Day.android.core.PxRect
+import com.Day.android.core.QuietHours
+import com.Day.android.core.UserSettings
+import com.Day.android.link.ApprovalRequest
+import com.Day.android.link.SessionInfo
+import com.Day.android.Day.BotState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -84,7 +84,7 @@ class IslandPlanTest {
         assertNotNull(IslandPlan.active(list, emptyList(), true, name))
     }
 
-    @Test fun theIslandNeverShowsWhileCoucouIsOpen() {
+    @Test fun theIslandNeverShowsWhileDayIsOpen() {
         assertTrue(IslandPlan.allowed(overlayOn = true, permitted = true, appInForeground = false))
         assertTrue(!IslandPlan.allowed(overlayOn = true, permitted = true, appInForeground = true))
         assertTrue(!IslandPlan.allowed(overlayOn = false, permitted = true, appInForeground = false))

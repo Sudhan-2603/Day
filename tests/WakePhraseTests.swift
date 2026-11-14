@@ -11,51 +11,51 @@ enum WakePhraseTests {
         // MARK: split — should match
 
         // Basic wake phrases (no command)
-        checkMatch("ok coucou",              WakePhrase.split("ok coucou"),              cmd: "")
-        checkMatch("OK COUCOU",              WakePhrase.split("OK COUCOU"),              cmd: "")
-        checkMatch("okay coucou",            WakePhrase.split("okay coucou"),            cmd: "")
+        checkMatch("ok Day",              WakePhrase.split("ok Day"),              cmd: "")
+        checkMatch("OK Day",              WakePhrase.split("OK Day"),              cmd: "")
+        checkMatch("okay Day",            WakePhrase.split("okay Day"),            cmd: "")
         checkMatch("ok kuku",                WakePhrase.split("ok kuku"),                cmd: "")
         checkMatch("ok cou cou",             WakePhrase.split("ok cou cou"),             cmd: "")
-        checkMatch("hey coucou",             WakePhrase.split("hey coucou"),             cmd: "")
-        checkMatch("Hey Coucou",             WakePhrase.split("Hey Coucou"),             cmd: "")
+        checkMatch("hey Day",             WakePhrase.split("hey Day"),             cmd: "")
+        checkMatch("Hey Day",             WakePhrase.split("Hey Day"),             cmd: "")
 
         // Command extracted from original text (casing/punctuation preserved)
-        checkMatch("Okay, Coucou, ajoute GitHub",
-                   WakePhrase.split("Okay, Coucou, ajoute GitHub"),             cmd: "ajoute GitHub")
+        checkMatch("Okay, Day, ajoute GitHub",
+                   WakePhrase.split("Okay, Day, ajoute GitHub"),             cmd: "ajoute GitHub")
         checkMatch("ok cuckoo add github",
                    WakePhrase.split("ok cuckoo add github"),                    cmd: "add github")
-        checkMatch("ok coucou ouvre figma",
-                   WakePhrase.split("ok coucou ouvre figma"),                   cmd: "ouvre figma")
+        checkMatch("ok Day ouvre figma",
+                   WakePhrase.split("ok Day ouvre figma"),                   cmd: "ouvre figma")
 
         // Apostrophes, hyphens and accents preserved in command
-        checkMatch("OK Coucou, mets l'album de Daft Punk",
-                   WakePhrase.split("OK Coucou, mets l'album de Daft Punk"),   cmd: "mets l'album de Daft Punk")
-        checkMatch("ok coucou qu'est-ce que fait Claude ?",
-                   WakePhrase.split("ok coucou qu'est-ce que fait Claude ?"),  cmd: "qu'est-ce que fait Claude ?")
+        checkMatch("OK Day, mets l'album de Daft Punk",
+                   WakePhrase.split("OK Day, mets l'album de Daft Punk"),   cmd: "mets l'album de Daft Punk")
+        checkMatch("ok Day qu'est-ce que fait Claude ?",
+                   WakePhrase.split("ok Day qu'est-ce que fait Claude ?"),  cmd: "qu'est-ce que fait Claude ?")
 
         // Wake anywhere in transcript (word-boundary search)
-        checkMatch("euh ok coucou mets de la musique",
-                   WakePhrase.split("euh ok coucou mets de la musique"),        cmd: "mets de la musique")
-        checkMatch("la chanson dit ok coucou",
-                   WakePhrase.split("la chanson dit ok coucou"),                cmd: "") // accepted false positive
+        checkMatch("euh ok Day mets de la musique",
+                   WakePhrase.split("euh ok Day mets de la musique"),        cmd: "mets de la musique")
+        checkMatch("la chanson dit ok Day",
+                   WakePhrase.split("la chanson dit ok Day"),                cmd: "") // accepted false positive
 
         // LAST occurrence wins
-        checkMatch("ok coucou search ok coucou play music",
-                   WakePhrase.split("ok coucou search ok coucou play music"),   cmd: "play music")
+        checkMatch("ok Day search ok Day play music",
+                   WakePhrase.split("ok Day search ok Day play music"),   cmd: "play music")
 
         // Partial word-by-word delivery
         checkNoMatch("ok alone",             WakePhrase.split("ok"))
-        checkMatch("ok coucou partial",      WakePhrase.split("ok coucou"),              cmd: "")
-        checkMatch("ok coucou with more",    WakePhrase.split("ok coucou mets"),         cmd: "mets")
+        checkMatch("ok Day partial",      WakePhrase.split("ok Day"),              cmd: "")
+        checkMatch("ok Day with more",    WakePhrase.split("ok Day mets"),         cmd: "mets")
 
         // MARK: split — should NOT match
-        checkNoMatch("standalone coucou",    WakePhrase.split("coucou"))
-        checkNoMatch("standalone COUCOU",    WakePhrase.split("COUCOU"))
-        checkNoMatch("partial coucou ça va", WakePhrase.split("coucou ça va"))
-        checkNoMatch("coucou comment",       WakePhrase.split("coucou comment tu vas"))
+        checkNoMatch("standalone Day",    WakePhrase.split("Day"))
+        checkNoMatch("standalone Day",    WakePhrase.split("Day"))
+        checkNoMatch("partial Day ça va", WakePhrase.split("Day ça va"))
+        checkNoMatch("Day comment",       WakePhrase.split("Day comment tu vas"))
         checkNoMatch("ok google",            WakePhrase.split("ok google"))
         checkNoMatch("hey siri",             WakePhrase.split("hey siri"))
-        checkNoMatch("okkkk coucou",         WakePhrase.split("okkkk coucou"))
+        checkNoMatch("okkkk Day",         WakePhrase.split("okkkk Day"))
         checkNoMatch("empty",                WakePhrase.split(""))
 
         // Summary

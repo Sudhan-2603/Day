@@ -91,7 +91,7 @@ enum PillCatalog {
         .init(id: "agent_hermes",        name: "Hermes",      color: "#C084FC",
               category: .agent,     subtitle: String(localized: "Agent"),        source: .agent,  githubOnly: true),
         // Claude Code sessions run from the Claude desktop app: the relay tags them
-        // `coucou_agent: claude-desktop` from CLAUDE_CODE_ENTRYPOINT, so nothing to install.
+        // `Day_agent: claude-desktop` from CLAUDE_CODE_ENTRYPOINT, so nothing to install.
         .init(id: "agent_claude-desktop", name: "Claude Desktop", color: "#D97757",
               category: .agent,     subtitle: String(localized: "Agent"),        source: .agent),
         // ── AI for the chat ──────────────────────────────────────────────────
@@ -131,7 +131,7 @@ enum PillCatalog {
         .init(id: "integration_crypto",    name: "Crypto",      color: "#F7931A",
               category: .service,   subtitle: String(localized: "Integration"),  source: .n8n),
         // Local countdown: work, then rest, until the user stops. No account, no network.
-        .init(id: "integration_coucoudoro", name: "Coucoudoro", color: "#0EA5E9",
+        .init(id: "integration_Daydoro", name: "Daydoro", color: "#0EA5E9",
               category: .service,   subtitle: String(localized: "Integration"),  source: .n8n),
         // GitHub build only, as intended when it was added (exchange API keys: not worth an
         // App Review question for the store build).

@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.Service
 import android.content.Context
@@ -15,7 +15,7 @@ class LinkService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val model = (application as CoucouApp).model
+        val model = (application as DayApp).model
         val notification = model.notifier.ongoing(model)
         // The specialUse type exists from Android 14; older versions reject an unknown type.
         if (Build.VERSION.SDK_INT >= 34) {

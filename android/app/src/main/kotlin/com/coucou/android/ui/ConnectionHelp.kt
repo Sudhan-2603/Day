@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.content.Context
 import android.content.Intent
@@ -17,14 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.coucou.android.R
-import com.coucou.android.app.AppModel
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.TypeScale
-import com.coucou.android.link.BatteryHint
-import com.coucou.android.link.LinkHealthText
-import com.coucou.android.link.LinkState
+import com.Day.android.R
+import com.Day.android.app.AppModel
+import com.Day.android.core.IconKind
+import com.Day.android.core.Spacing
+import com.Day.android.core.TypeScale
+import com.Day.android.link.BatteryHint
+import com.Day.android.link.LinkHealthText
+import com.Day.android.link.LinkState
 import kotlinx.coroutines.delay
 
 /**
@@ -47,7 +47,7 @@ fun LinkHealthPanel(model: AppModel, onHelp: () -> Unit) {
             if (lines.second.isNotEmpty()) Text(lines.second, style = TypeScale.SECONDARY.style(t.textDim.c()))
         }
         RowDivider()
-        ListRow(stringResource(R.string.diag_title), onClick = onHelp, trailing = { CoucouIcon(IconKind.CHEVRON, tint = t.textDim.c(), size = 20.dp) })
+        ListRow(stringResource(R.string.diag_title), onClick = onHelp, trailing = { DayIcon(IconKind.CHEVRON, tint = t.textDim.c(), size = 20.dp) })
     }
 }
 

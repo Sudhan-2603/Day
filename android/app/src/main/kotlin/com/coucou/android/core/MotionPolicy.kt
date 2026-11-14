@@ -1,4 +1,4 @@
-package com.coucou.android.core
+package com.Day.android.core
 
 /** What the user chose for motion: follow Android's "Remove animations" (the default), always reduce it, or always keep it. */
 enum class MotionChoice(val key: String) {
@@ -11,7 +11,7 @@ enum class MotionChoice(val key: String) {
 }
 
 /**
- * Whether motion is reduced. Reduced motion stops Mochi's idle animations (breathing, bouncing, scanning, blinking, floating
+ * Whether motion is reduced. Reduced motion stops Day's idle animations (breathing, bouncing, scanning, blinking, floating
  * particles) and turns the island's and the sheets' springs into a short fade or a jump. Pure, so every case is a unit test.
  */
 object MotionPolicy {
@@ -22,7 +22,7 @@ object MotionPolicy {
     }
 }
 
-/** The choice in force, set by the app model when Settings change; read by the Mochi view, the island and the sheets. */
+/** The choice in force, set by the app model when Settings change; read by the Day view, the island and the sheets. */
 object MotionState {
     @Volatile var choice: MotionChoice = MotionChoice.SYSTEM
 }

@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
@@ -36,7 +36,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.coucou.android.core.Spacing
+import com.Day.android.core.Spacing
 import kotlin.math.roundToInt
 
 private val TRACK_W = 52.dp
@@ -48,7 +48,7 @@ private val KNOB = 22.dp
  * is 48 dp high. It is a real toggle for TalkBack (role Switch, with its state), unlike a plain box.
  */
 @Composable
-fun CoucouSwitch(checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier, label: String? = null, enabled: Boolean = true) {
+fun DaySwitch(checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier, label: String? = null, enabled: Boolean = true) {
     val t = tokens()
     val reduced = reducedMotion()
     val knobX by animateDpAsState(if (checked) 22.dp else 0.dp, if (reduced) snap() else spring(dampingRatio = 0.72f, stiffness = 400f), label = "knob")
@@ -73,7 +73,7 @@ fun CoucouSwitch(checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifi
  * Tap or drag; TalkBack can step it through its progress action. 48 dp high so it is easy to hit.
  */
 @Composable
-fun CoucouSlider(
+fun DaySlider(
     value: Float, onChange: (Float) -> Unit, modifier: Modifier = Modifier,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f, enabled: Boolean = true, label: String = "",
 ) {

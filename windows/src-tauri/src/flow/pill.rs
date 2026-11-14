@@ -1,6 +1,6 @@
 // The pill of Flow dictation: a small see-through capsule at the bottom of the
 // screen (or on its left or right edge) while dictation is on. It opens into
-// Mochi and nine dots while you speak, into a toolbar under the pointer, and
+// Day and nine dots while you speak, into a toolbar under the pointer, and
 // shows a call being recorded and short messages. Port of FlowPill.swift.
 //
 // Its window is borderless, transparent, always on top, never takes the
@@ -41,7 +41,7 @@ pub struct PillState {
     pub enabled: bool,
     /// The user chose to hide the resting pill: it shows only while something happens.
     pub hide_idle: bool,
-    /// « OK Coucou » is talking with you.
+    /// « OK Day » is talking with you.
     pub voice: Option<crate::voice::VoiceView>,
 }
 
@@ -100,7 +100,7 @@ pub fn setup(app: &AppHandle) {
         let park = cfg!(windows);
         let mut builder = WebviewWindowBuilder::new(app, LABEL, page_url(app))
             .additional_browser_args(crate::BROWSER_ARGS)
-            .title("Coucou")
+            .title("Day")
             .inner_size(BOTTOM.0, BOTTOM.1)
             .resizable(cfg!(target_os = "linux"))
             .decorations(false)

@@ -1,11 +1,11 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.ChatHistory
-import com.coucou.android.core.ChatMessage
-import com.coucou.android.core.ChatRole
-import com.coucou.android.core.ChatSession
-import com.coucou.android.core.ChatStatus
-import com.coucou.android.core.TextFile
+import com.Day.android.core.ChatHistory
+import com.Day.android.core.ChatMessage
+import com.Day.android.core.ChatRole
+import com.Day.android.core.ChatSession
+import com.Day.android.core.ChatStatus
+import com.Day.android.core.TextFile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

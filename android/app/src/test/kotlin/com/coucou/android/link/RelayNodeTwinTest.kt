@@ -1,4 +1,4 @@
-package com.coucou.android.link
+package com.Day.android.link
 
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -19,7 +19,7 @@ import org.junit.Test
  * the same rules as the Cloudflare Worker, from the same code). It is a separate implementation of WebSocket (the `ws`
  * package), so it checks this client's framing, masking and upgrade against someone else's reading of RFC 6455.
  *
- * Runs only when COUCOU_NODE_RELAY=1 and `npm ci` was done in android/relay (CI does both).
+ * Runs only when Day_NODE_RELAY=1 and `npm ci` was done in android/relay (CI does both).
  */
 class RelayNodeTwinTest {
     private var process: Process? = null
@@ -29,7 +29,7 @@ class RelayNodeTwinTest {
     private val key = RelayCrypto.PairingKey(ByteArray(32) { 8 })
 
     @Before fun start() {
-        assumeTrue("set COUCOU_NODE_RELAY=1 to run against the relay's Node twin", System.getenv("COUCOU_NODE_RELAY") == "1")
+        assumeTrue("set Day_NODE_RELAY=1 to run against the relay's Node twin", System.getenv("Day_NODE_RELAY") == "1")
         val script = listOf(File("../relay/tools/dev-relay.ts"), File("android/relay/tools/dev-relay.ts")).first { it.exists() }
         val node = ProcessBuilder("node", "--experimental-strip-types", "--no-warnings", script.path)
             .also { it.environment().putAll(mapOf("ACCESS_KEY" to access, "PORT" to "0", "HOST" to "127.0.0.1")) }
@@ -49,7 +49,7 @@ class RelayNodeTwinTest {
     private inner class Host(k: RelayCrypto.PairingKey = key) : AutoCloseable {
         val ws: WsConnection = WsClient.open(
             RelayUrl.parse("ws://127.0.0.1:$port")!!, "/v1/room/$room?role=pc",
-            listOf("Authorization" to "Bearer $access"), listOf("coucou.v1", "coucou.join.${RelayCrypto.joinProof(k)}"),
+            listOf("Authorization" to "Bearer $access"), listOf("Day.v1", "Day.join.${RelayCrypto.joinProof(k)}"),
             3_000, RelayCrypto.MAX_FRAME + 1024,
         )
         val lines = LinkedBlockingQueue<String>()

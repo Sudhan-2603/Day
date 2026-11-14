@@ -3,16 +3,16 @@ import SwiftUI
 import WidgetKit
 
 // A Control Center button: the agent that needs you most and what it does;
-// a tap opens it in Coucou. The app reloads it with the widgets.
+// a tap opens it in Day. The app reloads it with the widgets.
 
-struct CoucouControl: ControlWidget {
+struct DayControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
-        StaticControlConfiguration(kind: "fr.louisraille.Coucou.lead", provider: LeadProvider()) { lead in
-            ControlWidgetButton(action: OpenLeadMochiIntent()) {
+        StaticControlConfiguration(kind: "fr.louisraille.Day.lead", provider: LeadProvider()) { lead in
+            ControlWidgetButton(action: OpenLeadDayIntent()) {
                 Label(lead.text, systemImage: lead.symbol)
             }
         }
-        .displayName("Coucou")
+        .displayName("Day")
         .description("Your agents at a glance. Opens the one that needs you.")
     }
 }

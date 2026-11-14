@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,15 +18,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.coucou.android.core.Palette
-import com.coucou.android.core.StatusPalette
-import com.coucou.android.core.ThemeChoice
-import com.coucou.android.core.ThemePolicy
-import com.coucou.android.core.Tokens
+import com.Day.android.core.Palette
+import com.Day.android.core.StatusPalette
+import com.Day.android.core.ThemeChoice
+import com.Day.android.core.ThemePolicy
+import com.Day.android.core.Tokens
 
 /**
- * The look of the Coucou website (docs/site.css): a near-black page (or a pale one in the light theme), slightly lighter cards with a
- * thin border, soft blue accent, rounded corners and pill-shaped buttons. Mochi itself is untouched.
+ * The look of the Day website (docs/site.css): a near-black page (or a pale one in the light theme), slightly lighter cards with a
+ * thin border, soft blue accent, rounded corners and pill-shaped buttons. Day itself is untouched.
  */
 private fun scheme(p: Palette, t: Tokens): ColorScheme {
     // Surfaces and text come from the tokens, the accent from Palette.
@@ -63,10 +63,10 @@ object StatusColors {
 
 /**
  * The theme: light, dark or the phone's own ([theme]), and optionally the phone's own colours ([dynamic], Android 12 and later).
- * Mochi, his colours and the state colours are the same in both.
+ * Day, his colours and the state colours are the same in both.
  */
 @Composable
-fun CoucouTheme(theme: ThemeChoice = ThemeChoice.SYSTEM, dynamic: Boolean = false, content: @Composable () -> Unit) {
+fun DayTheme(theme: ThemeChoice = ThemeChoice.SYSTEM, dynamic: Boolean = false, content: @Composable () -> Unit) {
     val dark = ThemePolicy.dark(theme, isSystemInDarkTheme())
     val context = LocalContext.current
     var tokens = if (dark) Tokens.DARK else Tokens.LIGHT

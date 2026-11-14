@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import java.io.File
 import org.junit.Assert.assertEquals
@@ -8,17 +8,17 @@ import org.junit.Test
 
 /** Source guards for the Team widget and its choice screen (Android classes only compile in CI). */
 class TeamWidgetSourceTest {
-    private val main = "src/main/kotlin/com/coucou/android/"
+    private val main = "src/main/kotlin/com/Day/android/"
     private fun read(p: String) = File(p).readText()
     private val config = read(main + "app/TeamConfigActivity.kt")
     private val widget = read(main + "app/TeamWidget.kt")
     private val store = read(main + "app/TeamStore.kt")
-    private val info = read("src/main/res/xml/coucou_team_widget_info.xml")
+    private val info = read("src/main/res/xml/Day_team_widget_info.xml")
     private val manifest = read("src/main/AndroidManifest.xml")
 
     @Test fun theProviderLetsTheUserSkipTheChoiceAndChangeItLater() {
         assertTrue(info.contains("""android:widgetFeatures="configuration_optional|reconfigurable""""))
-        assertTrue(info.contains("""android:configure="com.coucou.android.app.TeamConfigActivity""""))
+        assertTrue(info.contains("""android:configure="com.Day.android.app.TeamConfigActivity""""))
         assertTrue(info.contains("""android:updatePeriodMillis="0""""))
         assertTrue(info.contains("""android:targetCellWidth="4"""") && info.contains("""android:targetCellHeight="2""""))
         // Three cells wide at the least.

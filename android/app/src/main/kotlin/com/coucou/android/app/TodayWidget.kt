@@ -1,13 +1,13 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import com.coucou.android.R
-import com.coucou.android.core.WidgetContent
-import com.coucou.android.core.WidgetSpoken
+import com.Day.android.R
+import com.Day.android.core.WidgetContent
+import com.Day.android.core.WidgetSpoken
 
 /**
  * The Today widget: how many agent tasks finished today. The count is kept on this phone only ([TodayStore]) and starts
@@ -36,8 +36,8 @@ class TodayWidget : AppWidgetProvider() {
         fun views(context: Context, c: WidgetContent): RemoteViews {
             val v = RemoteViews(context.packageName, R.layout.widget_today)
             WidgetHub.paint(v, R.id.today_root, R.id.today_tint, c.todayLook)
-            v.setImageViewBitmap(R.id.today_face, MochiBitmap.of(c.todayMood, WidgetHub.px(context, 72), glow = true, tone = c.todayLook))
-            v.setContentDescription(R.id.today_face, context.getString(R.string.widget_mochi_description, WidgetSpoken.mood(c.todayMood)))
+            v.setImageViewBitmap(R.id.today_face, DayBitmap.of(c.todayMood, WidgetHub.px(context, 72), glow = true, tone = c.todayLook))
+            v.setContentDescription(R.id.today_face, context.getString(R.string.widget_Day_description, WidgetSpoken.mood(c.todayMood)))
             v.setTextViewText(R.id.today_count, c.today.toString())
             v.setContentDescription(R.id.today_root, context.getString(R.string.widget_today_cd, c.today))
             v.setOnClickPendingIntent(R.id.today_root, WidgetHub.openApp(context, WidgetHub.CODE_TODAY))

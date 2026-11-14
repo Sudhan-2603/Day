@@ -1,15 +1,15 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.EyeShape
-import com.coucou.android.mochi.MochiConst
+import com.Day.android.Day.BotState
+import com.Day.android.Day.EyeShape
+import com.Day.android.Day.DayConst
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 
-/** Checks the state table against windows/src/mochi/engine.ts, the reference implementation. */
-class MochiConstTest {
-    private val src = ReferenceFiles.read("windows/src/mochi/engine.ts")
+/** Checks the state table against windows/src/Day/engine.ts, the reference implementation. */
+class DayConstTest {
+    private val src = ReferenceFiles.read("windows/src/Day/engine.ts")
 
     @Test fun stateColoursMatchReference() {
         val block = src.substringAfter("const C = {").substringBefore("};")
@@ -18,7 +18,7 @@ class MochiConstTest {
         assertEquals(11, ref.size)
         for (s in BotState.entries) {
             val (r, g, b) = ref.getValue(s.key)
-            val c = MochiConst.STATES.getValue(s).color
+            val c = DayConst.STATES.getValue(s).color
             assertEquals("${s.key}.r", r.toDouble(), c.r, 1e-9)
             assertEquals("${s.key}.g", g.toDouble(), c.g, 1e-9)
             assertEquals("${s.key}.b", b.toDouble(), c.b, 1e-9)
@@ -32,7 +32,7 @@ class MochiConstTest {
         assertEquals(11, rows.size)
         for (m in rows) {
             val state = BotState.entries.first { it.key == m.groupValues[1] }
-            val cfg = MochiConst.STATES.getValue(state)
+            val cfg = DayConst.STATES.getValue(state)
             assertEquals(state.key, m.groupValues[2].toDouble(), cfg.tint, 1e-9)
             assertEquals(state.key, EyeShape.valueOf(m.groupValues[3].uppercase()), cfg.eye)
         }
@@ -41,8 +41,8 @@ class MochiConstTest {
     @Test fun stateSoundsMatchReferenceAndFilesExist() {
         val block = src.substringAfter("export const STATE_SOUND").substringBefore("};")
         val ref = Regex("""(\w+): "(\w+)"""").findAll(block).associate { it.groupValues[1] to it.groupValues[2] }
-        for ((state, sound) in MochiConst.STATE_SOUND) assertEquals(ref[state.key], sound)
-        assertEquals(ref.size, MochiConst.STATE_SOUND.size)
+        for ((state, sound) in DayConst.STATE_SOUND) assertEquals(ref[state.key], sound)
+        assertEquals(ref.size, DayConst.STATE_SOUND.size)
         for (sound in ref.values) assertNotNull(ReferenceFiles.file("NotchBuddy/Resources/sounds/$sound.wav").takeIf { it.exists() })
     }
 }

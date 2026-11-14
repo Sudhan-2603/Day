@@ -1,9 +1,9 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.ApprovalChannels
-import com.coucou.android.core.KeyValueStore
-import com.coucou.android.core.UserSettings
-import com.coucou.android.core.VibrationChoice
+import com.Day.android.core.ApprovalChannels
+import com.Day.android.core.KeyValueStore
+import com.Day.android.core.UserSettings
+import com.Day.android.core.VibrationChoice
 import java.io.File
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -62,8 +62,8 @@ class ApprovalAlertsTest {
     }
 
     @Test fun aRequestIsNeverMutedByTheseChoices() {
-        val src = File("src/main/kotlin/com/coucou/android/app/Notifications.kt").readText()
-        // The channel is always high importance with Mochi's sound; the choices only touch vibration and the wake.
+        val src = File("src/main/kotlin/com/Day/android/app/Notifications.kt").readText()
+        // The channel is always high importance with Day's sound; the choices only touch vibration and the wake.
         val block = src.substringAfter("fun applyApprovalSettings").substringBefore("private fun open(")
         assertTrue(block.contains("IMPORTANCE_HIGH"))
         assertTrue(block.contains("R.raw.approval"))
@@ -74,7 +74,7 @@ class ApprovalAlertsTest {
     }
 
     @Test fun settingsShowBothChoices() {
-        val ui = File("src/main/kotlin/com/coucou/android/ui/SettingsScreens.kt").readText()
+        val ui = File("src/main/kotlin/com/Day/android/ui/SettingsScreens.kt").readText()
         assertTrue(ui.contains("R.string.settings_no_wake") && ui.contains("R.string.settings_vibration"))
         assertTrue(ui.contains("VibrationChoice.SHORT") && ui.contains("VibrationChoice.OFF"))
     }

@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -6,13 +6,13 @@ import android.content.Context
 import android.util.SizeF
 import android.view.View
 import android.widget.RemoteViews
-import com.coucou.android.R
-import com.coucou.android.core.WidgetContent
-import com.coucou.android.core.WidgetSpoken
+import com.Day.android.R
+import com.Day.android.core.WidgetContent
+import com.Day.android.core.WidgetSpoken
 
 /**
- * The List widget: the headline with a badge, then one row per agent of at least 48dp (a bar in its own colour, Mochi's
- * face, its name, a state word and a dot in the state's tone). With no agent it is a centred empty state: Mochi asleep and
+ * The List widget: the headline with a badge, then one row per agent of at least 48dp (a bar in its own colour, Day's
+ * face, its name, a state word and a dot in the state's tone). With no agent it is a centred empty state: Day asleep and
  * one clear line. Drawn by [WidgetHub] when something changes (updatePeriodMillis = 0). A tap on a row opens that agent; a
  * tap anywhere else opens the app. It only opens things: a request waits for you in the app, behind the fingerprint.
  */
@@ -45,12 +45,12 @@ class ListWidget : AppWidgetProvider() {
             v.setContentDescription(R.id.list_root, WidgetSpoken.list(c))
 
             if (c.tiles.isEmpty()) {
-                // The empty state fills the card: Mochi asleep (or calm) with his glow, the headline and one clear line.
+                // The empty state fills the card: Day asleep (or calm) with his glow, the headline and one clear line.
                 v.setViewVisibility(R.id.list_header, View.GONE)
                 v.setViewVisibility(R.id.list_rows, View.GONE)
                 v.setViewVisibility(R.id.list_empty, View.VISIBLE)
-                v.setImageViewBitmap(R.id.list_empty_face, MochiBitmap.of(c.mood, WidgetHub.px(context, 96), glow = true, tone = c.look))
-                v.setContentDescription(R.id.list_empty_face, context.getString(R.string.widget_mochi_description, WidgetSpoken.mood(c.mood)))
+                v.setImageViewBitmap(R.id.list_empty_face, DayBitmap.of(c.mood, WidgetHub.px(context, 96), glow = true, tone = c.look))
+                v.setContentDescription(R.id.list_empty_face, context.getString(R.string.widget_Day_description, WidgetSpoken.mood(c.mood)))
                 v.setImageViewResource(R.id.list_empty_icon, if (c.connected) R.drawable.widget_dot else R.drawable.ic_widget_offline)
                 v.setInt(R.id.list_empty_icon, "setColorFilter", c.look.argb)
                 v.setTextViewText(R.id.list_empty_title, c.headline)
@@ -84,8 +84,8 @@ class ListWidget : AppWidgetProvider() {
                 }
                 v.setViewVisibility(r.row, View.VISIBLE)
                 v.setInt(r.stripe, "setColorFilter", tile.tone.argb)
-                v.setImageViewBitmap(r.face, MochiBitmap.of(tile.state, face))
-                v.setContentDescription(r.face, context.getString(R.string.widget_mochi_description, tile.stateWord.lowercase()))
+                v.setImageViewBitmap(r.face, DayBitmap.of(tile.state, face))
+                v.setContentDescription(r.face, context.getString(R.string.widget_Day_description, tile.stateWord.lowercase()))
                 v.setTextViewText(r.name, tile.name)
                 v.setTextViewText(r.state, tile.stateWord)
                 v.setInt(r.dot, "setColorFilter", tile.tone.argb)

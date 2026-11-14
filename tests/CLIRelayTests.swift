@@ -28,7 +28,7 @@ enum CLIRelayTests {
         precondition(chat.contains("--strict-mcp-config") && chat.contains("--no-session-persistence"))
         precondition(value(after: "--model", in: chat) == "claude-sonnet-5")
         precondition(value(after: "--system-prompt", in: chat) == "SYS")
-        let dir = URL(fileURLWithPath: "/tmp/coucou-relay-x")
+        let dir = URL(fileURLWithPath: "/tmp/Day-relay-x")
         let file = CLIRelay.arguments(.claude, request(web: false, readDir: dir))
         precondition(value(after: "--tools", in: file) == "Read" && value(after: "--add-dir", in: file) == dir.path)
         precondition(!file.contains("--model"), "no model: Claude Code's own default")

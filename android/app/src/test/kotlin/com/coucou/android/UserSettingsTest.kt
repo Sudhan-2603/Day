@@ -1,14 +1,14 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Announce
-import com.coucou.android.core.Decision
-import com.coucou.android.core.DecisionLog
-import com.coucou.android.core.HistoryDays
-import com.coucou.android.core.KeyValueStore
-import com.coucou.android.core.QuietHours
-import com.coucou.android.core.StatusPolicy
-import com.coucou.android.core.UserSettings
-import com.coucou.android.mochi.BotState
+import com.Day.android.core.Announce
+import com.Day.android.core.Decision
+import com.Day.android.core.DecisionLog
+import com.Day.android.core.HistoryDays
+import com.Day.android.core.KeyValueStore
+import com.Day.android.core.QuietHours
+import com.Day.android.core.StatusPolicy
+import com.Day.android.core.UserSettings
+import com.Day.android.Day.BotState
 import java.time.ZoneId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

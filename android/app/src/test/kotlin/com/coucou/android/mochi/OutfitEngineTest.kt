@@ -1,30 +1,30 @@
-package com.coucou.android.mochi
+package com.Day.android.Day
 
-import com.coucou.android.mochi.outfit.Outfit
+import com.Day.android.Day.outfit.Outfit
 import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** setOutfit and the soft-part physics, as in windows/src/mochi/engine.ts. */
+/** setOutfit and the soft-part physics, as in windows/src/Day/engine.ts. */
 class OutfitEngineTest {
     private class Clock { var ms = 10_000.0 }
 
-    private fun engine(clock: Clock) = MochiEngine({ clock.ms }, Random(1), SoundSink { })
+    private fun engine(clock: Clock) = DayEngine({ clock.ms }, Random(1), SoundSink { })
 
-    private fun MochiEngine.run(clock: Clock, ms: Int) {
+    private fun DayEngine.run(clock: Clock, ms: Int) {
         repeat(ms / 16) { clock.ms += 16; update(0.016) }
     }
 
-    @Test fun mochiStartsUndressed() {
+    @Test fun DayStartsUndressed() {
         val e = engine(Clock())
         assertEquals(Outfit.NONE, e.outfit)
         assertEquals(0.0, e.outfitPresence, 0.0)
         assertFalse(e.rigidRoll)
     }
 
-    @Test fun anOutfitDropsInOver350msAndThenMochiSquashes() {
+    @Test fun anOutfitDropsInOver350msAndThenDaySquashes() {
         val clock = Clock()
         val e = engine(clock)
         e.setOutfit(Outfit.CROWN)

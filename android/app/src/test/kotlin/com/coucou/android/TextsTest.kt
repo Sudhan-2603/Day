@@ -1,6 +1,6 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Texts
+import com.Day.android.core.Texts
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test

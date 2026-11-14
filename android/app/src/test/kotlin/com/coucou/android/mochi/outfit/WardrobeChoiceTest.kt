@@ -1,4 +1,4 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
 import java.io.File
 import java.time.LocalDate
@@ -29,7 +29,7 @@ class WardrobeChoiceTest {
     }
 
     // The screens cannot be drawn in a JVM test, so these read the sources.
-    private fun src(name: String) = File("src/main/kotlin/com/coucou/android/$name").readText()
+    private fun src(name: String) = File("src/main/kotlin/com/Day/android/$name").readText()
 
     @Test fun theWardrobeIsOneTapFromSettingsAndGoesBackToSettings() {
         assertTrue(src("ui/SettingsScreens.kt").contains("onWardrobe"))
@@ -44,21 +44,21 @@ class WardrobeChoiceTest {
         for (id in Wardrobe.SELECTIONS.filter { it != "bunnyEars" }) assertTrue(id, screen.contains("\"$id\" -> R.string.outfit_$id"))
     }
 
-    @Test fun theIconsAreDrawnByTheSameCodeAsTheBigMochi() {
+    @Test fun theIconsAreDrawnByTheSameCodeAsTheBigDay() {
         val screen = src("ui/WardrobeScreen.kt")
-        assertTrue(screen.contains("drawIconMochi("))
-        assertTrue(src("mochi/MochiPainter.kt").contains("drawOutfitFront(") && src("mochi/MochiPainter.kt").contains("drawOutfitBehind("))
+        assertTrue(screen.contains("drawIconDay("))
+        assertTrue(src("Day/DayPainter.kt").contains("drawOutfitFront(") && src("Day/DayPainter.kt").contains("drawOutfitBehind("))
     }
 
     @Test fun homeDressesTheHeroAndOnlyTheHero() {
         val main = src("MainActivity.kt")
         assertTrue(main.contains("engine.setOutfit("))
         assertEquals("only the hero's engine is dressed", 2, Regex("""setOutfit\(""").findAll(main).count())
-        assertFalse(src("mochi/MochiEngine.kt").contains("isMini) outfit"))
+        assertFalse(src("Day/DayEngine.kt").contains("isMini) outfit"))
     }
 
     @Test fun nothingAboutTheOutfitLeavesThePhone() {
-        for (f in listOf("ui/WardrobeScreen.kt", "mochi/outfit/Wardrobe.kt")) {
+        for (f in listOf("ui/WardrobeScreen.kt", "Day/outfit/Wardrobe.kt")) {
             val s = src(f)
             assertFalse(f, s.contains("Log.") || s.contains("Socket") || s.contains("http"))
         }

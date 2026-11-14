@@ -1,4 +1,4 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -20,7 +20,7 @@ import kotlin.math.max
 
 /**
  * Draws what the outfit code asks for (see [Ctx2D]) on a Compose canvas. [bounds] is the area a translucent layer
- * covers (the whole Mochi view is enough).
+ * covers (the whole Day view is enough).
  */
 class ComposeGfx(private val c: Canvas, private val bounds: Rect) : Gfx {
     private val paint = Paint().apply { isAntiAlias = true }

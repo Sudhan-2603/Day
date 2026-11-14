@@ -1,6 +1,6 @@
-package com.coucou.android.mochi.outfit
+package com.Day.android.Day.outfit
 
-import com.coucou.android.core.Ease
+import com.Day.android.core.Ease
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -11,8 +11,8 @@ import kotlin.math.pow
 import kotlin.math.sin
 
 /**
- * Mochi's outfits, a line-by-line port of windows/src/mochi/outfits.ts (itself a port of the Mac's
- * MochiOutfitDrawing.swift). Coordinates are the body space of [Head]. Every function keeps the order of
+ * Day's outfits, a line-by-line port of windows/src/Day/outfits.ts (itself a port of the Mac's
+ * DayOutfitDrawing.swift). Coordinates are the body space of [Head]. Every function keeps the order of
  * its drawing calls, because a test records them and compares with the TypeScript original.
  */
 internal typealias Stops = List<Pair<Double, String>>

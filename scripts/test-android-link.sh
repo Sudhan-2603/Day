@@ -4,7 +4,7 @@
 # approval and question rules, the certificate. Pure files only: no socket, no Keychain, no AppState.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-TEST_DIR="$(mktemp -d "${TMPDIR:-/tmp}/coucou-android-link.XXXXXX")"
+TEST_DIR="$(mktemp -d "${TMPDIR:-/tmp}/Day-android-link.XXXXXX")"
 trap 'rm -rf "$TEST_DIR"' EXIT
 LINK=NotchBuddy/Sources/App/AndroidLink
 swiftc -swift-version 6 -strict-concurrency=complete \

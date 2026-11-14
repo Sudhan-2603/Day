@@ -8,7 +8,7 @@ import AppKit
 ///   to put it away. It goes by itself after a few seconds, unless the pointer rests on it.
 ///
 /// The screen is the one the pointer is on. The image stays on the Mac, in the temporary folder
-/// Coucou keeps its captures in (the last 20 of them).
+/// Day keeps its captures in (the last 20 of them).
 @MainActor
 final class QuickScreenshot {
     static let shared = QuickScreenshot()
@@ -18,7 +18,7 @@ final class QuickScreenshot {
 
     /// The same folder as ⌘⇧S's captures.
     private static var folder: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("CoucouCaptures", isDirectory: true)
+        FileManager.default.temporaryDirectory.appendingPathComponent("DayCaptures", isDirectory: true)
     }
 
     private init() {}

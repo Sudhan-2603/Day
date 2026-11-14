@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Shortcut Action
 
-/// Every keyboard shortcut Coucou knows about.
+/// Every keyboard shortcut Day knows about.
 /// The first 10 cases are *global* (registered with Carbon and effective from any app).
 /// Island-local shortcuts are documented in `ShortcutLogic.islandShortcuts` but are
 /// not managed here — they are handled by a local NSEvent monitor in IslandWindowController.
@@ -16,9 +16,9 @@ enum ShortcutAction: String, CaseIterable, Sendable {
     case nextPill          = "nextPill"           // ⌃⌥] — next pill, open if closed
     case prevPill          = "prevPill"           // ⌃⌥[ — previous pill, open if closed
     case muteToggle        = "muteToggle"         // ⌃⌥M — mute / unmute sounds
-    case desktopToggle     = "desktopToggle"      // ⌃⌥D — send Mochi to desktop / bring back
+    case desktopToggle     = "desktopToggle"      // ⌃⌥D — send Day to desktop / bring back
     case wardrobeToggle    = "wardrobeToggle"     // ⌃⌥G — open / close wardrobe
-    case talkToCoucou      = "talkToCoucou"       // (unset) — start listening without wake phrase (non-AppStore)
+    case talkToDay      = "talkToDay"       // (unset) — start listening without wake phrase (non-AppStore)
     case captureScreen     = "captureScreen"      // ⌘⇧S — capture a part of the screen for Claude (non-AppStore)
     case quickScreenshot   = "quickScreenshot"    // ⌘⇧2 — the whole screen: copied, and a thumbnail to drag (non-AppStore)
     case newSession        = "newSession"         // ⌃⌥N — a new Claude Code session in a project (non-AppStore)
@@ -52,7 +52,7 @@ enum ShortcutAction: String, CaseIterable, Sendable {
         case .muteToggle:        return String(localized: "shortcut.mute-toggle")
         case .desktopToggle:     return String(localized: "shortcut.desktop-toggle")
         case .wardrobeToggle:    return String(localized: "shortcut.wardrobe")
-        case .talkToCoucou:      return String(localized: "shortcut.talk-to-coucou")
+        case .talkToDay:      return String(localized: "shortcut.talk-to-Day")
         case .captureScreen:     return String(localized: "shortcut.capture")
         case .quickScreenshot:   return String(localized: "shortcut.screenshot")
         case .newSession:        return String(localized: "launch.title")
@@ -61,11 +61,11 @@ enum ShortcutAction: String, CaseIterable, Sendable {
 
     /// Whether this action should be omitted from App Store builds.
     var isAppStoreOnly: Bool { false }
-    var isNonAppStore: Bool  { self == .attachFrontWindow || self == .talkToCoucou || self == .captureScreen || self == .quickScreenshot || self == .newSession }
+    var isNonAppStore: Bool  { self == .attachFrontWindow || self == .talkToDay || self == .captureScreen || self == .quickScreenshot || self == .newSession }
 
     /// Whether the shortcut is enabled by default.
-    /// `toggleIsland` and `talkToCoucou` are off by default; all others are on.
-    var enabledByDefault: Bool { self != .toggleIsland && self != .talkToCoucou }
+    /// `toggleIsland` and `talkToDay` are off by default; all others are on.
+    var enabledByDefault: Bool { self != .toggleIsland && self != .talkToDay }
 }
 
 // MARK: - Shortcut Spec
@@ -112,7 +112,7 @@ enum ShortcutLogic {
         .muteToggle:        ShortcutSpec(keyCode: 46, nsFlags: ShortcutSpec.ctrlOpt),  // ⌃⌥M
         .desktopToggle:     ShortcutSpec(keyCode: 2,  nsFlags: ShortcutSpec.ctrlOpt),  // ⌃⌥D
         .wardrobeToggle:    ShortcutSpec(keyCode: 5,  nsFlags: ShortcutSpec.ctrlOpt),  // ⌃⌥G
-        .talkToCoucou:      ShortcutSpec(keyCode: 9,  nsFlags: ShortcutSpec.ctrlOpt),  // ⌃⌥V (disabled by default)
+        .talkToDay:      ShortcutSpec(keyCode: 9,  nsFlags: ShortcutSpec.ctrlOpt),  // ⌃⌥V (disabled by default)
         .captureScreen:     ShortcutSpec(keyCode: 1,  nsFlags: ShortcutSpec.cmdShift), // ⌘⇧S
         .quickScreenshot:   ShortcutSpec(keyCode: 19, nsFlags: ShortcutSpec.cmdShift), // ⌘⇧2 (next to macOS's ⌘⇧3, free)
         .newSession:        ShortcutSpec(keyCode: 45, nsFlags: ShortcutSpec.ctrlOpt),  // ⌃⌥N
@@ -171,7 +171,7 @@ enum ShortcutLogic {
         return c
     }
 
-    // MARK: - Conflict detection (within Coucou's own shortcuts)
+    // MARK: - Conflict detection (within Day's own shortcuts)
 
     /// Returns the set of actions whose (keyCode, nsFlags) pair is shared with another action.
     static func duplicates(in specs: [ShortcutAction: ShortcutSpec]) -> Set<ShortcutAction> {

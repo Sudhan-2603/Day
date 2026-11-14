@@ -181,10 +181,10 @@ struct OverviewView: View {
             // ↗ jump button — last in ZStack so it renders on top; hidden while any detail is open
             #if !APPSTORE
             let hideJumpButton = showingN8nDetail || state.showingPlanDetail || activeDiffId != nil
-                || agent?.id == CoucoudoroController.pillId
+                || agent?.id == DaydoroController.pillId
             #else
             let hideJumpButton = showingN8nDetail || activeDiffId != nil
-                || agent?.id == CoucoudoroController.pillId
+                || agent?.id == DaydoroController.pillId
             #endif
             if !hideJumpButton {
                 Button(action: { openAgentTarget(agent) }) {
@@ -203,8 +203,8 @@ struct OverviewView: View {
         }
     }
 
-    /// Open in a corner: the card beside Mochi and his circle (CornerArcView, drawn over the
-    /// island), full height. The cards keep room on their left for Mochi at the notch; here it
+    /// Open in a corner: the card beside Day and his circle (CornerArcView, drawn over the
+    /// island), full height. The cards keep room on their left for Day at the notch; here it
     /// is cut off, so they start at the card's edge.
     private var cornerBody: some View {
         let placement = state.islandPlacement
@@ -295,7 +295,7 @@ struct OverviewView: View {
                 NSWorkspace.shared.openApplication(at: url, configuration: .init(), completionHandler: nil)
             }
             #endif
-        case "integration_coucoudoro":
+        case "integration_Daydoro":
             break
         case "integration_crypto":
             let exchange = CryptoSettings.exchange
@@ -1821,7 +1821,7 @@ struct ChatBubble: View {
                         if isStreaming {
                             TimelineView(.periodic(from: .now, by: 0.5)) { tl in
                                 let show = Int(tl.date.timeIntervalSinceReferenceDate / 0.5).isMultiple(of: 2)
-                                // A plan being written (```coucou-mail) is not shown as raw JSON.
+                                // A plan being written (```Day-mail) is not shown as raw JSON.
                                 Text(MailPlanParser.extract(message.content).prose + (show ? "▌" : " "))
                                     .font(.system(size: 12.5))
                                     .foregroundColor(Color(hex: "#B0B5BE"))
@@ -2066,7 +2066,7 @@ struct IntegrationCardView: View {
             #endif
         case "integration_crypto":
             return true  // public market data: no key, nothing to set up
-        case "integration_coucoudoro":
+        case "integration_Daydoro":
             return true  // a local countdown: nothing to connect
         case "integration_portfolio":
             return PortfolioSettings.hasAnyAccount
@@ -2325,8 +2325,8 @@ struct IntegrationCardView: View {
             // Its own card in every state (loading, no coins, prices).
             CryptoCardView()
                 .transition(.opacity)
-        } else if task.id == CoucoudoroController.pillId {
-            CoucoudoroCardView()
+        } else if task.id == DaydoroController.pillId {
+            DaydoroCardView()
                 .transition(.opacity)
         } else if task.id == "integration_portfolio" {
             PortfolioCardView()
@@ -4287,8 +4287,8 @@ struct AgentPillsView: View {
     @ViewBuilder
     private func pill(_ task: AgentTask) -> some View {
         #if !APPSTORE
-        if task.id == CoucoudoroController.pillId {
-            CoucoudoroPill(task: task, state: state, swapping: $swapping) {
+        if task.id == DaydoroController.pillId {
+            DaydoroPill(task: task, state: state, swapping: $swapping) {
                 swapping = true
                 state.setFocus(task.id)
                 SoundEngine.shared.play("blip")
@@ -4317,8 +4317,8 @@ struct AgentPillsView: View {
             }
         }
         #else
-        if task.id == CoucoudoroController.pillId {
-            CoucoudoroPill(task: task, state: state, swapping: $swapping) {
+        if task.id == DaydoroController.pillId {
+            DaydoroPill(task: task, state: state, swapping: $swapping) {
                 swapping = true
                 state.setFocus(task.id)
                 SoundEngine.shared.play("blip")
@@ -4460,7 +4460,7 @@ struct MusicPill: View {
                 .stroke(Color(hex: task.color).opacity(isHovered ? 0.55 : 0.14), lineWidth: 1)
                 .allowsHitTesting(false)
 
-            // Mini Mochi at leading edge
+            // Mini Day at leading edge
             HStack(spacing: 0) {
                 MiniBotCanvasView(task: task, isDancing: isPlaying)
                     .frame(width: 22 / 0.6, height: 22 / 0.6)
@@ -4564,7 +4564,7 @@ struct MusicCardView: View {
                 .padding(.leading, 108)
                 .padding(.trailing, 36)
 
-                Text("Allow Coucou to control Music")
+                Text("Allow Day to control Music")
                     .font(.system(size: 11))
                     .foregroundColor(Color(hex: "#8E939C"))
                     .padding(.leading, 108)
@@ -4711,7 +4711,7 @@ struct WardrobeView: View {
             return h.displayName
         }
         // Fall back to current selection
-        let sel = state.mochiOutfitSelection
+        let sel = state.DayOutfitSelection
         if sel == .auto {
             let seasonal = Outfit.seasonal(for: Date(), calendar: .current)
             let name = seasonal == .none ? "None" : seasonal.displayName
@@ -4744,12 +4744,12 @@ struct WardrobeView: View {
                     ForEach(withAuto, id: \.rawValue) { outfit in
                         OutfitPillView(
                             outfit: outfit,
-                            isSelected: state.mochiOutfitSelection == outfit,
+                            isSelected: state.DayOutfitSelection == outfit,
                             isHovered: hoveredOutfit == outfit,
                             onHover: { h in
                                 hoveredOutfit = h ? outfit : nil
                                 if h {
-                                    // Preview on main Mochi
+                                    // Preview on main Day
                                     let preview: Outfit = outfit == .auto
                                         ? Outfit.seasonal(for: Date(), calendar: .current)
                                         : outfit
@@ -4759,8 +4759,8 @@ struct WardrobeView: View {
                                 }
                             },
                             onTap: {
-                                guard state.mochiOutfitSelection != outfit else { return }
-                                state.mochiOutfitSelection = outfit
+                                guard state.DayOutfitSelection != outfit else { return }
+                                state.DayOutfitSelection = outfit
                                 SoundEngine.shared.play("pop")
                                 NotificationCenter.default.post(name: .triggerEmote, object: BotEmote.proud)
                             },
@@ -4833,8 +4833,8 @@ private func drawOutfitIcon(context: GraphicsContext, size: CGSize, outfit: Outf
     case .auto:
         let iconR: CGFloat = 10.0
         let rx = iconR * 1.14, ry = iconR * 0.88
-        let mH = MochiH(R: iconR, yaw: 0, pitch: 0)
-        let bodyPath = mochiOutfitPath(rx, ry)
+        let mH = DayH(R: iconR, yaw: 0, pitch: 0)
+        let bodyPath = DayOutfitPath(rx, ry)
         let iconCY = cy + iconR * 0.62
 
         // Draw the seasonal outfit behind body
@@ -4900,11 +4900,11 @@ private func drawOutfitIcon(context: GraphicsContext, size: CGSize, outfit: Outf
         ctx.stroke(slash, with: .color(Color(hex: "#454850")), style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
 
     default:
-        // Small Mochi wearing the outfit
+        // Small Day wearing the outfit
         let iconR: CGFloat = 10.0
         let rx = iconR * 1.14, ry = iconR * 0.88
-        let mH = MochiH(R: iconR, yaw: 0, pitch: 0)
-        let bodyPath = mochiOutfitPath(rx, ry)
+        let mH = DayH(R: iconR, yaw: 0, pitch: 0)
+        let bodyPath = DayOutfitPath(rx, ry)
         let iconCY = cy + iconR * 0.62
 
         // Draw outfit behind

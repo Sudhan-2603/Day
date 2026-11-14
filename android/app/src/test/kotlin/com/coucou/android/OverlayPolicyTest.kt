@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.OverlayChoice
-import com.coucou.android.core.OverlayPolicy
-import com.coucou.android.core.WishStore
+import com.Day.android.core.OverlayChoice
+import com.Day.android.core.OverlayPolicy
+import com.Day.android.core.WishStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

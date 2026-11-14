@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.content.Context
 import android.os.Build
@@ -9,71 +9,71 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.coucou.android.R
-import com.coucou.android.core.ChatTab
-import com.coucou.android.core.ChatTabState
-import com.coucou.android.core.Decision
-import com.coucou.android.core.DecisionLog
-import com.coucou.android.core.KeyValueStore
-import com.coucou.android.core.IslandPlan
-import com.coucou.android.core.OverlayChoice
-import com.coucou.android.core.StatusPolicy
-import com.coucou.android.core.UserSettings
-import com.coucou.android.core.OverlayPolicy
-import com.coucou.android.core.WishStore
-import com.coucou.android.core.Pills
-import com.coucou.android.ui.IslandOverlay
-import com.coucou.android.link.Protocol
-import com.coucou.android.link.ChatModel
-import com.coucou.android.core.PairingScan
-import com.coucou.android.core.ScanDecision
-import com.coucou.android.core.ChatHistory
-import com.coucou.android.core.ChatModels
-import com.coucou.android.core.ChatSession
-import com.coucou.android.link.AddressFinder
-import com.coucou.android.link.ApprovalRequest
-import com.coucou.android.link.QuestionRequest
-import com.coucou.android.link.Cancelable
-import com.coucou.android.link.Discovery
-import com.coucou.android.link.DiscoveryPolicy
-import com.coucou.android.link.DiscoveryState
-import com.coucou.android.link.PinnedProbe
-import com.coucou.android.link.DemoLink
-import com.coucou.android.link.Connector
-import com.coucou.android.link.DesktopLink
-import com.coucou.android.link.PinnedTls
-import com.coucou.android.link.LinkClient
-import com.coucou.android.link.LinkListener
-import com.coucou.android.link.LinkState
-import com.coucou.android.link.BatteryHint
-import com.coucou.android.link.DiagResult
-import com.coucou.android.link.DiagStep
-import com.coucou.android.link.Diagnostics
-import com.coucou.android.link.Found
-import com.coucou.android.link.LanDiagnostics
-import com.coucou.android.link.LinkHealth
-import com.coucou.android.link.LostReason
-import com.coucou.android.link.PairingPayload
-import com.coucou.android.link.ReconnectPolicy
-import com.coucou.android.link.Wake
-import com.coucou.android.link.SessionInfo
-import com.coucou.android.sound.SoundPlayer
-import com.coucou.android.mochi.BotState
+import com.Day.android.R
+import com.Day.android.core.ChatTab
+import com.Day.android.core.ChatTabState
+import com.Day.android.core.Decision
+import com.Day.android.core.DecisionLog
+import com.Day.android.core.KeyValueStore
+import com.Day.android.core.IslandPlan
+import com.Day.android.core.OverlayChoice
+import com.Day.android.core.StatusPolicy
+import com.Day.android.core.UserSettings
+import com.Day.android.core.OverlayPolicy
+import com.Day.android.core.WishStore
+import com.Day.android.core.Pills
+import com.Day.android.ui.IslandOverlay
+import com.Day.android.link.Protocol
+import com.Day.android.link.ChatModel
+import com.Day.android.core.PairingScan
+import com.Day.android.core.ScanDecision
+import com.Day.android.core.ChatHistory
+import com.Day.android.core.ChatModels
+import com.Day.android.core.ChatSession
+import com.Day.android.link.AddressFinder
+import com.Day.android.link.ApprovalRequest
+import com.Day.android.link.QuestionRequest
+import com.Day.android.link.Cancelable
+import com.Day.android.link.Discovery
+import com.Day.android.link.DiscoveryPolicy
+import com.Day.android.link.DiscoveryState
+import com.Day.android.link.PinnedProbe
+import com.Day.android.link.DemoLink
+import com.Day.android.link.Connector
+import com.Day.android.link.DesktopLink
+import com.Day.android.link.PinnedTls
+import com.Day.android.link.LinkClient
+import com.Day.android.link.LinkListener
+import com.Day.android.link.LinkState
+import com.Day.android.link.BatteryHint
+import com.Day.android.link.DiagResult
+import com.Day.android.link.DiagStep
+import com.Day.android.link.Diagnostics
+import com.Day.android.link.Found
+import com.Day.android.link.LanDiagnostics
+import com.Day.android.link.LinkHealth
+import com.Day.android.link.LostReason
+import com.Day.android.link.PairingPayload
+import com.Day.android.link.ReconnectPolicy
+import com.Day.android.link.Wake
+import com.Day.android.link.SessionInfo
+import com.Day.android.sound.SoundPlayer
+import com.Day.android.Day.BotState
 
 enum class Mode { NONE, DEMO, PAIRED }
 
-/** The one place the UI, the service and the notification actions share. Created by [CoucouApp]. */
+/** The one place the UI, the service and the notification actions share. Created by [DayApp]. */
 class AppModel(private val context: Context) : LinkListener {
     private val main = Handler(Looper.getMainLooper())
     private val store = SecureStore(context)
     val sounds = SoundPlayer(context)
     val notifier = Notifications(context)
 
-    /** Set only by LaunchActivity (not exported), read by MainActivity: see [com.coucou.android.core.PendingLaunch]. */
-    val launch = com.coucou.android.core.PendingLaunch()
+    /** Set only by LaunchActivity (not exported), read by MainActivity: see [com.Day.android.core.PendingLaunch]. */
+    val launch = com.Day.android.core.PendingLaunch()
 
-    /** Text shared to Coucou from another app, waiting to be put in the chat box (see [com.coucou.android.core.ShareDraft]). */
-    val shareDraft = com.coucou.android.core.ShareDraft()
+    /** Text shared to Day from another app, waiting to be put in the chat box (see [com.Day.android.core.ShareDraft]). */
+    val shareDraft = com.Day.android.core.ShareDraft()
 
     /** Changes with every share, so a chat screen that is already open notices there is a new draft. */
     var shareVersion by mutableStateOf(0); private set
@@ -85,7 +85,7 @@ class AppModel(private val context: Context) : LinkListener {
     }
 
     /** Agent tasks finished today, for the Today widget. Kept on this phone only (see [TodayStore]). */
-    private val todayCounter = com.coucou.android.core.TodayCounter(TodayStore(context))
+    private val todayCounter = com.Day.android.core.TodayCounter(TodayStore(context))
 
     var mode by mutableStateOf(Mode.NONE); private set
     var linkState by mutableStateOf(LinkState.DISCONNECTED); private set
@@ -101,13 +101,13 @@ class AppModel(private val context: Context) : LinkListener {
     var discovery by mutableStateOf(DiscoveryState.IDLE); private set
     /** The pairing the running link uses (with the address in force); the token stays in memory only as long as the link does. */
     @Volatile private var currentPairing: PairingPayload? = null
-    private val probeExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { r -> Thread(r, "coucou-probe").apply { isDaemon = true } }
+    private val probeExecutor = java.util.concurrent.Executors.newSingleThreadExecutor { r -> Thread(r, "Day-probe").apply { isDaemon = true } }
     /** Which way the link reaches the computer now (null until connected), and why the relay failed, if it did. */
-    var route by mutableStateOf<com.coucou.android.link.Route?>(null); private set
-    var relayIssue by mutableStateOf(com.coucou.android.link.RelayIssue.NONE); private set
-    private val transport = com.coucou.android.link.TransportPolicy({ currentPairing?.relay != null && settings.useRelay })
-    @Volatile private var fallback: com.coucou.android.link.FallbackConnector? = null
-    @Volatile private var relayConnector: com.coucou.android.link.RelayConnector? = null
+    var route by mutableStateOf<com.Day.android.link.Route?>(null); private set
+    var relayIssue by mutableStateOf(com.Day.android.link.RelayIssue.NONE); private set
+    private val transport = com.Day.android.link.TransportPolicy({ currentPairing?.relay != null && settings.useRelay })
+    @Volatile private var fallback: com.Day.android.link.FallbackConnector? = null
+    @Volatile private var relayConnector: com.Day.android.link.RelayConnector? = null
 
     /** Whether the pairing in force includes a relay (shown in Settings > Away from home Wi-Fi). */
     val hasRelay: Boolean get() = currentPairing?.relay != null
@@ -127,7 +127,7 @@ class AppModel(private val context: Context) : LinkListener {
         paired = currentPairing != null, demo = mode == Mode.DEMO, wifiUp = netWatch.wifiUp, linkConnected = linkState == LinkState.CONNECTED,
     )
 
-    private val prefs = context.getSharedPreferences("coucou_ui", Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("Day_ui", Context.MODE_PRIVATE)
     private val kv = object : KeyValueStore {
         override fun getBoolean(key: String, default: Boolean) = prefs.getBoolean(key, default)
         override fun getInt(key: String, default: Int) = prefs.getInt(key, default)
@@ -169,7 +169,7 @@ class AppModel(private val context: Context) : LinkListener {
         UserSettings.save(kv, next)
         applySound()
         notifier.applyApprovalSettings(settings.vibration, settings.keepScreenOff)
-        com.coucou.android.core.MotionState.choice = settings.motion
+        com.Day.android.core.MotionState.choice = settings.motion
         // Switching the relay on or off rebuilds the connection with the right routes.
         if (relayChanged) currentPairing?.let { restartLink(it) }
         if (dndChoiceChanged) {
@@ -223,21 +223,21 @@ class AppModel(private val context: Context) : LinkListener {
     init {
         applySound()
         notifier.applyApprovalSettings(settings.vibration, settings.keepScreenOff)
-        com.coucou.android.core.MotionState.choice = settings.motion
+        com.Day.android.core.MotionState.choice = settings.motion
         watchDnd()
     }
 
-    /** What the computer says Mochi wears ("auto" or an outfit); the last one it told, kept for when it is away. */
-    var computerOutfit by mutableStateOf(com.coucou.android.mochi.outfit.Wardrobe.parse(kv.getString("computer_outfit", "")))
+    /** What the computer says Day wears ("auto" or an outfit); the last one it told, kept for when it is away. */
+    var computerOutfit by mutableStateOf(com.Day.android.Day.outfit.Wardrobe.parse(kv.getString("computer_outfit", "")))
         private set
 
     /** The selection in force: the phone's own choice, or the computer's when the phone follows it. */
     val outfitSelection: String
-        get() = com.coucou.android.mochi.outfit.Wardrobe.choose(settings.outfit, computerOutfit)
+        get() = com.Day.android.Day.outfit.Wardrobe.choose(settings.outfit, computerOutfit)
 
-    /** What Mochi wears today ("auto" resolved with the phone's calendar). */
-    fun dress(today: java.time.LocalDate = java.time.LocalDate.now()): com.coucou.android.mochi.outfit.Outfit =
-        com.coucou.android.mochi.outfit.Wardrobe.resolve(outfitSelection, today)
+    /** What Day wears today ("auto" resolved with the phone's calendar). */
+    fun dress(today: java.time.LocalDate = java.time.LocalDate.now()): com.Day.android.Day.outfit.Outfit =
+        com.Day.android.Day.outfit.Wardrobe.resolve(outfitSelection, today)
 
     /** The phone's own list of decisions. Never sent anywhere. */
     private val decisionLog = DecisionLog(kv)
@@ -277,12 +277,12 @@ class AppModel(private val context: Context) : LinkListener {
     /** The computer lists the files an agent changed and can send their lines (its switch is on). */
     var diffsOffered by mutableStateOf(false); private set
     /** The Claude and Codex plan usage the computer sent (its switch is on); null: nothing to show. */
-    var usage by mutableStateOf<com.coucou.android.link.UsageSnapshot?>(null); private set
+    var usage by mutableStateOf<com.Day.android.link.UsageSnapshot?>(null); private set
 
     /** Last week's recap the computer sent (its switch is on); null: nothing to show. Held in memory only, never stored. */
-    var recap by mutableStateOf<com.coucou.android.link.Recap?>(null); private set
+    var recap by mutableStateOf<com.Day.android.link.Recap?>(null); private set
     /** The read-only service cards the user allowed on the computer; empty: none. */
-    var services by mutableStateOf<List<com.coucou.android.link.ServiceCard>>(emptyList()); private set
+    var services by mutableStateOf<List<com.Day.android.link.ServiceCard>>(emptyList()); private set
 
     /** What the Chat tab shows: not paired, not reachable, chat off on the computer, no model allowed, or ready. */
     val chatTabState: ChatTabState get() = ChatTab.state(
@@ -381,7 +381,7 @@ class AppModel(private val context: Context) : LinkListener {
     )
 
     /** The island went up: leave what it showed in the notification shade (quietly), so nothing is lost with the swipe. */
-    private fun shadeAfterSwipe(spec: com.coucou.android.core.IslandSpec) {
+    private fun shadeAfterSwipe(spec: com.Day.android.core.IslandSpec) {
         when (IslandPlan.shadeFor(spec.kind)) {
             IslandPlan.Shade.STATUS_NOTE -> notifier.showStatus(spec.pillId, spec.agent, spec.state, spec.text)
             IslandPlan.Shade.REQUEST_NOTE ->
@@ -411,7 +411,7 @@ class AppModel(private val context: Context) : LinkListener {
         val silenced = OverlayPolicy.silenced(settings.hideIslandInDnd, settings.hideIslandInDnd && dndOn())
         val why = OverlayPolicy.blocker(choice.wished, overlay.permitted(), inForeground, silenced)
             ?: if (!connected) "not connected to a computer" else null
-        if (why != null) Log.d("CoucouOverlay", "no island: $why")
+        if (why != null) Log.d("DayOverlay", "no island: $why")
         return why == null
     }
 
@@ -420,13 +420,13 @@ class AppModel(private val context: Context) : LinkListener {
      * sessions and requests. When it may not show at all it is removed completely.
      */
     /** What the notification, the widget and the tile say right now. */
-    fun glance(): com.coucou.android.core.Glance = com.coucou.android.core.GlanceBuilder.build(
+    fun glance(): com.Day.android.core.Glance = com.Day.android.core.GlanceBuilder.build(
         mode != Mode.NONE || isPaired, linkState, desktopName, sessions, approvals.size, this::agentName,
     )
 
     /** What the Widgets draw now: the glance, the sessions, the plan usage the computer sent and today's finished tasks. */
-    fun widgetContent(g: com.coucou.android.core.Glance = glance()): com.coucou.android.core.WidgetContent =
-        com.coucou.android.core.WidgetData.build(g, sessions, this::agentName, usage, todayCounter.count(), System.currentTimeMillis())
+    fun widgetContent(g: com.Day.android.core.Glance = glance()): com.Day.android.core.WidgetContent =
+        com.Day.android.core.WidgetData.build(g, sessions, this::agentName, usage, todayCounter.count(), System.currentTimeMillis())
 
     /** The small surfaces follow every change of sessions, requests and link; none of them runs a timer. */
     private fun pushGlance() {
@@ -458,7 +458,7 @@ class AppModel(private val context: Context) : LinkListener {
 
     /** The name the user knows the agent by: the session's own name, else the pill catalog. */
     fun agentName(pillId: String): String =
-        sessions.firstOrNull { it.pillId == pillId }?.agent?.takeIf { it.isNotBlank() } ?: Pills.byId(pillId)?.name ?: com.coucou.android.core.Texts.t("agent_an_title", "An agent")
+        sessions.firstOrNull { it.pillId == pillId }?.agent?.takeIf { it.isNotBlank() } ?: Pills.byId(pillId)?.name ?: com.Day.android.core.Texts.t("agent_an_title", "An agent")
 
     val isPaired get() = store.loadPairing() != null
 
@@ -475,7 +475,7 @@ class AppModel(private val context: Context) : LinkListener {
      */
     var pairRequest by mutableStateOf<String?>(null); private set
 
-    /** True if [text] is a Coucou pairing link (the user is now asked to confirm); false for any other text. */
+    /** True if [text] is a Day pairing link (the user is now asked to confirm); false for any other text. */
     fun requestPairing(text: String?): Boolean {
         val d = PairingScan.decide(text)
         if (d !is ScanDecision.Pairing) return false
@@ -526,9 +526,9 @@ class AppModel(private val context: Context) : LinkListener {
         val relay = p.relay
         fallback?.stop()
         val connector: Connector = if (relay != null && settings.useRelay) {
-            val rc = com.coucou.android.link.RelayConnector(relay)
+            val rc = com.Day.android.link.RelayConnector(relay)
             relayConnector = rc
-            com.coucou.android.link.FallbackConnector(lan, rc, transport, onRoute = { r -> main.post { route = r } }).also { fallback = it }
+            com.Day.android.link.FallbackConnector(lan, rc, transport, onRoute = { r -> main.post { route = r } }).also { fallback = it }
         } else {
             relayConnector = null
             fallback = null
@@ -546,7 +546,7 @@ class AppModel(private val context: Context) : LinkListener {
     /** A computer matching the paired fingerprint answered with the pinned certificate (checked by a bare TLS handshake). */
     private fun onAddressFound(host: String, port: Int) {
         if (mode != Mode.PAIRED || currentPairing == null) return
-        Log.d("CoucouDiscovery", "address updated")
+        Log.d("DayDiscovery", "address updated")
         useAddress(host, port)
     }
 
@@ -630,7 +630,7 @@ class AppModel(private val context: Context) : LinkListener {
         val version = runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "?"
         val via = when {
             linkState != LinkState.CONNECTED -> "not connected"
-            route == com.coucou.android.link.Route.RELAY -> "the relay"
+            route == com.Day.android.link.Route.RELAY -> "the relay"
             else -> "the direct link"
         }
         return Diagnostics.report(version, Build.VERSION.RELEASE, "${Build.MANUFACTURER} ${Build.MODEL}", diagResults, p?.let { Diagnostics.maskHost(it.host) } ?: "none", via)
@@ -679,7 +679,7 @@ class AppModel(private val context: Context) : LinkListener {
         fallback = null
         relayConnector = null
         route = null
-        relayIssue = com.coucou.android.link.RelayIssue.NONE
+        relayIssue = com.Day.android.link.RelayIssue.NONE
         finder.stop()
         netWatch.stop()
         screenWatch.stop()
@@ -702,7 +702,7 @@ class AppModel(private val context: Context) : LinkListener {
     /** True if the decision was sent (or applied to the demo). Allow is gated by the biometric prompt in the UI. */
     fun decide(fingerprint: String, allow: Boolean): Boolean {
         val request = approvals.firstOrNull { it.fingerprint == fingerprint }
-        if (allow && request != null && !com.coucou.android.core.ApprovalSheetPlan.canAllowHere(request)) {
+        if (allow && request != null && !com.Day.android.core.ApprovalSheetPlan.canAllowHere(request)) {
             // Whatever asked (a stale notification, a test): a command that was cut is never allowed from here. It stays pending.
             message = context.getString(R.string.approval_on_computer)
             return false
@@ -710,7 +710,7 @@ class AppModel(private val context: Context) : LinkListener {
         val ok = link?.decide(fingerprint, allow) ?: false
         if (ok && request != null) {
             // The phone's own history never keeps the command: a label and at most the program's name.
-            recordDecision(Decision(agentName(request.pillId), request.tool, com.coucou.android.core.SafeText.requestLabel(request.tool, request.command), allow, System.currentTimeMillis()))
+            recordDecision(Decision(agentName(request.pillId), request.tool, com.Day.android.core.SafeText.requestLabel(request.tool, request.command), allow, System.currentTimeMillis()))
         }
         if (!ok) {
             message = context.getString(R.string.msg_not_pending)
@@ -743,7 +743,7 @@ class AppModel(private val context: Context) : LinkListener {
     override fun onState(state: LinkState) {
         main.post {
             linkState = state
-            relayIssue = relayConnector?.issue ?: com.coucou.android.link.RelayIssue.NONE
+            relayIssue = relayConnector?.issue ?: com.Day.android.link.RelayIssue.NONE
             if (state == LinkState.CONNECTED) {
                 health = health.recovered()
                 screenWasOff = power?.isInteractive == false // the screen is off right now: this link starts its life asleep
@@ -772,18 +772,18 @@ class AppModel(private val context: Context) : LinkListener {
         }
     }
 
-    override fun onUsage(usage: com.coucou.android.link.UsageSnapshot) {
+    override fun onUsage(usage: com.Day.android.link.UsageSnapshot) {
         main.post {
             this.usage = usage.takeIf { it.claude != null || it.codex != null }
             pushGlance() // the Usage Ring follows it
         }
     }
 
-    override fun onRecap(recap: com.coucou.android.link.Recap?) {
+    override fun onRecap(recap: com.Day.android.link.Recap?) {
         main.post { this.recap = recap }
     }
 
-    override fun onServices(cards: List<com.coucou.android.link.ServiceCard>) {
+    override fun onServices(cards: List<com.Day.android.link.ServiceCard>) {
         main.post { services = cards }
     }
 
@@ -792,7 +792,7 @@ class AppModel(private val context: Context) : LinkListener {
     }
 
     fun applyComputerOutfit(outfit: String) {
-        val v = com.coucou.android.mochi.outfit.Wardrobe.parse(outfit)
+        val v = com.Day.android.Day.outfit.Wardrobe.parse(outfit)
         computerOutfit = v
         kv.put("computer_outfit", v)
     }
@@ -825,7 +825,7 @@ class AppModel(private val context: Context) : LinkListener {
                 // A task just finished (not one already finished when the link came back), on a real computer: the demo loops and never counts.
                 if (mode == Mode.PAIRED && prev != null && prev != BotState.FINISHED && s.state == BotState.FINISHED) todayCounter.increment()
                 val name = agentName(s.pillId)
-                val sound = com.coucou.android.mochi.MochiConst.STATE_SOUND[s.state]
+                val sound = com.Day.android.Day.DayConst.STATE_SOUND[s.state]
                 if (sound != null && StatusPolicy.stateSoundWanted(prev, s.state, settings)) sounds.play(sound)
                 val a = StatusPolicy.announce(prev, s.state, settings, minute, inForeground, s.pillId)
                 if (a.sound && sound != null) sounds.play(sound)
@@ -884,36 +884,36 @@ class AppModel(private val context: Context) : LinkListener {
 
     // ── A file's change (cap `diffs`) ──────────────────────────────────────────────────
 
-    private val diffAssembler = com.coucou.android.core.DiffAssembler()
+    private val diffAssembler = com.Day.android.core.DiffAssembler()
     private val diffTimeout = Runnable {
-        (diffState as? com.coucou.android.core.DiffState.Loading)?.let { diffState = com.coucou.android.core.DiffState.Failed(it.name) }
+        (diffState as? com.Day.android.core.DiffState.Loading)?.let { diffState = com.Day.android.core.DiffState.Failed(it.name) }
         diffAssembler.cancel()
     }
 
     /** What the file-change sheet shows; Idle closes it. The lines are held only while it is open. */
-    var diffState by mutableStateOf<com.coucou.android.core.DiffState>(com.coucou.android.core.DiffState.Idle); private set
+    var diffState by mutableStateOf<com.Day.android.core.DiffState>(com.Day.android.core.DiffState.Idle); private set
 
     /** Opens the sheet for a file of a session's list and asks the computer for its lines. */
-    fun openDiff(pillId: String, file: com.coucou.android.link.FileChange) {
-        diffState = com.coucou.android.core.DiffState.Loading(pillId, file.id, file.name)
+    fun openDiff(pillId: String, file: com.Day.android.link.FileChange) {
+        diffState = com.Day.android.core.DiffState.Loading(pillId, file.id, file.name)
         diffAssembler.expect(pillId, file.id)
         main.removeCallbacks(diffTimeout)
         if (link?.getDiff(pillId, file.id) == true) main.postDelayed(diffTimeout, DIFF_WAIT_MS)
-        else diffState = com.coucou.android.core.DiffState.Failed(file.name)
+        else diffState = com.Day.android.core.DiffState.Failed(file.name)
     }
 
     /** Closes the sheet and forgets the lines. */
     fun closeDiff() {
         main.removeCallbacks(diffTimeout)
         diffAssembler.cancel()
-        diffState = com.coucou.android.core.DiffState.Idle
+        diffState = com.Day.android.core.DiffState.Idle
     }
 
-    override fun onDiff(part: com.coucou.android.link.ServerMsg.Diff) {
+    override fun onDiff(part: com.Day.android.link.ServerMsg.Diff) {
         main.post {
             val done = diffAssembler.accept(part) ?: return@post
             main.removeCallbacks(diffTimeout)
-            if (diffState is com.coucou.android.core.DiffState.Loading) diffState = com.coucou.android.core.DiffState.Ready(done)
+            if (diffState is com.Day.android.core.DiffState.Loading) diffState = com.Day.android.core.DiffState.Ready(done)
         }
     }
 

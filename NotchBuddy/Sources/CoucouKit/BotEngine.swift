@@ -70,13 +70,13 @@ enum BadgeType {
     case bang(CGColor)
     case question(CGColor)
     case dot(CGColor)
-    /// A new Coucou is waiting (Mac GitHub build): a white up arrow.
+    /// A new Day is waiting (Mac GitHub build): a white up arrow.
     case arrow(CGColor)
 }
 
-// MARK: - Mochi track constants (from PISTES.mochi)
+// MARK: - Day track constants (from PISTES.Day)
 
-enum MochiConst {
+enum DayConst {
     static let eyeW: CGFloat  = 0.25
     static let eyeH: CGFloat  = 0.27
     static let eyeSp: CGFloat = 0.37
@@ -174,10 +174,10 @@ let BotStates: [BotState: BotStateCfg] = [
 final class BotEngine: ObservableObject {
     var isMini: Bool = false
     var bodyColor: CGColor? = nil    // override for mini bots
-    /// A new version waits (BotCanvasView sets it while Mochi has nothing else to say):
+    /// A new version waits (BotCanvasView sets it while Day has nothing else to say):
     /// the blue up-arrow badge instead of the state's own.
     private(set) var updateHint = false
-    /// #3B82F6: Mochi's colour while an update waits.
+    /// #3B82F6: Day's colour while an update waits.
     static let updateBlue = CGColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
 
     // Animation state (mirrors prototype 's' object)
@@ -260,7 +260,7 @@ final class BotEngine: ObservableObject {
 
     // Timing
     var lastTime: Double = CACurrentMediaTime()
-    /// Fractional engine steps owed when drawing slower than the display (Mac mini Mochis).
+    /// Fractional engine steps owed when drawing slower than the display (Mac mini Days).
     var stepDebt: Double = 0
     var t0: Double = CACurrentMediaTime() - Double.random(in: 0...5)
     var nextBlink: Double = CACurrentMediaTime() + 1.5 + Double.random(in: 0...2)
@@ -283,9 +283,9 @@ final class BotEngine: ObservableObject {
     var isDancing: Bool = false
     var dancingLevel: CGFloat = 0   // 0→1 over 0.3s, 1→0 over 0.5s
 
-    // How the Mac feels (MochiMood.swift): the target is set every frame on the Mac, the
+    // How the Mac feels (DayMood.swift): the target is set every frame on the Mac, the
     // levels ease towards it.
-    var moodTarget = MochiMood.calm
+    var moodTarget = DayMood.calm
     var moodBusy: CGFloat = 0
     var moodHot: CGFloat = 0
     var moodFull: CGFloat = 0
@@ -347,7 +347,7 @@ final class BotEngine: ObservableObject {
         }
     }
 
-    /// The caller decides when (an update waits, Mochi idle or asleep); the badge follows.
+    /// The caller decides when (an update waits, Day idle or asleep); the badge follows.
     func setUpdateHint(_ on: Bool) {
         guard on != updateHint else { return }
         updateHint = on
@@ -889,7 +889,7 @@ final class BotEngine: ObservableObject {
     func update(dt: Double) {
         let now = CACurrentMediaTime()
         let dtCG = CGFloat(dt)
-        // The stressed hop of the last frame comes off first (MochiMood.swift).
+        // The stressed hop of the last frame comes off first (DayMood.swift).
         undoMoodOffsets()
 
         // Process tweens
@@ -1141,14 +1141,14 @@ final class BotEngine: ObservableObject {
         if tilt != 0 { ctx.rotate(by: .radians(tilt)) }
         ctx.scaleBy(x: sx, y: sy)
 
-        // Body path (superellipse for Mochi, morph to rect for upload)
-        let bodyPath = mochiPath(rx: rx, ry: ry, morph: morph, R: R)
+        // Body path (superellipse for Day, morph to rect for upload)
+        let bodyPath = DayPath(rx: rx, ry: ry, morph: morph, R: R)
 
         // Body fill
         drawBody(ctx: &ctx, path: bodyPath, R: R, rx: rx, ry: ry,
                  pumpkinColors: outfit == .pumpkin && !isMini)
 
-        // A warm Mac flushes him (MochiMood.swift).
+        // A warm Mac flushes him (DayMood.swift).
         drawMoodTint(ctx: &ctx, path: bodyPath, rx: rx, ry: ry)
 
         // Blush — always shows a floor proportional to tint (prototype behaviour)
@@ -1208,13 +1208,13 @@ final class BotEngine: ObservableObject {
         // (We'll pass world-space cx/cy to these helpers)
     }
 
-    // MARK: - Draw hands behind body (called before draw() so hands appear under Mochi)
+    // MARK: - Draw hands behind body (called before draw() so hands appear under Day)
 
     func drawHandsBehind(context: GraphicsContext, size: CGSize) {
         guard hands > 0.01, !isMini else { return }
         let W = size.width, H = size.height
         let R = W * 0.3
-        // Only draw hands when Mochi is large enough to be meaningful (not compact/peek)
+        // Only draw hands when Day is large enough to be meaningful (not compact/peek)
         guard R > 14 else { return }
         let rx = R * 1.14
         let ry = R * 0.88
@@ -1299,8 +1299,8 @@ final class BotEngine: ObservableObject {
                     endPoint: CGPoint(x: -hew * 0.8, y: heh * 0.9)
                 ))
             } else {
-                let c0 = cgColorToTuple(MochiConst.baseTop)
-                let c1 = cgColorToTuple(MochiConst.baseBottom)
+                let c0 = cgColorToTuple(DayConst.baseTop)
+                let c1 = cgColorToTuple(DayConst.baseBottom)
                 handCtx.fill(handPath, with: .linearGradient(
                     Gradient(colors: [colorFromTuple(c0), colorFromTuple(c1)]),
                     startPoint: CGPoint(x: hew * 0.7, y: -heh * 0.85),
@@ -1327,7 +1327,7 @@ final class BotEngine: ObservableObject {
             drawBadge(context: context, size: size, badge: badge, R: R, rx: rx, ry: ry, cx: cx, cy: cy)
         }
 
-        // Sweat and heat waves (MochiMood.swift)
+        // Sweat and heat waves (DayMood.swift)
         drawMoodExtras(context: context, R: R, rx: rx, ry: ry, cx: cx, cy: cy)
 
         // Particles
@@ -1341,7 +1341,7 @@ final class BotEngine: ObservableObject {
         let cy = H / 2 + particleOverhang / 2 + oy * R + R * 0.06
         // Rigid roll: accessories see roll=0 (they rotate with the body via context transform)
         let outfitRoll: CGFloat = outfitPresence > 0.05 ? 0 : roll
-        let mH = MochiH(R: R, yaw: yaw, pitch: pitch, physDx: physDx, physDy: physDy, roll: outfitRoll)
+        let mH = DayH(R: R, yaw: yaw, pitch: pitch, physDx: physDx, physDy: physDy, roll: outfitRoll)
         drawOutfitBehindStatic(context: context, outfit: outfit, H: mH,
                                cx: cx, cy: cy, tilt: tilt, sx: sx, sy: sy,
                                roll: outfitRoll, morph: morph, isMini: isMini,
@@ -1355,14 +1355,14 @@ final class BotEngine: ObservableObject {
         let cy = H / 2 + particleOverhang / 2 + oy * R + R * 0.06
         // Rigid roll: accessories see roll=0 (they rotate with the body via context transform)
         let outfitRoll: CGFloat = outfitPresence > 0.05 ? 0 : roll
-        let mH = MochiH(R: R, yaw: yaw, pitch: pitch, physDx: physDx, physDy: physDy, roll: outfitRoll)
+        let mH = DayH(R: R, yaw: yaw, pitch: pitch, physDx: physDx, physDy: physDy, roll: outfitRoll)
         drawOutfitFrontStatic(context: context, outfit: outfit, H: mH,
                               cx: cx, cy: cy, tilt: tilt, sx: sx, sy: sy,
                               roll: outfitRoll, morph: morph, isMini: isMini,
                               presence: outfitPresence, rollTurns: rollTurns)
     }
 
-    /// World-space center of Mochi's body (used by BotCanvasView for rigid-roll transform)
+    /// World-space center of Day's body (used by BotCanvasView for rigid-roll transform)
     func bodyCenter(size: CGSize) -> CGPoint {
         let W = size.width, R = W * 0.3
         let cx = W / 2 + ox * R
@@ -1379,7 +1379,7 @@ final class BotEngine: ObservableObject {
 
     // MARK: - Private draw helpers
 
-    private func mochiPath(rx: CGFloat, ry: CGFloat, morph: CGFloat, R: CGFloat) -> Path {
+    private func DayPath(rx: CGFloat, ry: CGFloat, morph: CGFloat, R: CGFloat) -> Path {
         let n = 72
         let expN: CGFloat = 2.0 / 2.7
         // Target mailbox dims (spec: 1.0R wide, 0.94R tall, 0.42R corner radius)
@@ -1526,13 +1526,13 @@ final class BotEngine: ObservableObject {
         // Build eye frames: use mEyeFrames for position/foreshortening, but keep roll in eyePitch
         // When an outfit is rigidly rotating, the whole body turns — eyes do NOT add roll
         let rigidRoll = outfit != .none && outfitPresence > 0.05
-        let mH = MochiH(R: R, yaw: yaw, pitch: pitch)
+        let mH = DayH(R: R, yaw: yaw, pitch: pitch)
         for f in mEyeFrames(mH) {
             // Re-derive pitch with roll for the roll-through effect (illusion, outfit=none only)
-            var eyePitch = MochiConst.eyeP + pitch + (rigidRoll ? 0 : roll)
+            var eyePitch = DayConst.eyeP + pitch + (rigidRoll ? 0 : roll)
             eyePitch = ((eyePitch + .pi).truncatingRemainder(dividingBy: .pi*2) + .pi*2).truncatingRemainder(dividingBy: .pi*2) - .pi
             let cp = cos(eyePitch)
-            let eyeYaw = f.sd * MochiConst.eyeSp + yaw
+            let eyeYaw = f.sd * DayConst.eyeSp + yaw
             guard cos(eyeYaw) * cp > 0.04 else { continue }
 
             let ey = f.y + (morph > 0 ? ry * 0.14 * morph : 0)
@@ -1540,11 +1540,11 @@ final class BotEngine: ObservableObject {
             let fy = lerp(f.fy, 1, morph * 0.7)
 
             let eyeMult: CGFloat = isMini ? 1.9 : 1.0
-            // Stressed (MochiMood.swift): a little smaller, like pupils tightening with fear,
+            // Stressed (DayMood.swift): a little smaller, like pupils tightening with fear,
             // and trembling.
             let fear = isMini ? 0 : min(1, moodBusy * 1.3)
-            let ew = R * MochiConst.eyeW * es * eyeMult * (1 - 0.2 * fear)
-            let eh = R * MochiConst.eyeH * es * eyeMult * (1 - 0.1 * fear)
+            let ew = R * DayConst.eyeW * es * eyeMult * (1 - 0.2 * fear)
+            let eh = R * DayConst.eyeH * es * eyeMult * (1 - 0.1 * fear)
 
             var eyeCtx = ctx
             eyeCtx.translateBy(x: f.x + stressTremble.x * R, y: ey + stressTremble.y * R)
@@ -1554,7 +1554,7 @@ final class BotEngine: ObservableObject {
     }
 
     private func drawEyeShape(ctx: inout GraphicsContext, shape: EyeShape, w: CGFloat, h: CGFloat, open: CGFloat, sd: CGFloat, R: CGFloat) {
-        let ink = isMini ? Color(cgColor: MochiConst.miniInk) : Color(cgColor: MochiConst.ink)
+        let ink = isMini ? Color(cgColor: DayConst.miniInk) : Color(cgColor: DayConst.ink)
         let now = CGFloat(CACurrentMediaTime())
 
         switch shape {

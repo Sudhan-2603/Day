@@ -1,7 +1,7 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.LaunchScreen
-import com.coucou.android.core.PendingLaunch
+import com.Day.android.core.LaunchScreen
+import com.Day.android.core.PendingLaunch
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -49,7 +49,7 @@ class PendingLaunchTest {
         assertEquals(PendingLaunch.Request("new", false), launch.take())
     }
 
-    private val main = "src/main/kotlin/com/coucou/android/"
+    private val main = "src/main/kotlin/com/Day/android/"
     private fun manifest() = File("src/main/AndroidManifest.xml").readText()
 
     @Test fun theExportedActivityNeverReadsTheRequestFromItsIntent() {
@@ -81,7 +81,7 @@ class PendingLaunchTest {
         val m = manifest()
         val exported = Regex("""android:name="([^"]+)"[^>]*android:exported="true"""").findAll(m).map { it.groupValues[1] }.toSet()
         assertEquals(setOf(
-                ".MainActivity", ".app.GlanceWidget", ".app.GlanceTile", ".app.SoloWidget", ".app.ListWidget", ".app.MochiBigWidget",
+                ".MainActivity", ".app.GlanceWidget", ".app.GlanceTile", ".app.SoloWidget", ".app.ListWidget", ".app.DayBigWidget",
                 ".app.StatusPillWidget", ".app.WaitingAlertWidget", ".app.UsageRingWidget", ".app.TodayWidget", ".app.MoodWidget", ".app.TeamWidget", ".app.TeamConfigActivity", ".app.ShareActivity",
             ), exported)
     }
@@ -166,7 +166,7 @@ class PendingLaunchTest {
     }
 
     @Test fun theScreenSlotOnlyHoldsAValueOfTheClosedList() {
-        val src = File("src/main/kotlin/com/coucou/android/core/PendingLaunch.kt").readText()
+        val src = File("src/main/kotlin/com/Day/android/core/PendingLaunch.kt").readText()
         assertTrue(src.contains("fun requestScreen(which: LaunchScreen?)"))
         assertTrue(src.contains("fun takeScreen(): LaunchScreen?"))
         assertTrue(src.contains("private var screen: LaunchScreen?"))

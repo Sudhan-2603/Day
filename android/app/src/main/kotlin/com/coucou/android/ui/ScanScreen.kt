@@ -1,4 +1,4 @@
-package com.coucou.android.ui
+package com.Day.android.ui
 
 import android.Manifest
 import android.app.Activity
@@ -29,11 +29,11 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.coucou.android.core.IconKind
-import com.coucou.android.core.IslandSurface
-import com.coucou.android.core.Spacing
-import com.coucou.android.core.Tokens
-import com.coucou.android.core.TypeScale
+import com.Day.android.core.IconKind
+import com.Day.android.core.IslandSurface
+import com.Day.android.core.Spacing
+import com.Day.android.core.Tokens
+import com.Day.android.core.TypeScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,9 +69,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.coucou.android.R
-import com.coucou.android.core.ScanPermission
-import com.coucou.android.scan.QrDecoder
+import com.Day.android.R
+import com.Day.android.core.ScanPermission
+import com.Day.android.scan.QrDecoder
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.delay
@@ -88,13 +88,13 @@ private tailrec fun Context.activity(): Activity? = when (this) {
  * Reads the pairing QR code with the camera. The camera is asked for only here, used only while this screen is
  * showing (it is released when the screen is left, paused, or a code was accepted), and no picture is kept or
  * sent: each frame is looked at for a code and dropped. [onText] gets the text of a code and says whether it was
- * a Coucou pairing code; anything else is ignored with a short hint.
+ * a Day pairing code; anything else is ignored with a short hint.
  */
 @Composable
 fun ScanScreen(onBack: () -> Unit, onText: (String) -> Boolean) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
-    val prefs = remember { context.getSharedPreferences("coucou_ui", Context.MODE_PRIVATE) }
+    val prefs = remember { context.getSharedPreferences("Day_ui", Context.MODE_PRIVATE) }
     fun hasCamera() = context.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     var granted by remember { mutableStateOf(hasCamera()) }
     var asked by remember { mutableStateOf(prefs.getBoolean(ASKED_KEY, false)) }
@@ -128,7 +128,7 @@ fun ScanScreen(onBack: () -> Unit, onText: (String) -> Boolean) {
             Box(
                 Modifier.size(Spacing.MIN_TOUCH.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onBack).semantics { contentDescription = backLabel },
                 contentAlignment = Alignment.Center,
-            ) { CoucouIcon(IconKind.BACK, tint = Color(IslandSurface.TEXT), size = 24.dp) }
+            ) { DayIcon(IconKind.BACK, tint = Color(IslandSurface.TEXT), size = 24.dp) }
             Text(stringResource(R.string.scan_title), style = TypeScale.TITLE.style(Color(IslandSurface.TEXT)), maxLines = 1)
         }
         when {

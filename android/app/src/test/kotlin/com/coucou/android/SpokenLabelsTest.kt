@@ -1,6 +1,6 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.SpokenLabels
+import com.Day.android.core.SpokenLabels
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

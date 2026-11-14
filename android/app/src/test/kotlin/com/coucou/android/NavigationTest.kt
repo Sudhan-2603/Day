@@ -1,8 +1,8 @@
-package com.coucou.android
+package com.Day.android
 
-import com.coucou.android.core.Nav
-import com.coucou.android.core.Screen
-import com.coucou.android.core.Tab
+import com.Day.android.core.Nav
+import com.Day.android.core.Screen
+import com.Day.android.core.Tab
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

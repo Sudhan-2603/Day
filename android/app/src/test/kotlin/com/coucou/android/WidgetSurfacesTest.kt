@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import java.io.File
 import org.junit.Assert.assertEquals
@@ -8,22 +8,22 @@ import org.junit.Test
 
 /** Source guards for the Solo and List widgets (Compose and Android classes only compile in CI), in the style of [GlanceSurfacesTest]. */
 class WidgetSurfacesTest {
-    private val main = "src/main/kotlin/com/coucou/android/"
+    private val main = "src/main/kotlin/com/Day/android/"
     private fun read(path: String) = File(path).readText()
     private val manifest get() = read("src/main/AndroidManifest.xml")
 
     /** Every widget source: the providers, the hub, the pictures, the pure logic and the day's count. */
     private val widgets = listOf(
-        "SoloWidget" to "coucou_solo_widget_info", "ListWidget" to "coucou_list_widget_info", "MochiBigWidget" to "coucou_big_widget_info",
-        "StatusPillWidget" to "coucou_pill_widget_info", "WaitingAlertWidget" to "coucou_alert_widget_info",
-        "UsageRingWidget" to "coucou_ring_widget_info", "TodayWidget" to "coucou_today_widget_info", "MoodWidget" to "coucou_mood_widget_info",
-        "TeamWidget" to "coucou_team_widget_info",
+        "SoloWidget" to "Day_solo_widget_info", "ListWidget" to "Day_list_widget_info", "DayBigWidget" to "Day_big_widget_info",
+        "StatusPillWidget" to "Day_pill_widget_info", "WaitingAlertWidget" to "Day_alert_widget_info",
+        "UsageRingWidget" to "Day_ring_widget_info", "TodayWidget" to "Day_today_widget_info", "MoodWidget" to "Day_mood_widget_info",
+        "TeamWidget" to "Day_team_widget_info",
         // The summary widget (3x2): same class, receiver and provider file as ever, in the shared look since Widgets C.
-        "GlanceWidget" to "coucou_widget_info",
+        "GlanceWidget" to "Day_widget_info",
     )
     private val sources = (
         widgets.map { "app/${it.first}.kt" } +
-            listOf("app/WidgetHub.kt", "app/TeamStore.kt", "core/TeamChoice.kt", "app/MochiBitmap.kt", "app/RingBitmap.kt", "app/BarBitmap.kt", "app/TodayStore.kt", "core/WidgetData.kt", "core/TodayCounter.kt", "core/LaunchScreen.kt")
+            listOf("app/WidgetHub.kt", "app/TeamStore.kt", "core/TeamChoice.kt", "app/DayBitmap.kt", "app/RingBitmap.kt", "app/BarBitmap.kt", "app/TodayStore.kt", "core/WidgetData.kt", "core/TodayCounter.kt", "core/LaunchScreen.kt")
         ).associateWith { read(main + it) }
 
     @Test fun theWidgetsAreRegisteredAndNeverWakeOnATimer() {
@@ -100,7 +100,7 @@ class WidgetSurfacesTest {
     }
 
     @Test fun theImageAndTheBadgeAreDescribed() {
-        assertTrue(sources.getValue("app/SoloWidget.kt").contains("setContentDescription(R.id.solo_mochi"))
+        assertTrue(sources.getValue("app/SoloWidget.kt").contains("setContentDescription(R.id.solo_Day"))
         assertTrue(sources.getValue("app/SoloWidget.kt").contains("setContentDescription(R.id.solo_badge"))
         assertTrue(sources.getValue("app/ListWidget.kt").contains("setContentDescription(R.id.list_badge"))
         // Every Widget with a picture describes it; every layout image that is not decoration has a description or is hidden from it.
@@ -125,9 +125,9 @@ class WidgetSurfacesTest {
     @Test fun theSummaryWidgetKeepsItsNamesAndItsRefreshPath() {
         // GlanceSurfacesTest guards its registration; this guards that the restyle kept the names, the size and the refresh path.
         assertTrue(manifest.contains("""android:name=".app.GlanceWidget""""))
-        assertTrue(manifest.contains("@xml/coucou_widget_info"))
+        assertTrue(manifest.contains("@xml/Day_widget_info"))
         assertTrue(File("src/main/res/layout/widget_glance.xml").exists())
-        val info = read("src/main/res/xml/coucou_widget_info.xml")
+        val info = read("src/main/res/xml/Day_widget_info.xml")
         assertTrue(info.contains("""android:targetCellWidth="3""""))
         assertTrue(info.contains("""android:targetCellHeight="2""""))
         assertTrue(info.contains("""android:initialLayout="@layout/widget_glance""""))
@@ -166,9 +166,9 @@ class WidgetSurfacesTest {
         assertTrue(read(main + "app/ListWidget.kt").contains("WidgetHub.paint("))
     }
 
-    @Test fun mochiHasAtLeastHalfOfTheSoloCard() {
+    @Test fun DayHasAtLeastHalfOfTheSoloCard() {
         val solo = read("src/main/res/layout/widget_solo.xml")
-        // Mochi takes the leftover height (weight 1) while the text rows wrap their content.
+        // Day takes the leftover height (weight 1) while the text rows wrap their content.
         assertTrue(solo.contains("""android:layout_weight="1""""))
         assertTrue(read(main + "app/SoloWidget.kt").contains("glow = true"))
     }
@@ -176,14 +176,14 @@ class WidgetSurfacesTest {
     // ── The debug preview: it must exist in debug builds and nowhere else ──────────────────────────
 
     @Test fun thePreviewReceiverLivesInTheDebugSourceSetOnly() {
-        assertTrue(File("src/debug/kotlin/com/coucou/android/app/WidgetPreviewReceiver.kt").exists())
+        assertTrue(File("src/debug/kotlin/com/Day/android/app/WidgetPreviewReceiver.kt").exists())
         val debugManifest = read("src/debug/AndroidManifest.xml")
         assertTrue(debugManifest.contains(".app.WidgetPreviewReceiver"))
-        assertTrue(debugManifest.contains("com.coucou.android.debug.WIDGET_STATE"))
+        assertTrue(debugManifest.contains("com.Day.android.debug.WIDGET_STATE"))
         // Not in the main source set, not in the manifest every build gets.
         assertFalse(File(main + "app/WidgetPreviewReceiver.kt").exists())
         assertFalse(manifest.contains("WidgetPreviewReceiver"))
-        assertFalse(manifest.contains("com.coucou.android.debug"))
+        assertFalse(manifest.contains("com.Day.android.debug"))
         assertFalse(File("src/release").exists() && File("src/release").walkTopDown().any { it.readText().contains("WidgetPreviewReceiver") })
         // Nothing in the main code calls it, and nothing outside the debug receiver pins a preview.
         for (f in File(main).walkTopDown().filter { it.extension == "kt" }) {
@@ -195,11 +195,11 @@ class WidgetSurfacesTest {
     }
 
     @Test fun thePreviewReceiverDocumentsEveryCommand() {
-        val src = read("src/debug/kotlin/com/coucou/android/app/WidgetPreviewReceiver.kt")
+        val src = read("src/debug/kotlin/com/Day/android/app/WidgetPreviewReceiver.kt")
         for (state in listOf("disconnected", "empty", "working", "waiting", "done", "live")) {
             assertTrue(state, src.contains("--es state $state"))
         }
-        assertTrue(src.contains("adb shell am broadcast -n com.coucou.android/.app.WidgetPreviewReceiver -a com.coucou.android.debug.WIDGET_STATE"))
+        assertTrue(src.contains("adb shell am broadcast -n com.Day.android/.app.WidgetPreviewReceiver -a com.Day.android.debug.WIDGET_STATE"))
         assertTrue(src.contains("DEBUG BUILDS ONLY"))
         assertTrue(src.contains("--ei usage 92"))
         // It only redraws Widgets with a made-up state.
@@ -222,10 +222,10 @@ class WidgetSurfacesTest {
     @Test fun everyProviderDeclaresItsSizeAndIsListedWithAStringLabelAndDescription() {
         val strings = read("src/main/res/values/strings.xml")
         val expected = mapOf(
-            "coucou_solo_widget_info" to (2 to 2), "coucou_list_widget_info" to (4 to 3), "coucou_big_widget_info" to (4 to 4),
-            "coucou_pill_widget_info" to (4 to 1), "coucou_alert_widget_info" to (2 to 2), "coucou_ring_widget_info" to (2 to 2),
-            "coucou_today_widget_info" to (2 to 2), "coucou_mood_widget_info" to (1 to 1), "coucou_widget_info" to (3 to 2),
-            "coucou_team_widget_info" to (4 to 2),
+            "Day_solo_widget_info" to (2 to 2), "Day_list_widget_info" to (4 to 3), "Day_big_widget_info" to (4 to 4),
+            "Day_pill_widget_info" to (4 to 1), "Day_alert_widget_info" to (2 to 2), "Day_ring_widget_info" to (2 to 2),
+            "Day_today_widget_info" to (2 to 2), "Day_mood_widget_info" to (1 to 1), "Day_widget_info" to (3 to 2),
+            "Day_team_widget_info" to (4 to 2),
         )
         assertEquals(widgets.map { it.second }.toSet(), expected.keys)
         for ((info, cells) in expected) {
@@ -250,15 +250,15 @@ class WidgetSurfacesTest {
     }
 
     @Test fun theListNeverGoesBelowTwoRowsAndTheBigOneKeepsItsBubble() {
-        val list = read("src/main/res/xml/coucou_list_widget_info.xml")
+        val list = read("src/main/res/xml/Day_list_widget_info.xml")
         // Header 28 + padding 20 + two rows of 48 = 144dp.
         assertTrue(dp(attr(list, "minResizeHeight")) >= 144)
         assertTrue(dp(attr(list, "minHeight")) >= 28 + 20 + 3 * 48)
-        val big = read("src/main/res/xml/coucou_big_widget_info.xml")
+        val big = read("src/main/res/xml/Day_big_widget_info.xml")
         assertTrue(dp(attr(big, "minResizeHeight")) >= 180)
-        val pill = read("src/main/res/xml/coucou_pill_widget_info.xml")
+        val pill = read("src/main/res/xml/Day_pill_widget_info.xml")
         assertEquals("horizontal", attr(pill, "resizeMode"))
-        assertEquals("none", attr(read("src/main/res/xml/coucou_mood_widget_info.xml"), "resizeMode"))
+        assertEquals("none", attr(read("src/main/res/xml/Day_mood_widget_info.xml"), "resizeMode"))
     }
 
     @Test fun everyWidgetIsOnTheSharedCardAndOnlyUsesWhatRemoteViewsAllow() {
@@ -281,7 +281,7 @@ class WidgetSurfacesTest {
         assertFalse(texts.contains("Wedge", ignoreCase = true))
         // The picker names: short, and the same ones in the README.
         val readme = File("../README.md").readText()
-        for (w in listOf("Mochi at a glance", "All your agents", "Mochi, big", "One-line status", "Approvals waiting", "Plan usage", "Finished today", "Mochi's mood")) {
+        for (w in listOf("Day at a glance", "All your agents", "Day, big", "One-line status", "Approvals waiting", "Plan usage", "Finished today", "Day's mood")) {
             assertTrue(w, strings.contains(w))
             assertTrue("$w is not in the README", readme.contains(w))
         }

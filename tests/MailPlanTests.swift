@@ -13,7 +13,7 @@ enum MailPlanTests {
         let answer = """
         Je prépare les 3 envois.
 
-        ```coucou-mail
+        ```Day-mail
         {"summary": "3 mails", "actions": [
           {"type": "junk", "messages": [2, 3]},
           {"type": "move", "messages": 4, "mailbox": "Compta"},
@@ -30,7 +30,7 @@ enum MailPlanTests {
         let r = MailPlanParser.extract(answer)
         precondition(r.error == nil, r.error ?? "")
         precondition(r.prose == "Je prépare les 3 envois.\n\n\nClique sur Lancer." || r.prose.hasPrefix("Je prépare"), r.prose)
-        precondition(!r.prose.contains("coucou-mail") && r.prose.contains("Clique sur Lancer."))
+        precondition(!r.prose.contains("Day-mail") && r.prose.contains("Clique sur Lancer."))
         let plan = r.plan!
         precondition(plan.summary == "3 mails" && plan.actions.count == 6)
         precondition(plan.actions[0] == .sort(.junk, messages: [2, 3]))
@@ -44,11 +44,11 @@ enum MailPlanTests {
         precondition(plan.sendCount == 3)
         // No block, a block still streaming, a broken block.
         precondition(MailPlanParser.extract("Hello").plan == nil && MailPlanParser.extract("Hello").prose == "Hello")
-        let streaming = MailPlanParser.extract("Ok\n```coucou-mail\n{\"actions\": [")
+        let streaming = MailPlanParser.extract("Ok\n```Day-mail\n{\"actions\": [")
         precondition(streaming.plan == nil && streaming.error == nil && streaming.prose == "Ok")
-        let broken = MailPlanParser.extract("Ok\n```coucou-mail\n{\"actions\": [{\"type\": \"send\"}]}\n```")
+        let broken = MailPlanParser.extract("Ok\n```Day-mail\n{\"actions\": [{\"type\": \"send\"}]}\n```")
         precondition(broken.plan == nil && broken.error!.contains("needs \"to\""))
-        let unknown = MailPlanParser.extract("```coucou-mail\n{\"actions\": [{\"type\": \"delete\", \"messages\": [1]}]}\n```")
+        let unknown = MailPlanParser.extract("```Day-mail\n{\"actions\": [{\"type\": \"delete\", \"messages\": [1]}]}\n```")
         precondition(unknown.error!.contains("unknown type"), "no delete action exists")
     }
 
@@ -76,11 +76,11 @@ enum MailPlanTests {
         let lines = [MailAgentPrompt.Line(number: 1, sender: "Martin <m@archi.fr>", subject: "Plans franchisés",
                                           date: Date(timeIntervalSince1970: 0), isRead: false, account: "Pro",
                                           attachments: ["plans.pdf"], text: "Voici\nles plans")]
-        let s = MailAgentPrompt.snapshot(lines, accounts: [("Pro", "louis@pro.fr")])
-        precondition(s.contains("Accounts: Pro <louis@pro.fr>"))
+        let s = MailAgentPrompt.snapshot(lines, accounts: [("Pro", "Sudhan-2603@pro.fr")])
+        precondition(s.contains("Accounts: Pro <Sudhan-2603@pro.fr>"))
         precondition(s.contains("[1] ") && s.contains("unread") && s.contains("attachments: plans.pdf"))
         precondition(s.contains("text: Voici les plans") && s.hasSuffix("</mail>"))
-        precondition(MailAgentPrompt.instructions.contains("coucou-mail") && MailAgentPrompt.instructions.contains("Never invent an address"))
+        precondition(MailAgentPrompt.instructions.contains("Day-mail") && MailAgentPrompt.instructions.contains("Never invent an address"))
         let hits = MailAgentPrompt.mentioned(in: "le mail de Martin avec les plans",
                                              senders: ["Anne <a@x.fr>", "Martin <m@archi.fr>", "Paul"],
                                              subjects: ["Plans", "Plans franchisés", "Hello"])
@@ -89,10 +89,10 @@ enum MailPlanTests {
     }
 
     static func scripts() {
-        let s = MailScript.sendScript(from: "louis@pro.fr", to: ["a@x.fr"], cc: ["b@x.fr"], subject: "Plan \"Lyon\"",
+        let s = MailScript.sendScript(from: "Sudhan-2603@pro.fr", to: ["a@x.fr"], cc: ["b@x.fr"], subject: "Plan \"Lyon\"",
                                       body: "Bonjour", attachments: ["/tmp/p 1.pdf"])
         precondition(s.contains("subject:\"Plan \\\"Lyon\\\"\""))
-        precondition(s.contains("set sender of m to \"louis@pro.fr\""))
+        precondition(s.contains("set sender of m to \"Sudhan-2603@pro.fr\""))
         precondition(s.contains("to recipients with properties {address:\"a@x.fr\"}"))
         precondition(s.contains("cc recipients with properties {address:\"b@x.fr\"}"))
         precondition(s.contains("POSIX file \"/tmp/p 1.pdf\"") && s.contains("delay 1") && s.contains("send m"))

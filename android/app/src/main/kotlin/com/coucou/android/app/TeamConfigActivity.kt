@@ -1,4 +1,4 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.Activity
 import android.appwidget.AppWidgetManager
@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.coucou.android.ui.CoucouTheme
-import com.coucou.android.ui.TeamConfigScreen
+import com.Day.android.ui.DayTheme
+import com.Day.android.ui.TeamConfigScreen
 
 /**
  * Where the user picks the agents of a Team widget: when the widget is added, and from its long-press menu (reconfigure). The launcher starts
@@ -42,11 +42,11 @@ class TeamConfigActivity : ComponentActivity() {
             finish()
             return
         }
-        val model = (application as CoucouApp).model
+        val model = (application as DayApp).model
         val store = TeamStore(this)
         enableEdgeToEdge()
         setContent {
-            CoucouTheme(model.settings.theme, model.settings.dynamicColour) {
+            DayTheme(model.settings.theme, model.settings.dynamicColour) {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     TeamConfigScreen(Modifier.windowInsetsPadding(WindowInsets.safeDrawing), store.get(widgetId)) { chosen ->
                         store.set(widgetId, chosen)

@@ -1,6 +1,6 @@
 import Foundation
 
-// The real BotState lives in Sources/CoucouKit/IslandTypes.swift.
+// The real BotState lives in Sources/DayKit/IslandTypes.swift.
 enum BotState: String, CaseIterable {
     case idle, working, thinking, searching
     case approval, question, error, finished

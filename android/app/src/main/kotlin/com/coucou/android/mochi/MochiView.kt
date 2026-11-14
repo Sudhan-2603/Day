@@ -1,4 +1,4 @@
-package com.coucou.android.mochi
+package com.Day.android.Day
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
@@ -10,19 +10,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import com.coucou.android.mochi.MochiPainter.drawMochi
+import com.Day.android.Day.DayPainter.drawDay
 
 private const val IDLE_STEP_S = 0.25
 
 /**
- * Hosts a [MochiEngine] and redraws it every frame while the screen is visible.
+ * Hosts a [DayEngine] and redraws it every frame while the screen is visible.
  * The frame loop only runs while the lifecycle is STARTED, so a backgrounded app costs no CPU.
  */
 @Composable
-fun MochiView(engine: MochiEngine, modifier: Modifier = Modifier) {
+fun DayView(engine: DayEngine, modifier: Modifier = Modifier) {
     val frame = remember { mutableLongStateOf(0L) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val reduced = com.coucou.android.ui.reducedMotion()
+    val reduced = com.Day.android.ui.reducedMotion()
     androidx.compose.runtime.SideEffect { engine.reduceMotion = reduced }
     LaunchedEffect(engine, lifecycle) {
         lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -48,6 +48,6 @@ fun MochiView(engine: MochiEngine, modifier: Modifier = Modifier) {
     }
     Canvas(modifier) {
         frame.longValue // read so the canvas redraws every frame
-        drawMochi(engine, System.nanoTime() / 1e9)
+        drawDay(engine, System.nanoTime() / 1e9)
     }
 }

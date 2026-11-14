@@ -1,4 +1,4 @@
-package com.coucou.android.core
+package com.Day.android.core
 
 import kotlin.math.PI
 import kotlin.math.abs

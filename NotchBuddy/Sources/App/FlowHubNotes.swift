@@ -2,7 +2,7 @@
 import AppKit
 import SwiftUI
 
-/// Coucou Flow → Notetaker: the calls on the left, the one chosen on the right.
+/// Day Flow → Notetaker: the calls on the left, the one chosen on the right.
 struct HubNotesPage: View {
     @ObservedObject private var taker = NoteTaker.shared
     @ObservedObject private var parakeet = Parakeet.shared
@@ -204,7 +204,7 @@ private struct HubNotesSetup: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HubLiveMochi(color: "#3B9EFF", size: 54, outfit: .roundGlasses)
+            HubLiveDay(color: "#3B9EFF", size: 54, outfit: .roundGlasses)
                 .frame(height: 50)
             HubCard(padding: 20) {
                 Text("notes.setup-title")

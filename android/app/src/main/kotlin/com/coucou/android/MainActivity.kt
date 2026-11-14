@@ -1,4 +1,4 @@
-package com.coucou.android
+package com.Day.android
 
 import android.Manifest
 import android.content.Context
@@ -70,73 +70,73 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.coucou.android.app.AppModel
-import com.coucou.android.app.BiometricGate
-import com.coucou.android.app.CoucouApp
-import com.coucou.android.app.Mode
-import com.coucou.android.app.Notifications
-import com.coucou.android.core.ApprovalSheetPlan
-import com.coucou.android.core.HomeText
-import com.coucou.android.core.Nav
-import com.coucou.android.core.Pills
-import com.coucou.android.core.Screen
-import com.coucou.android.core.SecureScreens
-import com.coucou.android.link.ApprovalRequest
-import com.coucou.android.link.QuestionRequest
-import com.coucou.android.link.LinkState
-import com.coucou.android.link.PairingPayload
-import com.coucou.android.mochi.BotEmote
-import com.coucou.android.mochi.BotState
-import com.coucou.android.mochi.MochiEngine
-import com.coucou.android.mochi.MochiView
-import com.coucou.android.ui.Panel
-import com.coucou.android.ui.c
-import com.coucou.android.ui.style
-import com.coucou.android.ui.tokens
-import com.coucou.android.core.TypeScale
+import com.Day.android.app.AppModel
+import com.Day.android.app.BiometricGate
+import com.Day.android.app.DayApp
+import com.Day.android.app.Mode
+import com.Day.android.app.Notifications
+import com.Day.android.core.ApprovalSheetPlan
+import com.Day.android.core.HomeText
+import com.Day.android.core.Nav
+import com.Day.android.core.Pills
+import com.Day.android.core.Screen
+import com.Day.android.core.SecureScreens
+import com.Day.android.link.ApprovalRequest
+import com.Day.android.link.QuestionRequest
+import com.Day.android.link.LinkState
+import com.Day.android.link.PairingPayload
+import com.Day.android.Day.BotEmote
+import com.Day.android.Day.BotState
+import com.Day.android.Day.DayEngine
+import com.Day.android.Day.DayView
+import com.Day.android.ui.Panel
+import com.Day.android.ui.c
+import com.Day.android.ui.style
+import com.Day.android.ui.tokens
+import com.Day.android.core.TypeScale
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.semantics.Role
-import com.coucou.android.ui.CoucouTheme
-import com.coucou.android.core.HomePanel
-import com.coucou.android.link.DiscoveryState
-import com.coucou.android.ui.AddressSheet
-import com.coucou.android.ui.BatteryCard
-import com.coucou.android.ui.DiagnosticsScreen
-import com.coucou.android.ui.LicencesScreen
-import com.coucou.android.ui.LinkHealthPanel
-import com.coucou.android.ui.AgentRows
-import com.coucou.android.ui.DiscoveryHint
-import com.coucou.android.ui.ApprovalSheet
-import com.coucou.android.ui.MessagePanel
-import com.coucou.android.ui.PairingScreen
-import com.coucou.android.ui.DiffSheet
-import com.coucou.android.ui.QuestionSheet
-import com.coucou.android.ui.ServicesPanel
-import com.coucou.android.ui.UsagePanel
-import com.coucou.android.ui.RecapPanel
-import com.coucou.android.ui.WardrobeScreen
-import com.coucou.android.ui.HeroCard
-import com.coucou.android.ui.RecentPanel
-import com.coucou.android.ui.BarClearance
-import com.coucou.android.ui.BottomBar
-import com.coucou.android.ui.PairConfirm
-import com.coucou.android.ui.ScanScreen
-import com.coucou.android.ui.SessionScreen
-import com.coucou.android.ui.ChatScreen
-import com.coucou.android.ui.MochiTouch
-import com.coucou.android.ui.HistoryScreen
-import com.coucou.android.ui.SettingsScreen
-import com.coucou.android.ui.StatusColors
-import com.coucou.android.ui.Gap
-import com.coucou.android.ui.Gutter
-import com.coucou.android.ui.ScreenTitle
-import com.coucou.android.ui.SectionTitle
-import com.coucou.android.ui.linkDotColor
-import com.coucou.android.ui.linkStatusText
+import com.Day.android.ui.DayTheme
+import com.Day.android.core.HomePanel
+import com.Day.android.link.DiscoveryState
+import com.Day.android.ui.AddressSheet
+import com.Day.android.ui.BatteryCard
+import com.Day.android.ui.DiagnosticsScreen
+import com.Day.android.ui.LicencesScreen
+import com.Day.android.ui.LinkHealthPanel
+import com.Day.android.ui.AgentRows
+import com.Day.android.ui.DiscoveryHint
+import com.Day.android.ui.ApprovalSheet
+import com.Day.android.ui.MessagePanel
+import com.Day.android.ui.PairingScreen
+import com.Day.android.ui.DiffSheet
+import com.Day.android.ui.QuestionSheet
+import com.Day.android.ui.ServicesPanel
+import com.Day.android.ui.UsagePanel
+import com.Day.android.ui.RecapPanel
+import com.Day.android.ui.WardrobeScreen
+import com.Day.android.ui.HeroCard
+import com.Day.android.ui.RecentPanel
+import com.Day.android.ui.BarClearance
+import com.Day.android.ui.BottomBar
+import com.Day.android.ui.PairConfirm
+import com.Day.android.ui.ScanScreen
+import com.Day.android.ui.SessionScreen
+import com.Day.android.ui.ChatScreen
+import com.Day.android.ui.DayTouch
+import com.Day.android.ui.HistoryScreen
+import com.Day.android.ui.SettingsScreen
+import com.Day.android.ui.StatusColors
+import com.Day.android.ui.Gap
+import com.Day.android.ui.Gutter
+import com.Day.android.ui.ScreenTitle
+import com.Day.android.ui.SectionTitle
+import com.Day.android.ui.linkDotColor
+import com.Day.android.ui.linkStatusText
 
 class MainActivity : ComponentActivity() {
-    private val model get() = (application as CoucouApp).model
+    private val model get() = (application as DayApp).model
     private var screen by mutableStateOf(Screen.HOME)
     /** The session whose details are open. */
     private var detailPill by mutableStateOf<String?>(null)
@@ -145,19 +145,19 @@ class MainActivity : ComponentActivity() {
     private var questionPill by mutableStateOf<String?>(null)
     private var confirming = false
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(com.coucou.android.app.AppLanguage.wrap(newBase))
+        super.attachBaseContext(com.Day.android.app.AppLanguage.wrap(newBase))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        model.languageChanged(com.coucou.android.app.AppLanguage.current(this))
+        model.languageChanged(com.Day.android.app.AppLanguage.current(this))
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
         model.resume()
         setContent {
-            CoucouTheme(model.settings.theme, model.settings.dynamicColour) {
+            DayTheme(model.settings.theme, model.settings.dynamicColour) {
                 // Dark icons on a light page; the camera screen is black in both themes, so its icons are light.
                 val lightPage = !tokens().isDark && screen != Screen.SCAN
                 SideEffect {
@@ -258,12 +258,12 @@ class MainActivity : ComponentActivity() {
         handle(intent)
     }
 
-    /** A coucou://pair link (from the camera app or a browser) or a tap on an approval notification. */
+    /** A Day://pair link (from the camera app or a browser) or a tap on an approval notification. */
     private fun handle(i: Intent?) {
         i ?: return
-        Log.d("CoucouLaunch", "MainActivity intent: action=${i.action} data=${i.data != null}")
+        Log.d("DayLaunch", "MainActivity intent: action=${i.action} data=${i.data != null}")
         i.data?.let { uri ->
-            if (uri.scheme == "coucou") {
+            if (uri.scheme == "Day") {
                 // Opened from the camera app or a browser: never paired without the user's OK.
                 if (!model.requestPairing(uri.toString())) model.message = getString(R.string.msg_bad_link)
                 i.data = null // handled once: a rotation must not ask again
@@ -277,7 +277,7 @@ class MainActivity : ComponentActivity() {
         }
         // A tap on a widget button: a screen of the closed list ([LaunchScreen]), even when the app is locked, not connected or not paired.
         model.launch.takeScreen()?.let { screen = it.screen }
-        // Text shared to Coucou from another app (ShareActivity, which only keeps cleaned text): it waits in the model for the chat box.
+        // Text shared to Day from another app (ShareActivity, which only keeps cleaned text): it waits in the model for the chat box.
         if (model.shareDraft.pending()) screen = Screen.CHAT
         val launch = model.launch.take() ?: return
         val fp = launch.fingerprint
@@ -328,9 +328,9 @@ private fun Home(
     model: AppModel, onApprove: (ApprovalRequest) -> Unit, onOverlay: (Boolean) -> Unit, onSession: (String) -> Unit,
     onScan: () -> Unit, onHistory: () -> Unit, onReview: () -> Unit, onQuestion: (String) -> Unit, onDiagnostics: () -> Unit,
 ) {
-    val engines = remember { HashMap<String, MochiEngine>() }
-    val miniEngines = remember { HashMap<String, MochiEngine>() }
-    val touches = remember { HashMap<String, MochiTouch>() }
+    val engines = remember { HashMap<String, DayEngine>() }
+    val miniEngines = remember { HashMap<String, DayEngine>() }
+    val touches = remember { HashMap<String, DayTouch>() }
     val clock = remember { { SystemClock.elapsedRealtimeNanos() / 1e6 } }
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
@@ -348,16 +348,16 @@ private fun Home(
     // The PC's Home panel: the agent that matters in a big card, the others as pills.
     val focus = HomePanel.focus(model.sessions, selected)
     val key = focus?.pillId ?: HOME_KEY
-    val engine = engines.getOrPut(key) { MochiEngine(clock, sound = model.sounds) }
-    val touch = touches.getOrPut(key) { MochiTouch(engine, model.sounds) { model.sessions.firstOrNull { it.pillId == key }?.state ?: BotState.IDLE } }
-    val state = focus?.state ?: BotState.SLEEPING // no agent: a sleeping Mochi
+    val engine = engines.getOrPut(key) { DayEngine(clock, sound = model.sounds) }
+    val touch = touches.getOrPut(key) { DayTouch(engine, model.sounds) { model.sessions.firstOrNull { it.pillId == key }?.state ?: BotState.IDLE } }
+    val state = focus?.state ?: BotState.SLEEPING // no agent: a sleeping Day
     if (engine.state != state && !touch.dizzy) engine.setState(state)
 
     // The hero wears what the computer says, or what the user picked here (a new engine starts dressed, a change animates).
-    val dressed = remember { HashSet<MochiEngine>() }
+    val dressed = remember { HashSet<DayEngine>() }
     model.dress().let { outfit -> if (dressed.add(engine)) engine.setOutfit(outfit, animated = false) else engine.setOutfit(outfit) }
 
-    // The hero's Mochi wears its agent's colour, like the small ones (never white by default).
+    // The hero's Day wears its agent's colour, like the small ones (never white by default).
     engine.bodyColor = focus?.let { HomePanel.colorHex(it) }?.let { HomePanel.rgb(it) }
 
     val pair = HomePanel.link(model.isPaired, model.mode == Mode.DEMO, hasApproval = model.approvals.isNotEmpty())
@@ -406,7 +406,7 @@ private fun Home(
                         others,
                         engineFor = { s ->
                             miniEngines.getOrPut(s.pillId) {
-                                MochiEngine(clock).apply {
+                                DayEngine(clock).apply {
                                     isMini = true
                                     bodyColor = HomePanel.colorHex(s)?.let { HomePanel.rgb(it) }
                                 }
@@ -454,8 +454,8 @@ private fun OverlayHint(onOverlay: (Boolean) -> Unit) {
 @Composable
 private fun Gallery(onBack: () -> Unit) {
     val clock = remember { { SystemClock.elapsedRealtimeNanos() / 1e6 } }
-    val states = remember { BotState.entries.map { s -> s to MochiEngine(clock).apply { setState(s, force = true) } } }
-    val emotes = remember { BotEmote.entries.map { e -> e to MochiEngine(clock).apply { setPermanentEmote(e) } } }
+    val states = remember { BotState.entries.map { s -> s to DayEngine(clock).apply { setState(s, force = true) } } }
+    val emotes = remember { BotEmote.entries.map { e -> e to DayEngine(clock).apply { setPermanentEmote(e) } } }
     Column(Modifier.padding(horizontal = Gutter)) {
         ScreenTitle(stringResource(R.string.gallery), onBack)
         Spacer(Modifier.height(Gap))
@@ -467,10 +467,10 @@ private fun Gallery(onBack: () -> Unit) {
 }
 
 @Composable
-private fun GalleryCell(label: String, engine: MochiEngine) {
+private fun GalleryCell(label: String, engine: DayEngine) {
     Box(Modifier.fillMaxWidth()) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            MochiView(engine, Modifier.fillMaxWidth().aspectRatio(1f))
+            DayView(engine, Modifier.fillMaxWidth().aspectRatio(1f))
             Text(label, style = MaterialTheme.typography.labelSmall)
         }
     }

@@ -3,7 +3,7 @@ import Foundation
 
 // MARK: - Android link, protocol v1: the wire (docs/ANDROID_LINK.md)
 //
-// The Mac side of the link with Coucou for Android, the same protocol the
+// The Mac side of the link with Day for Android, the same protocol the
 // Windows/Linux app speaks (windows/src-tauri/src/phone_link/). Newline-delimited
 // JSON over TLS, a self-signed certificate the phone pins, a pairing token that is
 // the shared secret. This file is the pure part: no sockets, no Keychain, no
@@ -45,7 +45,7 @@ enum AndroidLinkProtocol {
     ]
 
     /// The DNS-SD service type the phone browses for.
-    static let serviceType = "_coucou._tcp"
+    static let serviceType = "_Day._tcp"
     /// How many hex characters of the certificate fingerprint go into the TXT record.
     static let fingerprintIdLength = 16
     /// The protocol version in the TXT record.
@@ -110,9 +110,9 @@ enum AndroidLinkProtocol {
         return out
     }
 
-    /// `coucou://pair?v=1&host=…&port=…&fp=…&token=…&name=…`
+    /// `Day://pair?v=1&host=…&port=…&fp=…&token=…&name=…`
     static func pairingLink(host: String, port: UInt16, fingerprint: String, token: String, name: String) -> String {
-        "coucou://pair?v=1&host=\(percentEncode(host))&port=\(port)&fp=\(fingerprint)&token=\(token)&name=\(percentEncode(name))"
+        "Day://pair?v=1&host=\(percentEncode(host))&port=\(port)&fp=\(fingerprint)&token=\(token)&name=\(percentEncode(name))"
     }
 
     // MARK: Discovery (Bonjour)
@@ -133,11 +133,11 @@ enum AndroidLinkProtocol {
         return ["v": txtVersion, "fp": id]
     }
 
-    /// The service's instance name: the computer's name, at most 48 characters, "Coucou" if empty.
+    /// The service's instance name: the computer's name, at most 48 characters, "Day" if empty.
     static func instanceName(_ name: String) -> String {
         let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(48))
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Coucou" : trimmed
+        return trimmed.isEmpty ? "Day" : trimmed
     }
 
     /// The name the phone shows for this Mac.

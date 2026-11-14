@@ -15,8 +15,8 @@ enum IslandView: String, CaseIterable {
     case listening    // voice wake detected — "À l'écoute…" with live transcript
     case voiceResult  // voice command executed — "✓ Musique lancée" for ~2 s
     case capture      // a screen capture just taken (⌃⌥X): paste, copy, annotate, ask Claude
-    case update       // a new Coucou is out on GitHub: one click to install it (GitHub build)
-    case whatsNew     // Coucou just updated itself: what the version brings, then your Coucou so far (GitHub build)
+    case update       // a new Day is out on GitHub: one click to install it (GitHub build)
+    case whatsNew     // Day just updated itself: what the version brings, then your Day so far (GitHub build)
     case launch       // a new Claude Code session: a prompt, a project, and the terminal opens (GitHub build)
 }
 
@@ -37,7 +37,7 @@ enum BotEmote: String, CaseIterable {
 
 // MARK: - Voice sub-state
 
-/// What Mochi is doing during a voice exchange (compact island or expanded).
+/// What Day is doing during a voice exchange (compact island or expanded).
 /// Driven by IslandWindowController; read by BotEngine each frame.
 enum BotVoiceSubState: Equatable {
     case none       // voice not active
@@ -107,7 +107,7 @@ struct SessionLine: Identifiable, Equatable {
 enum AgentSource: Equatable {
     case claudeCode
     case n8n
-    case agent   // third-party agent via coucou_agent field
+    case agent   // third-party agent via Day_agent field
 }
 
 // MARK: - Chat provider
@@ -268,14 +268,14 @@ enum IslandConst {
         .greeting:  ViewLayout(height: 150, botX: 320, botY: 90,  botDiameter: 0,  agentMode: .none),
         .wardrobe:  ViewLayout(height: 160, botX: 68,  botY: nil, botDiameter: 58, agentMode: .none),
         .recap:     ViewLayout(height: 160, botX: 62,  botY: nil, botDiameter: 58, agentMode: .column),
-        // Voice listening: Mochi (listening emote) on left, transcript on right
+        // Voice listening: Day (listening emote) on left, transcript on right
         .listening:    ViewLayout(height: 160, botX: 68,  botY: nil, botDiameter: 58, agentMode: .none),
-        // Voice result: same layout as listening — Mochi on left, ✓/✗ on right
+        // Voice result: same layout as listening — Day on left, ✓/✗ on right
         .voiceResult:  ViewLayout(height: 160, botX: 68,  botY: nil, botDiameter: 58, agentMode: .none),
-        // Screen capture: Mochi on the left (he just swallowed it), the image and what to do with it
+        // Screen capture: Day on the left (he just swallowed it), the image and what to do with it
         .capture:      ViewLayout(height: 160, botX: 58,  botY: nil, botDiameter: 52, agentMode: .none),
         .launch:       ViewLayout(height: 160, botX: 58,  botY: nil, botDiameter: 52, agentMode: .none),
-        // New version: Mochi on the left, the version and Update now
+        // New version: Day on the left, the version and Update now
         .update:       ViewLayout(height: 160, botX: 62,  botY: nil, botDiameter: 58, agentMode: .none),
         // After an update: taller, four items then the stats (like mail, it fills the height)
         .whatsNew:     ViewLayout(height: 232, botX: 62,  botY: nil, botDiameter: 58, agentMode: .none),

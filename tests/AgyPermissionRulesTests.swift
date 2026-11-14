@@ -95,7 +95,7 @@ enum AgyPermissionRulesTests {
 
         // Loading from a home folder laid out like Antigravity's
         let home = FileManager.default.temporaryDirectory
-            .appendingPathComponent("coucou-agy-\(UUID().uuidString)")
+            .appendingPathComponent("Day-agy-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: home) }
         let gemini = home.appendingPathComponent(".gemini")
         write(#"{"permissions":{"allow":["command(ls)"],"deny":["command(rm -rf)"]}}"#,

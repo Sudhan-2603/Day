@@ -1,10 +1,10 @@
-package com.coucou.android.app
+package com.Day.android.app
 
 import android.app.Application
 import android.content.Context
-import com.coucou.android.core.Texts
+import com.Day.android.core.Texts
 
-class CoucouApp : Application() {
+class DayApp : Application() {
     val model: AppModel by lazy { AppModel(this) }
 
     override fun attachBaseContext(base: Context) {
