@@ -67,7 +67,7 @@ test("a paused island hands a permission request straight back to the terminal",
 test("a paused island ignores every other event", () => {
   State.paused = true;
   hook({ hook_event_name: "SessionStart", cwd: "C:\\Users\\me\\proj" });
-  assert.equal(task().name, "Claude Code");
+  assert.equal(task().name, "Day - Personal Intelligence");
   assert.deepEqual(asked, []);
   assert.deepEqual(calls, []);
 });
@@ -159,7 +159,7 @@ test("a notification is a rate limit, a question, or nothing", () => {
 test("an unknown event changes nothing", () => {
   hook({ hook_event_name: "SomethingNew", cwd: "/p" });
   assert.equal(task().state, "idle");
-  assert.equal(task().name, "Claude Code");
+  assert.equal(task().name, "Day - Personal Intelligence");
   assert.deepEqual(asked, []);
 });
 
@@ -227,7 +227,7 @@ test("the end of a session puts the pill back as it was", () => {
   hook({ hook_event_name: "PreToolUse", cwd: "/p/proj", tool_name: "Bash", tool_input: { command: "ls" } });
   hook({ hook_event_name: "SessionEnd", cwd: "/p/proj" });
   assert.equal(task().state, "idle");
-  assert.equal(task().name, "Claude Code");
+  assert.equal(task().name, "Day - Personal Intelligence");
   assert.deepEqual(task().steps, []);
 });
 
@@ -255,7 +255,7 @@ test("a tagged agent gets its own pill next to Claude Code's", () => {
   assert.deepEqual(agent.steps, ["Runs · ls"]);
   assert.match(agent.color, /^#[0-9A-F]{6}$/);
   // Claude Code's own pill is not the one that moved.
-  assert.equal(task().name, "Claude Code");
+  assert.equal(task().name, "Day - Personal Intelligence");
   assert.equal(task().state, "idle");
 });
 

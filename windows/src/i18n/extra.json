@@ -136,21 +136,6 @@
       "ko": "터미널에서 답해 주세요.",
       "ja": "ターミナルで答えてください。"
     },
-    "Ask": {
-      "zh-Hans": "提问",
-      "hi": "पूछें",
-      "es": "Preguntar",
-      "ar": "اسأل",
-      "fr": "Demander",
-      "bn": "জিজ্ঞেস করুন",
-      "pt-BR": "Perguntar",
-      "ru": "Спросить",
-      "id": "Tanya",
-      "de": "Fragen",
-      "tr": "Sor",
-      "ko": "묻기",
-      "ja": "質問"
-    },
     "Asking Codex…": {
       "zh-Hans": "正在询问 Codex…",
       "hi": "Codex से पूछ रहे हैं…",
@@ -960,21 +945,6 @@
       "tr": "Tamamlandı. Sayılar, bir Claude Code oturumunun sonraki yanıtından sonra görünür.",
       "ko": "완료! Claude Code 세션에서 다음 답이 오면 숫자가 나타나요.",
       "ja": "完了しました。数値は Claude Code セッションの次の返信のあとに表示されます。"
-    },
-    "Drop": {
-      "zh-Hans": "拖放",
-      "hi": "छोड़ें",
-      "es": "Soltar",
-      "ar": "إفلات",
-      "fr": "Déposer",
-      "bn": "ড্রপ",
-      "pt-BR": "Soltar",
-      "ru": "Перетащить",
-      "id": "Letakkan",
-      "de": "Ablegen",
-      "tr": "Bırak",
-      "ko": "파일 놓기",
-      "ja": "ドロップ"
     },
     "Enter the server address first.": {
       "zh-Hans": "请先输入服务器地址。",

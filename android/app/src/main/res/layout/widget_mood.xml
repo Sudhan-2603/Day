@@ -15,7 +15,7 @@
 
     <ImageView
         android:id="@+id/mood_face"
-        android:src="@drawable/preview_Day_idle"
+        android:src="@drawable/preview_day_idle"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@string/widget_mood_label"

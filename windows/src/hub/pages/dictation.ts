@@ -39,8 +39,7 @@ export async function dictationPage(page: HTMLElement, ctx: HubContext) {
   }, "primary");
   record.prepend(h("span", { class: "hub-rec", style: "background:#170c04;box-shadow:none;margin-inline-end:8px" }));
   const alertLine = h("div", { class: "hub-note" });
-  const hello = status.userName ? t("Hello {0}", { 0: status.userName }) : t("Hello");
-  page.append(ctx.hero("dictation", hello, t("Hold {0} anywhere, speak, let go: it's pasted.", { 0: key }), [record]));
+  page.append(ctx.hero("dictation", t("Dictation"), null, [record]));
   page.append(alertLine);
 
   if (!ready) page.append(setup(ctx));

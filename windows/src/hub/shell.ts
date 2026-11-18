@@ -102,7 +102,9 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
   await onEvent<number[]>("flow-bands", (bands) => setVoiceLevel(Math.max(0, ...bands)));
   const shown = await FlowBridge.hubShown();
   if (shown !== null) setWindowShown(shown);
-  let current: PageId = "dictation";
+  const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const initialPage = (urlParams?.get("page") || (typeof window !== "undefined" ? window.location.hash.replace("#", "") : "") || "general") as PageId;
+  let current: PageId = ALL.some((p) => p.id === initialPage) ? initialPage : "general";
   let activeAnchor: string | null = null;
   let searchHits: SettingsSearchHit[] = [];
   let status: FlowStatus = (await FlowBridge.status()) ?? DEFAULT_STATUS;
@@ -199,7 +201,11 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
   // ── The sidebar ──
   const side = h("nav", { class: "hub-side" });
   const logo = h("canvas", {});
-  side.append(h("div", { class: "hub-brand" }, logo, h("span", { text: "Day" })));
+  const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const brandSub = isLocalhost
+    ? h("span", { style: "display:inline-block;margin-left:8px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3)", text: "Localhost" })
+    : null;
+  side.append(h("div", { class: "hub-brand" }, h("span", { class: "hub-avatar" }, logo), h("span", { text: "Day" }), ...(brandSub ? [brandSub] : [])));
   liveDay(logo as HTMLCanvasElement);
 
   // Settings search field
@@ -242,7 +248,7 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
     return heading;
   };
   group("Flow", FLOW_PAGES);
-  const notchGroup = group(t("Notch"), NOTCH_PAGES);
+  const notchGroup = group(t("Island"), NOTCH_PAGES);
   if (status.platform === "windows") group("Mail", MAIL_PAGES);
 
   function renderSearchResults() {
@@ -312,7 +318,7 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
     if (searchInput.value.trim()) renderSearchResults();
   });
 
-  side.append(h("div", { class: "spacer" }), statusLine, h("div", { class: "hub-version", text: `Day ${opts.version}` }));
+  side.append(h("div", { class: "spacer" }), statusLine, h("div", { class: "hub-version", text: isLocalhost ? `Day ${opts.version || "0.5.9"} (Localhost:1420)` : `Day ${opts.version}` }));
 
   clear(root);
   root.append(side, h("main", { class: "hub-panel" }, scroll));
@@ -337,7 +343,7 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
         const label = labels.get(p.id);
         if (label) label.textContent = p.title();
       }
-      notchGroup.textContent = t("Notch");
+      notchGroup.textContent = t("Island");
       drawStatus();
       void show(current);
     },

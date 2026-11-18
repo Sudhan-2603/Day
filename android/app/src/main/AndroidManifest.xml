@@ -76,7 +76,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_widget_info" />
         </receiver>
 
         <!-- The Solo and List widgets: Day and the agents, pushed by the app when something changes (no timer). -->
@@ -84,13 +84,13 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_solo_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_solo_widget_info" />
         </receiver>
         <receiver android:name=".app.ListWidget" android:exported="true" android:label="@string/widget_list_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_list_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_list_widget_info" />
         </receiver>
 
         <!-- More Widgets: Day Big, Status Pill, Waiting Alert, Usage Ring, Today and Day Mood. Pushed by the app when something changes (no timer). -->
@@ -98,25 +98,25 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_big_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_big_widget_info" />
         </receiver>
         <receiver android:name=".app.StatusPillWidget" android:exported="true" android:label="@string/widget_pill_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_pill_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_pill_widget_info" />
         </receiver>
         <receiver android:name=".app.WaitingAlertWidget" android:exported="true" android:label="@string/widget_alert_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_alert_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_alert_widget_info" />
         </receiver>
         <receiver android:name=".app.UsageRingWidget" android:exported="true" android:label="@string/widget_ring_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_ring_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_ring_widget_info" />
         </receiver>
         <receiver android:name=".app.TodayWidget" android:exported="true" android:label="@string/widget_today_label">
             <intent-filter>
@@ -125,13 +125,13 @@
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_today_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_today_widget_info" />
         </receiver>
         <receiver android:name=".app.MoodWidget" android:exported="true" android:label="@string/widget_mood_label">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_mood_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_mood_widget_info" />
         </receiver>
 
         <!-- The Team widget: the agents the user picked. Its choice screen is started by the launcher (so it is exported) and checks the widget id itself. -->
@@ -139,7 +139,7 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/Day_team_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/coucou_team_widget_info" />
         </receiver>
         <activity android:name=".app.TeamConfigActivity" android:exported="true" android:label="@string/team_config_title">
             <intent-filter>
@@ -167,7 +167,7 @@
         <service
             android:name=".app.GlanceTile"
             android:exported="true"
-            android:icon="@drawable/ic_stat_Day"
+            android:icon="@drawable/ic_stat_mochi"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>

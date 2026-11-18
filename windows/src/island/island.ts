@@ -4,7 +4,7 @@
 import { Tracked, Spring, clamp } from "../core/anim";
 import { Bridge, IS_TAURI, onDragDrop, type DragDropPayload } from "../core/bridge";
 import {
-  CLOSED_BOT_D, CLOSED_H, closedContent, closedIsland, closedWidth, type ClosedContent,
+  CLOSED_BOT_D, closedContent, closedIsland, closedWidth, type ClosedContent,
 } from "../core/closed";
 import {
   EXPANDED_CORNER, EXPANDED_W, NOTCH_W, PANEL_H, PANEL_W,
@@ -18,7 +18,7 @@ import { State } from "../core/state";
 import { SPOTIFY_ID, Spotify, islandDances } from "../core/spotify";
 import { BotEngine, hexToRGB } from "../Day/engine";
 import { Greeting } from "../Day/greeting";
-import { createMiniBot, pruneMiniBots, syncMiniBotStates, tickMiniBots } from "../Day/minibots";
+import { syncMiniBotStates, tickMiniBots } from "../Day/minibots";
 import { SeasonCache, parseOutfit } from "../Day/wardrobe";
 import { UploadCanvas } from "../upload/canvas";
 import { USC, UploadSeq, uploadProgressCurve } from "../upload/sequence";
@@ -37,6 +37,9 @@ import type { ViewCommand } from "./shortcuts";
 import { DRAG_THRESHOLD } from "../Day/desktop-logic";
 import { Updates } from "./update";
 import { UPDATE_BLUE, showsUpdateHint } from "../whats-new/whats-new";
+import { buildCompactAudioPill } from "../views/audio-tracker";
+import { buildClipboardActionOverlay, buildDeviceAlertView, buildNotificationOverlay } from "../views/system-alerts";
+import { SystemAccess } from "./system-access";
 
 const BOT_OVERHANG = 40;
 const UPDATE_BLUE_RGB = hexToRGB(UPDATE_BLUE);
@@ -91,6 +94,10 @@ export class Island {
   private compactPlan!: HTMLElement;
   private compactPlanDot!: HTMLElement;
   private compactPlanLabel!: HTMLElement;
+  private compactAudioPill!: HTMLElement;
+  private deviceAlertOverlay!: HTMLElement;
+  private notificationOverlay!: HTMLElement;
+  private clipboardOverlay!: HTMLElement;
   private wakeStrip!: HTMLElement;
 
   private header!: ViewHost;
@@ -216,10 +223,14 @@ export class Island {
         if (req?.pillId === id) this.setView(req.questions ? "question" : "approval");
       },
       openTerminal: () => {
-        const task = State.focusTask;
-        // Sessions from the Claude desktop app live there, not in a terminal.
-        if (task?.id === CLAUDE_DESKTOP_ID) void Bridge.openClaudeDesktop();
-        else void Bridge.openSession(task?.sessionId ?? null, task?.sessionCwd ?? null);
+        void Bridge.openSystemCmd();
+      },
+      triggerMoveMode: () => {
+        this.triggerMoveMode();
+      },
+      resetIslandPosition: () => {
+        State.saveCustomIslandPos(null);
+        this.applyGeometry();
       },
       // The ↗ button — same targets as openAgentTarget() on macOS.
       openTarget: () => {
@@ -310,6 +321,17 @@ export class Island {
         this.engine.triggerEmote("happy");
         this.collapse();
       },
+      closeIsland: () => {
+        Sound.play("pop");
+        this.fsm.forceHidden();
+      },
+      toggleExpand: () => {
+        if (State.mode === "expanded") {
+          this.collapse();
+        } else {
+          this.fsm.click();
+        }
+      },
       holdOpen: (on) => {
         if (this.holdingOpen === on) return;
         this.holdingOpen = on;
@@ -353,6 +375,44 @@ export class Island {
       this.compactPlanLabel,
     );
 
+    this.compactAudioPill = buildCompactAudioPill();
+    this.deviceAlertOverlay = buildDeviceAlertView();
+    this.notificationOverlay = buildNotificationOverlay(() => {
+      this.alert("overview");
+    });
+    this.clipboardOverlay = buildClipboardActionOverlay((text) => {
+      State.promptContext = { kind: "file", name: "Clipboard", path: text };
+      this.setView("prompt");
+      // Typing & entering the copied text into chat automatically
+      window.setTimeout(() => {
+        if (typeof (window as any).__DAY_ASK_CHAT__ === "function") {
+          (window as any).__DAY_ASK_CHAT__(text);
+        }
+      }, 100);
+    });
+
+    SystemAccess.onDeviceChange((alert) => {
+      this.animateGeometry(false);
+      if (alert && State.mode === "hidden") {
+        this.reveal();
+      }
+    });
+    SystemAccess.onNotificationChange((notif) => {
+      this.animateGeometry(false);
+      if (notif && State.mode === "hidden") {
+        this.reveal();
+      }
+    });
+    SystemAccess.onClipboardChange((clip) => {
+      this.animateGeometry(false);
+      if (clip && State.mode === "hidden") {
+        this.reveal();
+      }
+    });
+    SystemAccess.onAudioChange(() => {
+      this.animateGeometry(false);
+    });
+
     this.header = buildHeader(actions);
     this.views = buildViews(actions, () => this.animateGeometry(false));
     this.viewsEl = h("div", { id: "views" });
@@ -388,9 +448,13 @@ export class Island {
       this.botCanvas,
       this.miniGrid,
       this.compactPlan,
+      this.compactAudioPill,
       this.clockEl,
       this.closedEl,
       this.countdown,
+      this.deviceAlertOverlay,
+      this.notificationOverlay,
+      this.clipboardOverlay,
     );
 
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -854,8 +918,32 @@ export class Island {
   }
 
   private targetSize(): { w: number; h: number; r: number } {
-    if (State.mode === "hidden" && this.closedShows) {
-      return { w: this.closedW, h: CLOSED_H, r: 10 };
+    // ── Dynamic Island size adjustment based on active System Access modules ──
+    if (State.mode !== "expanded") {
+      // 1. Notification active: expands island to full notification card size
+      if (SystemAccess.activeNotification) {
+        return { w: 420, h: 84, r: 24 };
+      }
+      // 2. Device Alert active (Wi-Fi / Bluetooth): adjusts to alert module size
+      if (SystemAccess.activeDeviceAlert) {
+        const nameLen = SystemAccess.activeDeviceAlert.name.length;
+        const alertW = Math.min(360, Math.max(240, 140 + nameLen * 7.5));
+        return { w: alertW, h: 42, r: 21 };
+      }
+      // 3. Clipboard Action Pill active: adjusts to copy pill size
+      if (SystemAccess.activeClipboard) {
+        const textLen = SystemAccess.activeClipboard.text.length;
+        const clipW = Math.min(400, Math.max(260, 160 + Math.min(textLen, 25) * 6));
+        return { w: clipW, h: 42, r: 21 };
+      }
+      // 4. Background Audio Tracker playing in compact mode: adjusts to audio pill size
+      if (SystemAccess.audioTrack.playing && State.systemAccessModules.audio) {
+        return { w: 260, h: 38, r: 19 };
+      }
+    }
+
+    if (State.mode === "hidden") {
+      return { w: 140, h: 4, r: 2 };
     }
     let { w, h } = islandSize(State.mode, State.view, State.chatHistory.length);
     if (State.mode === "expanded" && State.view === "question" && State.pendingApproval?.questions) {
@@ -879,14 +967,39 @@ export class Island {
     this.ensureRunning();
   }
 
+  private moveMode = false;
+
+  triggerMoveMode() {
+    this.moveMode = true;
+    this.islandEl.classList.add("island-vibrating");
+    Sound.play("pop");
+    window.setTimeout(() => {
+      this.islandEl.classList.remove("island-vibrating");
+    }, 700);
+  }
+
   private applyGeometry() {
     const w = this.width.value;
     const hh = this.height.value;
     const r = this.radius.value;
+    const isHidden = State.mode === "hidden";
+    this.islandEl.classList.toggle("island-closed-line", isHidden);
+
     this.islandEl.style.width = `${w}px`;
     this.islandEl.style.height = `${hh}px`;
-    this.islandEl.style.borderRadius = `0 0 ${r}px ${r}px`;
-    this.islandEl.style.transform = `translateX(-50%)`;
+    this.islandEl.style.borderRadius = `${r}px`;
+
+    const customPos = State.customIslandPos;
+    if (customPos && !isHidden) {
+      this.islandEl.style.left = `${customPos.x}px`;
+      this.islandEl.style.top = `${customPos.y}px`;
+      this.islandEl.style.transform = "none";
+    } else {
+      this.islandEl.style.left = "50%";
+      this.islandEl.style.top = "6px";
+      this.islandEl.style.transform = "translateX(-50%)";
+    }
+
     // These follow the island as it resizes, so they belong here rather than in
     // the state-driven DOM sync.
     this.miniGrid.style.left = `${w - 40 - 14.5}px`;
@@ -896,7 +1009,9 @@ export class Island {
     this.uploadCanvas.el.style.left = `${(w - EXPANDED_W) / 2}px`;
 
     const viewportW = window.innerWidth > 0 ? window.innerWidth : PANEL_W;
-    const rect = { x: (viewportW - w) / 2, y: 0, w, h: hh };
+    const posX = customPos && !isHidden ? customPos.x : (viewportW - w) / 2;
+    const posY = customPos && !isHidden ? customPos.y : 6;
+    const rect = { x: posX, y: posY, w, h: hh };
     const p = this.pushedRect;
     if (Math.abs(p.x - rect.x) > 0.5 || Math.abs(p.w - rect.w) > 0.5 || Math.abs(p.h - rect.h) > 0.5) {
       this.pushedRect = rect;
@@ -909,7 +1024,7 @@ export class Island {
     const w = this.width.value;
     const hh = this.height.value;
     const viewportW = window.innerWidth > 0 ? window.innerWidth : PANEL_W;
-    return { x: (viewportW - w) / 2, y: 0, w, h: hh };
+    return { x: (viewportW - w) / 2, y: 6, w, h: hh };
   }
 
   // ── Window collapse (hidden → tiny wake strip, zero polling) ────────────────
@@ -970,9 +1085,9 @@ export class Island {
     this.fsm.mouseEntered();
   }
 
-  /** Tells Rust the folded window's size: the closed island's, or none (the strip). */
+  /** Tells Rust the folded window's size: the closed line (160×10) or wake strip. */
   private sendCollapsedSize(force = false) {
-    const size = this.closedShows ? { w: this.closedW, h: CLOSED_H } : { w: 0, h: 0 };
+    const size = { w: 160, h: 10 };
     if (!force && size.w === this.collapsedTo.w && size.h === this.collapsedTo.h) return;
     this.collapsedTo = size;
     if (size.w > 0) void Bridge.setCollapsed(true, size.w, size.h);
@@ -1030,9 +1145,27 @@ export class Island {
       if (this.collapsed) wake();
     });
 
+    let moveDragging = false;
+    let moveStartX = 0;
+    let moveStartY = 0;
+    let moveOrigX = 0;
+    let moveOrigY = 0;
+
     this.islandEl.addEventListener("mousedown", (e) => {
       Sound.resume();
       State.lastActivity = performance.now();
+      // If Move mode is active, dragging anywhere on the island moves it to a custom static place
+      if (this.moveMode && e.button === 0 && !this.isBotHit(e.clientX, e.clientY)) {
+        moveDragging = true;
+        moveStartX = e.clientX;
+        moveStartY = e.clientY;
+        const rect = this.islandEl.getBoundingClientRect();
+        moveOrigX = rect.left;
+        moveOrigY = rect.top;
+        this.islandEl.style.cursor = "grabbing";
+        e.stopPropagation();
+        return;
+      }
       // A click makes a hover-opened island an ordinary open one.
       this.fsm.userInteracted();
       // A press on Day may become a drag out to the desktop.
@@ -1063,6 +1196,16 @@ export class Island {
 
     // Dragging Day out of the island puts him on the desktop.
     window.addEventListener("mousemove", (e) => {
+      if (moveDragging) {
+        const dx = e.clientX - moveStartX;
+        const dy = e.clientY - moveStartY;
+        const newX = Math.round(Math.max(10, Math.min(window.innerWidth - 100, moveOrigX + dx)));
+        const newY = Math.round(Math.max(0, Math.min(window.innerHeight - 50, moveOrigY + dy)));
+        this.islandEl.style.left = `${newX}px`;
+        this.islandEl.style.top = `${newY}px`;
+        this.islandEl.style.transform = "none";
+        return;
+      }
       if (this.desktop.carrying) {
         this.desktop.carry(e.clientX, e.clientY);
         return;
@@ -1080,6 +1223,14 @@ export class Island {
       this.desktop.pickUp(e.clientX, e.clientY);
     });
     window.addEventListener("mouseup", (e) => {
+      if (moveDragging) {
+        moveDragging = false;
+        this.islandEl.style.cursor = "";
+        const rect = this.islandEl.getBoundingClientRect();
+        State.saveCustomIslandPos({ x: Math.round(rect.left), y: Math.round(rect.top) });
+        this.applyGeometry();
+        return;
+      }
       this.botPress = null;
       if (this.desktop.carrying) this.desktop.carryEnd(e.clientX, e.clientY);
     });
@@ -1384,14 +1535,17 @@ export class Island {
     // A new Day waits: over an idle or sleeping Day, the blue and the arrow
     // badge (whats-new.ts). Anything Day has to say comes first.
     this.engine.setUpdateHint(this.updateHintOn() ? UPDATE_BLUE_RGB : null);
+    this.engine.botStyle = State.botStyle;
     // While a plan card is open Day wears the plan's colour, like its pill.
     this.engine.bodyColor = planCardOpen()
       ? hexToRGB(openPlanColor())
       : this.engine.showsUpdateHint
         ? UPDATE_BLUE_RGB
-        : focus?.isIntegration
-          ? hexToRGB(focus.color)
-          : null;
+        : State.botColor
+          ? hexToRGB(State.botColor)
+          : focus?.isIntegration
+            ? hexToRGB(focus.color)
+            : null;
     this.engine.particleOverhang = BOT_OVERHANG;
     this.engine.lookX = this.lookX();
     this.engine.lookY = this.lookY();
@@ -1507,21 +1661,9 @@ export class Island {
       }
     }
 
-    // Compact mini grid
-    const showGrid = State.mode === "compact";
-    this.miniGrid.style.opacity = showGrid ? "1" : "0";
-    if (showGrid) {
-      const others = State.otherTasks.slice(0, 4);
-      const key = others.map((t) => t.id).join("|");
-      if (this.miniGrid.dataset.key !== key) {
-        this.miniGrid.dataset.key = key;
-        this.miniGrid.replaceChildren();
-        for (const t of others) {
-          this.miniGrid.append(createMiniBot(t, 13));
-        }
-        pruneMiniBots();
-      }
-    }
+    // Compact mini grid: other bot avatars removed, island inside only shows Day
+    this.miniGrid.style.display = "none";
+    this.miniGrid.style.opacity = "0";
 
     // Compact Claude plan indicator
     const showPlan = claudeCompactPillVisible();

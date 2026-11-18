@@ -51,7 +51,19 @@ body.hub-window {
   font: 700 18px var(--font);
 }
 
-.hub-brand canvas {
+.hub-avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #33343a, #141518 72%);
+}
+
+.hub-avatar canvas {
   width: 28px;
   height: 28px;
 }
@@ -340,11 +352,36 @@ body.hub-window {
   padding: 0;
 }
 
-/* ── Hero band ────────────────────────────────────────────────────────────── */
+/* ── Section Header (replaces hub-hero) ────────────────────────────────── */
 
-/* The band's black and its colour, painted by the page too: the canvas draws
-   the same over it, with the particles, once its frames run. */
-.hub-hero,
+.hub-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 4px 16px;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+  flex: 0 0 auto;
+  margin-bottom: 6px;
+}
+
+.hub-section-header h1 {
+  font: 600 24px/1.2 var(--font);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.hub-section-header .actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hub-hero {
+  display: none !important;
+}
+
 .hub-glow {
   background:
     radial-gradient(ellipse 60% 90% at 92% -15%, var(--hero-glow, transparent), transparent 70%),

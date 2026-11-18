@@ -104,17 +104,7 @@ pub enum Agent {
 }
 
 impl Agent {
-    pub const ALL: &'static [Agent] = &[
-        Agent::Codex,
-        Agent::Copilot,
-        Agent::Muse,
-        Agent::Gemini,
-        Agent::Antigravity,
-        Agent::Cursor,
-        Agent::OpenCode,
-        Agent::Amp,
-        Agent::Hermes,
-    ];
+    pub const ALL: &'static [Agent] = &[];
 
     /// The `--agent` name; the pill is `agent_<id>` (PillCatalog.swift).
     pub fn id(self) -> &'static str {

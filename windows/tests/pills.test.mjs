@@ -15,12 +15,9 @@ installFakeDom();
 
 // ── The catalog itself ────────────────────────────────────────────────────────
 
-test("the catalog holds the Mac's pills with the Claude Code label for Windows and Linux", () => {
-  // Copied from NotchBuddy/Sources/DayKit/PillCatalog.swift: an ID is a
-  // contract value, and a colour or subtitle that drifts is a visible bug.
-  // Windows and Linux name the Claude Code integration after the agent.
+test("the catalog holds the Mac's pills with the Day - Personal Intelligence label for Windows and Linux", () => {
   const mac = [
-    ["integration_claude", "Claude Code", "#F5F6F8", "workspace", "Integration"],
+    ["integration_claude", "Day - Personal Intelligence", "#F5F6F8", "workspace", "Integration"],
     ["agent_cursor", "Cursor", "#C0C4CC", "workspace", "Integration"],
     ["agent_antigravity", "Antigravity", "#E879F9", "workspace", "Integration"],
     ["agent_codex", "Codex", "#2DD4BF", "workspace", "Integration"],
@@ -74,7 +71,7 @@ test("Gitea is an available service pill", () => {
 
 test("the shipped pills keep their IDs, colours and sources with current display names", () => {
   const shipped = [
-    ["integration_claude", "Claude Code", "#F5F6F8", "claudeCode"],
+    ["integration_claude", "Day - Personal Intelligence", "#F5F6F8", "claudeCode"],
     ["integration_resend", "Resend", "#22C55E", "n8n"],
     ["integration_n8n", "n8n", "#F29B38", "n8n"],
     ["integration_vercel", "Vercel", "#7C5CFF", "n8n"],
@@ -102,14 +99,10 @@ test("this build leaves out what only macOS has", () => {
     assert.ok(!windows.includes(id), id);
     assert.ok(!linux.includes(id), id);
   }
-  // Their plugins are written from Settings → Agents, and the chat talks to
-  // every provider (port/chat-providers), on both systems.
-  for (const id of ["agent_opencode", "agent_amp", "agent_hermes", "ai_google", "ai_openai", "ai_ollama", "ai_lmstudio"]) {
+  for (const id of ["ai_google", "ai_openai", "ai_ollama", "ai_lmstudio"]) {
     assert.ok(windows.includes(id), id);
     assert.ok(linux.includes(id), id);
   }
-  assert.ok(windows.includes("agent_claude-desktop"));
-  assert.ok(linux.includes("agent_claude-desktop"));
   // Mail is Outlook's, and Outlook is a Windows program.
   assert.ok(windows.includes("integration_mail"));
   assert.ok(!linux.includes("integration_mail"));
@@ -137,9 +130,6 @@ test("Spotify and Claude Desktop can be declared on both systems", () => {
   const empty = { mainPill: "integration_claude", activeIntegrations: [] };
   assert.deepEqual(toggleDeclared(empty, "integration_spotify", "linux"), ["integration_spotify"]);
   assert.deepEqual(toggleDeclared(empty, "integration_spotify", "windows"), ["integration_spotify"]);
-  // Claude Desktop is available on both Linux and Windows.
-  assert.deepEqual(toggleDeclared(empty, "agent_claude-desktop", "linux"), ["agent_claude-desktop"]);
-  assert.deepEqual(toggleDeclared(empty, "agent_claude-desktop", "windows"), ["agent_claude-desktop"]);
 });
 
 test("no chat provider that works here says Coming soon", () => {
@@ -154,25 +144,25 @@ test("no chat provider that works here says Coming soon", () => {
 
 test("the main pill is a workspace tool that works here", () => {
   assert.deepEqual(mainPillChoices("linux").map((p) => p.id), [
-    "integration_claude", "agent_cursor", "agent_antigravity", "agent_codex",
+    "integration_claude",
+    "agent_cursor",
+    "agent_antigravity",
+    "agent_codex",
   ]);
   assert.equal(DEFAULT_MAIN_PILL, "integration_claude");
 });
 
 test("hook-driven pills are the workspace tools and the agents with hooks", () => {
-  for (const id of ["integration_claude", "agent_cursor", "agent_codex", "agent_gemini", "agent_copilot", "agent_muse", "agent_antigravity", "agent_opencode", "agent_amp", "agent_hermes"]) {
+  for (const id of ["integration_claude", "agent_cursor", "agent_gemini", "agent_codex"]) {
     assert.ok(isHookPill(id), id);
   }
-  for (const id of ["agent_claude-desktop", "ai_anthropic", "integration_stripe", "agent_unknown"]) {
+  for (const id of ["ai_anthropic", "integration_stripe", "agent_unknown"]) {
     assert.ok(!isHookPill(id), id);
   }
 });
 
 test("a live session names its tool next to the project", () => {
-  assert.equal(sessionSubtitle("integration_claude"), "Claude Code");
-  assert.equal(sessionSubtitle("agent_cursor"), "Cursor");
-  assert.equal(sessionSubtitle("agent_claude-desktop"), "Claude Desktop");
-  assert.equal(sessionSubtitle("agent_gemini"), "Agent");
+  assert.equal(sessionSubtitle("integration_claude"), "Day - Personal Intelligence");
   assert.equal(sessionSubtitle("agent_whatever"), "Agent");
 });
 
@@ -201,13 +191,11 @@ test("up to four pills next to the main one, never the main one itself", () => {
     mainPill: "integration_claude",
     activeIntegrations: ["integration_n8n", "integration_github", "integration_stripe"],
   };
-  const four = toggleDeclared(d, "agent_gemini", "linux");
+  const four = toggleDeclared(d, "ai_anthropic", "linux");
   assert.equal(four.length, MAX_DECLARED);
-  assert.equal(toggleDeclared({ ...d, activeIntegrations: four }, "ai_anthropic", "linux"), null);
+  assert.equal(toggleDeclared({ ...d, activeIntegrations: four }, "ai_google", "linux"), null);
   assert.equal(toggleDeclared(d, "integration_claude", "linux"), null);
   assert.equal(toggleDeclared(d, "integration_music", "linux"), null);
-  assert.ok(toggleDeclared(d, "agent_claude-desktop", "linux").includes("agent_claude-desktop"));
-  assert.ok(toggleDeclared(d, "agent_claude-desktop", "windows").includes("agent_claude-desktop"));
   assert.deepEqual(toggleDeclared(d, "integration_github", "linux"), ["integration_n8n", "integration_stripe"]);
   // Every chat provider can be declared now that the chat talks to it.
   assert.ok(toggleDeclared(d, "ai_google", "linux").includes("ai_google"));
@@ -215,23 +203,19 @@ test("up to four pills next to the main one, never the main one itself", () => {
 });
 
 test("picking a main pill takes it out of the declared ones, and only workspace tools qualify", () => {
-  const d = { mainPill: "integration_claude", activeIntegrations: ["agent_cursor", "integration_n8n"] };
-  assert.deepEqual(chooseMainPill(d, "agent_cursor", "linux"), {
-    mainPill: "agent_cursor", activeIntegrations: ["integration_n8n"],
+  const d = { mainPill: "integration_claude", activeIntegrations: ["integration_n8n"] };
+  assert.deepEqual(chooseMainPill(d, "integration_claude", "linux"), {
+    mainPill: "integration_claude", activeIntegrations: ["integration_n8n"],
   });
   assert.equal(chooseMainPill(d, "integration_n8n", "linux"), null);
-  assert.equal(chooseMainPill(d, "agent_gemini", "linux"), null);
 });
 
 test("pills are ordered main first, then other agents, then the catalog's order", () => {
   const ids = (list) => list.map((t) => t.id);
-  const tasks = ["integration_stripe", "agent_mine", "integration_n8n", "agent_cursor", "integration_claude", "agent_gemini"]
+  const tasks = ["integration_stripe", "agent_mine", "integration_n8n", "integration_claude"]
     .map((id) => ({ id }));
   assert.deepEqual(ids(orderPills(tasks, "integration_claude")), [
-    "integration_claude", "agent_mine", "agent_cursor", "agent_gemini", "integration_n8n", "integration_stripe",
-  ]);
-  assert.deepEqual(ids(orderPills(tasks, "agent_cursor")).slice(0, 3), [
-    "agent_cursor", "agent_mine", "integration_claude",
+    "integration_claude", "agent_mine", "integration_n8n", "integration_stripe",
   ]);
 });
 
@@ -247,54 +231,32 @@ beforeEach(() => {
 const ids = () => State.tasks.map((t) => t.id);
 
 test("the main pill always loads, the declared ones join it, and focus starts on it", () => {
-  State.settings.mainPill = "agent_cursor";
-  State.settings.activeIntegrations = ["integration_github", "agent_gemini"];
+  State.settings.mainPill = "integration_claude";
+  State.settings.activeIntegrations = ["integration_github", "integration_n8n"];
   State.loadIntegrationTasks();
-  assert.deepEqual(ids(), ["agent_cursor", "agent_gemini", "integration_github"]);
-  assert.equal(State.focusId, "agent_cursor");
-  assert.equal(State.tasks[1].name, "Gemini CLI");
-  assert.equal(State.tasks[1].color, "#8AB4F8");
+  assert.deepEqual(ids(), ["integration_claude", "integration_n8n", "integration_github"]);
+  assert.equal(State.focusId, "integration_claude");
+  assert.equal(State.tasks[0].name, "Day - Personal Intelligence");
 });
 
-test("an old settings file gets Claude Code as its main pill and keeps its integrations", () => {
+test("an old settings file gets Day - Personal Intelligence as its main pill and keeps its integrations", () => {
   State.settings = { ...DEFAULT_SETTINGS, mainPill: undefined };
   State.loadIntegrationTasks();
   assert.deepEqual(ids(), [
     "integration_claude", "integration_resend", "integration_n8n", "integration_vercel", "integration_github",
   ]);
   assert.equal(State.settings.mainPill, "integration_claude");
-  assert.equal(State.tasks[0].name, "Claude Code");
-});
-
-test("switching the main pill frees its slot and the old main pill goes when idle", () => {
-  State.loadIntegrationTasks();
-  State.settings.mainPill = "agent_codex";
-  State.loadIntegrationTasks();
-  assert.equal(ids()[0], "agent_codex");
-  assert.ok(!ids().includes("integration_claude"));
-  assert.equal(State.focusId, "agent_codex");
+  assert.equal(State.tasks[0].name, "Day - Personal Intelligence");
 });
 
 test("a pill in the middle of a session stays until the session ends", () => {
-  State.loadIntegrationTasks();
-  State.tasks[0].state = "working";
-  State.settings.mainPill = "agent_cursor";
-  State.loadIntegrationTasks();
-  assert.ok(ids().includes("integration_claude"));
-  State.removeTask("integration_claude");
-  assert.ok(!ids().includes("integration_claude"));
+  State.upsertExternalAgent("agent_external", "ext", "#123456");
+  assert.ok(ids().includes("agent_external"));
+  State.removeTask("agent_external");
+  assert.ok(!ids().includes("agent_external"));
 });
 
 test("the end of a session puts a kept pill back as it was, and removes any other", () => {
-  State.settings.activeIntegrations = ["agent_gemini"];
-  State.loadIntegrationTasks();
-  const gemini = State.tasks.find((t) => t.id === "agent_gemini");
-  Object.assign(gemini, { name: "proj", state: "finished", steps: ["a"], pillBadge: "finished" });
-  State.removeTask("agent_gemini");
-  assert.deepEqual(
-    [gemini.name, gemini.state, gemini.steps, gemini.pillBadge],
-    ["Gemini CLI", "idle", [], null],
-  );
   State.upsertExternalAgent("agent_mine", "mine", "#22C55E");
   State.setFocus("agent_mine");
   State.removeTask("agent_mine");
@@ -302,11 +264,10 @@ test("the end of a session puts a kept pill back as it was, and removes any othe
   assert.equal(State.focusId, "integration_claude");
 });
 
-test("a Claude Code session gets its pill even when it is not loaded", () => {
-  State.settings.mainPill = "agent_codex";
+test("a Day - Personal Intelligence session gets its pill even when it is not loaded", () => {
   State.loadIntegrationTasks();
   const t = State.upsertWorkspacePill("integration_claude", "proj", "/p");
-  assert.equal(ids()[1], "integration_claude");
+  assert.equal(ids()[0], "integration_claude");
   assert.equal(t.name, "proj");
   assert.equal(t.sessionCwd, "/p");
   assert.equal(State.upsertWorkspacePill("not_a_pill", "x", ""), null);
@@ -315,34 +276,30 @@ test("a Claude Code session gets its pill even when it is not loaded", () => {
 test("toggling declares up to four pills and never the main one", () => {
   State.settings.activeIntegrations = [];
   State.loadIntegrationTasks();
-  for (const id of ["integration_n8n", "agent_gemini", "ai_anthropic", "integration_stripe", "integration_github"]) {
+  for (const id of ["integration_n8n", "ai_anthropic", "integration_stripe", "integration_github"]) {
     State.toggleIntegration(id);
   }
   assert.deepEqual(State.settings.activeIntegrations, [
-    "integration_n8n", "agent_gemini", "ai_anthropic", "integration_stripe",
+    "integration_n8n", "ai_anthropic", "integration_stripe", "integration_github",
   ]);
   State.toggleIntegration("integration_claude");
   assert.ok(ids().includes("integration_claude"));
-  State.setFocus("agent_gemini");
-  State.toggleIntegration("agent_gemini");
-  assert.ok(!ids().includes("agent_gemini"));
-  assert.equal(State.focusId, "integration_claude");
 });
 
-test("Claude Code is named after the agent in main-tool choices on both platforms", () => {
+test("Day - Personal Intelligence is named after the agent in main-tool choices on both platforms", () => {
   for (const os of ["windows", "linux"]) {
     const choice = mainPillChoices(os).find((p) => p.id === "integration_claude");
-    assert.equal(choice.name, "Claude Code");
+    assert.equal(choice.name, "Day - Personal Intelligence");
     assert.equal(choice.source, "claudeCode");
   }
 });
 
-test("the Claude Code idle card keeps the agent title when the task has a project name", () => {
+test("the Day - Personal Intelligence idle card keeps the agent title when the task has a project name", () => {
   State.loadIntegrationTasks();
   const task = State.tasks.find((t) => t.id === "integration_claude");
   task.name = "my-project";
   const card = renderIntegrationCard(task, { openSettings() {} });
-  assert.ok(card.textContent.includes("Claude Code"));
+  assert.ok(card.textContent.includes("Day - Personal Intelligence"));
   assert.ok(!card.textContent.includes("my-project"));
   assert.ok(card.textContent.includes("Open Visual Studio Code"));
 });

@@ -196,6 +196,7 @@ export function danceTransform(seconds: number, level: number, R: number) {
 
 export class BotEngine {
   isMini = false;
+  botStyle: "circle" | "classic" | "minimal" = "circle";
   /** Solid body colour for mini bots / integration pills (null = Day gradient). */
   bodyColor: RGB | null = null;
   /**
@@ -780,7 +781,7 @@ export class BotEngine {
     if (this.dancingLevel <= 0.001) return;
     const R = W * 0.3;
     const px = W / 2 + this.ox * R;
-    const py = H / 2 + this.particleOverhang / 2 + this.oy * R + R * 0.06 + R * 0.88;
+    const py = H / 2 + this.particleOverhang / 2 + this.oy * R + R * 0.06 + R;
     const d = danceTransform(now(), this.dancingLevel, R);
     x.translate(px + d.dx, py + d.dy);
     x.rotate(d.rotate);
@@ -796,8 +797,15 @@ export class BotEngine {
    */
   draw(x: CanvasRenderingContext2D, W: number, H: number) {
     const R = W * 0.3;
-    const rx = R * 1.14;
-    const ry = R * 0.88;
+    let rx = R;
+    let ry = R;
+    if (this.botStyle === "classic") {
+      rx = R * 1.14;
+      ry = R * 0.88;
+    } else if (this.botStyle === "minimal") {
+      rx = R * 0.68;
+      ry = R * 0.68;
+    }
     const cx = W / 2 + this.ox * R;
     const cy = H / 2 + this.particleOverhang / 2 + this.oy * R + R * 0.06;
 
@@ -822,7 +830,7 @@ export class BotEngine {
     const outfitState = { presence: this.outfitPresence, morph: this.morph };
     if (head) drawOutfitBehind(x, this.outfit, head, outfitState);
 
-    const body = this.bodyPath(rx, ry, R);
+    const body = this.bodyPath(R, rx, ry);
     this.drawBody(x, body, R, rx, ry);
 
     const blushVal = Math.max(this.blush, this.tint * 0.5) * (1 - this.morph);
@@ -853,20 +861,31 @@ export class BotEngine {
     this.drawParticles(x, R, cx, cy);
   }
 
-  private bodyPath(rx: number, ry: number, R: number): Path2D {
+  private bodyPath(_R: number, rx: number, ry: number): Path2D {
     const n = 72;
-    const expN = 2.0 / 2.7;
-    const tw = R * 1.0;
-    const th = R * 0.94;
-    const tr = R * 0.42;
+    const tw = rx * 1.0;
+    const th = ry * 1.0;
+    const tr = Math.min(rx, ry) * 0.5;
     const p = new Path2D();
     const m = this.morph;
+    const isClassic = this.botStyle === "classic";
+    const P = 3.6;
+
     for (let i = 0; i <= n; i++) {
       const a = (i / n) * Math.PI * 2;
       const ca = Math.cos(a);
       const sa = Math.sin(a);
-      const px0 = rx * (ca >= 0 ? Math.pow(ca, expN) : -Math.pow(-ca, expN));
-      const py0 = ry * (sa >= 0 ? Math.pow(sa, expN) : -Math.pow(-sa, expN));
+      let px0: number;
+      let py0: number;
+      if (isClassic) {
+        const sgnX = ca >= 0 ? 1 : -1;
+        const sgnY = sa >= 0 ? 1 : -1;
+        px0 = rx * sgnX * Math.pow(Math.abs(ca), 2 / P);
+        py0 = ry * sgnY * Math.pow(Math.abs(sa), 2 / P);
+      } else {
+        px0 = rx * ca;
+        py0 = ry * sa;
+      }
       let px = px0;
       let py = py0;
       if (m >= 0.005) {
@@ -890,10 +909,20 @@ export class BotEngine {
   private drawBody(x: CanvasRenderingContext2D, body: Path2D, R: number, rx: number, ry: number) {
     const pumpkin = this.pumpkinAlpha;
     if (this.bodyColor) {
-      // Mini bots: flat solid fill — no gradient, no reflection, no highlight
-      x.fillStyle = rgba(this.bodyColor, 1);
-      x.fill(body);
-      if (pumpkin <= 0.001) return;
+      if (this.isMini) {
+        // Mini bots: flat solid fill — no gradient, no reflection, no highlight
+        x.fillStyle = rgba(this.bodyColor, 1);
+        x.fill(body);
+        if (pumpkin <= 0.001) return;
+      } else {
+        const top = mix3(this.bodyColor, [1, 1, 1], 0.35);
+        const bot = mix3(this.bodyColor, [0, 0, 0], 0.25);
+        const g = x.createLinearGradient(rx * 0.7, -ry * 0.85, -rx * 0.8, ry * 0.9);
+        g.addColorStop(0, rgba(top));
+        g.addColorStop(1, rgba(bot));
+        x.fillStyle = g;
+        x.fill(body);
+      }
     } else {
       const g = x.createLinearGradient(rx * 0.7, -ry * 0.85, -rx * 0.8, ry * 0.9);
       g.addColorStop(0, rgba(BASE_TOP));
@@ -910,7 +939,7 @@ export class BotEngine {
       x.fillStyle = pg;
       x.fill(body);
       // A flat-coloured body only gets the shading while it is a pumpkin.
-      x.globalAlpha = this.bodyColor ? pumpkin : 1;
+      x.globalAlpha = (this.bodyColor && this.isMini) ? pumpkin : 1;
     }
 
     const effectiveTint = this.tint * (1 - this.morph);
@@ -1093,7 +1122,7 @@ export class BotEngine {
     const hW = R * 1.8 * m;
     const hH = this.slotH * R * m;
     const hX = -hW / 2;
-    const boxTop = -R * (0.88 + 0.06 * m);
+    const boxTop = -R * (1.0 + 0.06 * m);
     const hY = boxTop + R * 0.08 * m;
 
     x.save();

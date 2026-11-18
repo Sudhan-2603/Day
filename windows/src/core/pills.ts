@@ -72,7 +72,7 @@ const ACCENT = {
 
 export const PILL_CATALOG: readonly PillDefinition[] = [
   // ── Where you code ─────────────────────────────────────────────────────────
-  { id: "integration_claude", name: "Claude Code", color: "#F5F6F8", category: "workspace",
+  { id: "integration_claude", name: "Day - Personal Intelligence", color: "#F5F6F8", category: "workspace",
     subtitle: N_("Integration"), source: "claudeCode", support: "yes", connect: hooks },
   // Claude Code in Cursor's terminal: the same hooks as Claude Code.
   { id: "agent_cursor", name: "Cursor", color: "#C0C4CC", category: "workspace",
@@ -99,7 +99,7 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
   // from CLAUDE_CODE_ENTRYPOINT, so there is nothing to install. The app has
   // official builds for Windows and Linux (.deb).
   { id: "agent_claude-desktop", name: "Claude Desktop", color: "#D97757", category: "agent",
-    subtitle: N_("Agent"), source: "agent", support: "yes", connect: none },
+    subtitle: N_("Agent"), source: "agent", support: "no", connect: none },
   // ── AI for the chat ────────────────────────────────────────────────────────
   { id: "ai_anthropic", name: "Anthropic", color: ACCENT.anthropic, category: "ai",
     subtitle: N_("Chat"), source: "n8n", support: "yes", connect: key("anthropic-api-key") },
@@ -188,11 +188,7 @@ export function mainPillChoices(os: HostOs = HOST_OS): PillDefinition[] {
 /** PillDefinition.sessionSubtitle — next to the name in a live session's card. */
 export function sessionSubtitle(id: string): string {
   switch (id) {
-    case "integration_claude": return "Claude Code";
-    case "agent_cursor": return "Cursor";
-    case "agent_codex": return "Codex";
-    case "agent_hermes": return "Hermes";
-    case "agent_claude-desktop": return "Claude Desktop";
+    case "integration_claude": return "Day - Personal Intelligence";
     default: return N_("Agent");
   }
 }

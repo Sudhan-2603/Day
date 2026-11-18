@@ -49,6 +49,27 @@ export interface PhoneLinkStatus {
 
 export type PhoneRelayState = "off" | "connecting" | "waiting" | "linked" | "accessRefused" | "unreachable" | "roomTaken" | "tooMany";
 
+export interface RealSystemInfo {
+  network_name: string;
+  network_type: string;
+  online: boolean;
+  battery_level: number | null;
+  computer_name: string;
+}
+
+export interface SystemMetrics {
+  cpu_percent: number;
+  ram_used_gb: number;
+  ram_total_gb: number;
+  ram_percent: number;
+  storage_used_gb: number;
+  storage_total_gb: number;
+  storage_percent: number;
+  gpu_name: string;
+  network_rx_mb: number;
+  network_tx_mb: number;
+}
+
 /** The relay switch and address. The access key is write-only: only whether one is stored comes back. */
 export interface PhoneRelayStatus {
   enabled: boolean;
@@ -212,6 +233,18 @@ export const Bridge = {
 
   saveSettings: (settings: Settings) => call<void>("save_settings", { settings }),
 
+  /** Read operating system clipboard directly without browser permission popup. */
+  readClipboardText: () => call<string>("read_clipboard_text"),
+
+  /** Get real operating system status (network, battery, device). */
+  getSystemInfo: () => call<RealSystemInfo>("get_system_info"),
+
+  /** Get real operating system telemetry (CPU, RAM, Storage, GPU, Network). */
+  getSystemMetrics: () => call<SystemMetrics>("get_system_metrics"),
+
+  /** Open native Windows command prompt (cmd.exe). */
+  openSystemCmd: () => call<boolean>("open_system_cmd"),
+
   /** Shrink the window down to the invisible wake strip (hidden) or back to full. */
   /** Folds the window to `width`×`height` (the closed island) or grows it back to the panel. */
   setCollapsed: (collapsed: boolean, width?: number, height?: number) =>
@@ -283,7 +316,7 @@ export const Bridge = {
 
   quit: () => call<void>("quit_app"),
 
-  openSettingsWindow: () => call<void>("open_settings_window"),
+  openSettingsWindow: (page?: string) => call<void>("open_settings_window", { page: page ?? "general" }),
 
   /** Writes to %LOCALAPPDATA%\Day\Day.log, next to the Rust lines. */
   log: (message: string) => call<void>("log_line", { message }),

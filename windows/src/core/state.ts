@@ -276,6 +276,70 @@ class AppState {
   /** Outfit shown on Day while the pointer rests on a wardrobe button. */
   wardrobePreview: Outfit | null = null;
 
+  botStyle: "circle" | "classic" | "minimal" = "circle";
+  botColor: string | null = null;
+  showIslandWindowControls = false;
+
+  /** Module toggles for System Access features. */
+  systemAccessModules: {
+    clipboard: boolean;
+    audio: boolean;
+    notifications: boolean;
+    deviceAlerts: boolean;
+    monitoring: boolean;
+  } = (() => {
+    try {
+      if (typeof localStorage !== "undefined") {
+        const saved = localStorage.getItem("Day_system_access_modules");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return {
+            clipboard: parsed.clipboard ?? true,
+            audio: parsed.audio ?? true,
+            notifications: parsed.notifications ?? true,
+            deviceAlerts: parsed.deviceAlerts ?? true,
+            monitoring: parsed.monitoring ?? true,
+          };
+        }
+      }
+    } catch {}
+    return { clipboard: true, audio: true, notifications: true, deviceAlerts: true, monitoring: true };
+  })();
+
+  saveSystemAccessModules() {
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("Day_system_access_modules", JSON.stringify(this.systemAccessModules));
+      }
+    } catch {}
+    this.notify();
+  }
+
+  /** Custom static placement position for Island when user manually drags it */
+  customIslandPos: { x: number; y: number } | null = (() => {
+    try {
+      if (typeof localStorage !== "undefined") {
+        const saved = localStorage.getItem("Day_custom_island_pos");
+        if (saved) return JSON.parse(saved);
+      }
+    } catch {}
+    return null;
+  })();
+
+  saveCustomIslandPos(pos: { x: number; y: number } | null) {
+    this.customIslandPos = pos;
+    try {
+      if (typeof localStorage !== "undefined") {
+        if (pos) localStorage.setItem("Day_custom_island_pos", JSON.stringify(pos));
+        else localStorage.removeItem("Day_custom_island_pos");
+      }
+    } catch {}
+    this.notify();
+  }
+
+  /** True when the device has no internet connection (navigator.onLine === false). */
+  isOffline = typeof navigator !== "undefined" && typeof navigator.onLine === "boolean" ? !navigator.onLine : false;
+
   lastActivity = performance.now();
 
   settings: Settings = { ...DEFAULT_SETTINGS };

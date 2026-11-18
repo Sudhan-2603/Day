@@ -22,7 +22,6 @@ import { h, clear } from "../views/dom";
 import { startHub, type PageId } from "../hub/shell";
 import { FLOW_PAGE_RENDERERS } from "../hub/pages";
 import { claudeModelControl } from "./claude-models";
-import { agentsSection } from "./agents";
 import { phoneSection } from "./phone";
 import { whatsappSection } from "./whatsapp";
 import { WHATSAPP_ID } from "../core/whatsapp";
@@ -47,6 +46,11 @@ let root: HTMLElement = windowRoot;
 let hub: { redraw(): void; current(): PageId } | null = null;
 
 async function save() {
+  if (typeof localStorage !== "undefined") {
+    try {
+      localStorage.setItem("day_settings", JSON.stringify(settings));
+    } catch {}
+  }
   await Bridge.saveSettings(settings);
 }
 
@@ -177,7 +181,7 @@ function claudeSection(status: HookStatus): HTMLElement {
   const section = h(
     "section",
     {},
-    h("h2", {}, statusDot(status.installed), h("span", { text: "Claude Code" })),
+    h("h2", {}, statusDot(status.installed), h("span", { text: "Day - Personal Intelligence" })),
     body,
   );
 
@@ -191,7 +195,7 @@ function claudeSection(status: HookStatus): HTMLElement {
     redraw();
     const head = section.querySelector("h2")!;
     clear(head);
-    head.append(statusDot(status.installed), h("span", { text: "Claude Code" }));
+    head.append(statusDot(status.installed), h("span", { text: "Day - Personal Intelligence" }));
   };
 
   function draw() {
@@ -258,10 +262,10 @@ function claudeSection(status: HookStatus): HTMLElement {
 const PLAN_SETTINGS_TEXT = {
   get claude() { return t("Shows your Claude plan usage (5-hour and weekly limits) in the island's header. Day adds a status line relay in ~/.claude/settings.json. If you already have a status line, it keeps working as before. Pro and Max plans only."); },
   get claudeCli() { return t("The numbers come from the Claude Code command-line tool. The Claude desktop app does not report them, so the gauge stays empty if you only use the desktop app."); },
-  get showClaude() { return t("Show in notch"); },
+  get showClaude() { return t("Show in island"); },
   get showClaudeCompact() { return t("Show in compact island"); },
   get codex() { return t("Shows your Codex plan usage (weekly limit and free resets left) in the island's header. Day asks the Codex CLI (codex app-server) when the pill shows; nothing is installed. Codex must be signed in with ChatGPT."); },
-  get showCodex() { return t("Show Codex plan in the notch"); },
+  get showCodex() { return t("Show Codex plan in the island"); },
 };
 
 function planSection(status: HookStatus): HTMLElement {
@@ -341,15 +345,6 @@ function planSection(status: HookStatus): HTMLElement {
               onclick: () => void reviewChange(body, STATUS_LINE_CHANGE, true, redraw, () => void rebuild()),
             }),
       ),
-      // Codex: nothing to install, Day asks the Codex CLI when the pill shows.
-      h("div", { class: "hint", text: PLAN_SETTINGS_TEXT.codex }),
-      h("div", { class: "row" },
-        h("label", { text: PLAN_SETTINGS_TEXT.showCodex }),
-        toggle(settings.showCodexPlanInNotch, (on) => {
-          settings.showCodexPlanInNotch = on;
-          void save();
-        }),
-      ),
     );
   }
 
@@ -361,7 +356,7 @@ function planSection(status: HookStatus): HTMLElement {
 
 /** The plan people know, by provider. */
 const SUBSCRIPTION_NAMES: Record<string, string> = {
-  anthropic: "Claude", google: "Google Gemini", openai: "ChatGPT", cursor: "Cursor", copilot: "GitHub Copilot",
+  anthropic: "Claude", google: "Google Gemini", openai: "ChatGPT",
 };
 
 /**
@@ -1048,7 +1043,7 @@ function generalSection(): HTMLElement {
   // The closed island (core/closed.ts): what stays at the top of the screen.
   const closed = h("select", {}) as HTMLSelectElement;
   closed.append(
-    h("option", { value: "Day", text: t("Day, as on a Mac without a notch") }),
+    h("option", { value: "Day", text: t("Day, as on a Mac") }),
     h("option", { value: "time", text: t("The time") }),
     h("option", { value: "datetime", text: t("The date and the time") }),
     h("option", { value: "claude", text: t("Claude usage") }),
@@ -1110,8 +1105,8 @@ function generalSection(): HTMLElement {
     h("h2", {}, h("span", { text: t("General") })),
     h("div", { class: "row" },
       h("label", { text: t("Sound") }),
-      sound,
       volume,
+      sound,
     ),
     h("div", { class: "row" }, soundsFolder, reloadSounds, customCount),
     h("div", { class: "hint", text: t("Drop a file named like one of Day's sounds (finish.wav, approval.mp3, greet.m4a…) in the sounds folder to replace it, then Reload.") }),
@@ -1124,7 +1119,7 @@ function generalSection(): HTMLElement {
       h("label", { text: t("Open for every pill’s alerts") }),
       toggle(settings.alertsFromAllPills, (v) => { settings.alertsFromAllPills = v; void save(); }),
     ),
-    h("div", { class: "hint", text: t("When a pill other than the one shown finishes or hits an error, the notch shows it for a moment, then the pill you had comes back.") }),
+    h("div", { class: "hint", text: t("When a pill other than the one shown finishes or hits an error, the island shows it for a moment, then the pill you had comes back.") }),
     h("div", { class: "row" },
       h("label", { text: t("Show clock in the island") }),
       toggle(settings.showClock, (v) => { settings.showClock = v; void save(); }),
@@ -1134,7 +1129,7 @@ function generalSection(): HTMLElement {
       h("label", { text: t("Closed island shows") }),
       closed,
     ),
-    h("div", { class: "hint", text: t("A PC has no notch: once closed, a small island stays at the top of the screen. Hover it to bring Day back. Hidden, move the pointer to the very top of the screen.") }),
+    h("div", { class: "hint", text: t("Once closed, a small island stays at the top of the screen. Hover it to bring Day back. Hidden, move the pointer to the very top of the screen.") }),
     h("div", { class: "row" },
       h("label", { text: t("Auto-close") }),
       autoClose,
@@ -1151,6 +1146,47 @@ function generalSection(): HTMLElement {
     ...recapRows(),
     ...updateRows(toggle, version),
     languageRow(),
+    localhostRow(),
+  );
+}
+
+function localhostRow(): HTMLElement {
+  const isRunningLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const localhostUrl = "http://localhost:1420/settings.html";
+
+  const openBtn = h("button", {
+    class: "primary",
+    text: isRunningLocalhost ? "Refresh Localhost" : "Open in Browser (Localhost)",
+    onclick: () => {
+      if (isRunningLocalhost) {
+        window.location.reload();
+      } else {
+        void Bridge.openUrl(localhostUrl);
+      }
+    },
+  });
+
+  const copyBtn = h("button", {
+    text: "Copy Localhost Link",
+    onclick: async () => {
+      try {
+        await navigator.clipboard.writeText(localhostUrl);
+        copyBtn.textContent = "Copied!";
+        setTimeout(() => { copyBtn.textContent = "Copy Localhost Link"; }, 2000);
+      } catch {}
+    },
+  });
+
+  return h("div", { class: "localhost-card", style: "margin-top:16px;padding:12px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px" },
+    h("div", { style: "display:flex;align-items:center;justify-content:space-between;margin-bottom:8px" },
+      h("div", { style: "display:flex;align-items:center;gap:8px" },
+        h("span", { style: "display:inline-block;width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399" }),
+        h("strong", { text: "Localhost Version (Web Browser)" }),
+      ),
+      h("span", { class: "tag", style: "font-family:monospace;font-size:11px", text: "http://localhost:1420/settings.html" }),
+    ),
+    h("div", { class: "hint", style: "margin-bottom:10px", text: "Access and configure the full Day settings layout directly in any web browser at local port 1420." }),
+    h("div", { style: "display:flex;gap:8px" }, openBtn, copyBtn)
   );
 }
 
@@ -1457,6 +1493,15 @@ async function main() {
   if (boot) {
     settings = { ...settings, ...boot.settings };
     version = boot.version;
+  } else {
+    // Plain browser / localhost mode
+    if (typeof localStorage !== "undefined") {
+      try {
+        const stored = localStorage.getItem("day_settings");
+        if (stored) settings = { ...settings, ...JSON.parse(stored) };
+      } catch {}
+    }
+    version = "0.5.9 (Localhost)";
   }
   setLanguage(resolveLanguage(settings.language, systemLanguages()));
   applyDirection();
@@ -1496,7 +1541,6 @@ async function render() {
   const status = (await Bridge.hooksStatus()) ?? {
     installed: false, planRelayInstalled: false, settingsPath: "", hookPath: "", hookReady: false,
   };
-  const agents = await Bridge.agentHooksList();
 
   const hasKey = (await Bridge.secretPresent("anthropic-api-key")) ?? false;
   const claudeRelay = !hasKey && ((await Bridge.claudeReady()) ?? false);
@@ -1539,7 +1583,7 @@ async function render() {
   const sections: Partial<Record<PageId, () => HTMLElement[]>> = {
     general: () => [generalSection()],
     pills: () => [activePillsSection(connected)],
-    agents: () => [claudeSection(status), agentsSection(agents), planSection(status)],
+    agents: () => [claudeSection(status), planSection(status)],
     chat: () => [subscriptionsSection(), apiSection(hasKey, claudeRelay), chatProvidersSection(chatKeys, keyChanged), localSection(customKey)],
     integrations: () => [integrationsSection(present), ...whatsappSections()],
     phone: () => [phoneSection(settings.phoneLink ?? false, toggle, settings)],

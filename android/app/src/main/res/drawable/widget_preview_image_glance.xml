@@ -13,5 +13,5 @@
         android:height="64dp"
         android:left="16dp"
         android:gravity="start|center_vertical"
-        android:drawable="@drawable/preview_Day_working" />
+        android:drawable="@drawable/preview_day_working" />
 </layer-list>

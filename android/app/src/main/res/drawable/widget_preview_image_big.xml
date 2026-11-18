@@ -14,5 +14,5 @@
         android:left="0dp"
         android:top="10dp"
         android:gravity="center"
-        android:drawable="@drawable/preview_Day_working" />
+        android:drawable="@drawable/preview_day_working" />
 </layer-list>

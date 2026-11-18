@@ -29,6 +29,8 @@ export class IslandStateMachine {
   greetHoverCollapseDelay = 10;
   /** An alert waiting for an answer stays open, even when the mouse leaves. */
   pinned = false;
+  /** True only if user explicitly closed the Island via the X button. */
+  explicitlyClosed = false;
   /**
    * Hovering opens the island all the way instead of peeking (Settings →
    * General → Open on hover, off by default), as IslandStateMachine.openOnHover.
@@ -61,7 +63,8 @@ export class IslandStateMachine {
 
   launch() {
     this.cancelTimers();
-    this.transition("Day");
+    this.explicitlyClosed = false;
+    this.transition("home");
   }
 
   mouseEntered() {
@@ -107,6 +110,7 @@ export class IslandStateMachine {
 
   click() {
     this.byHover = false;
+    this.explicitlyClosed = false;
     if (this.state !== "petit") return;
     this.cancelTimers();
     this.transition("home");
@@ -115,11 +119,12 @@ export class IslandStateMachine {
   /** Greeting animation finished (T.end). Doesn't override a running hover timer. */
   greetComplete() {
     if (this.state !== "Day") return;
-    if (this.greetCollapse == null) this.scheduleGreetCollapse(this.greetAutoCollapseDelay);
+    this.transition("home");
   }
 
   /** Non-alert work event: show compact from hidden. */
   reveal() {
+    this.explicitlyClosed = false;
     if (this.state !== "hidden") return;
     this.cancelTimers();
     this.transition("petit");
@@ -153,6 +158,7 @@ export class IslandStateMachine {
 
   forceHidden() {
     this.byHover = false;
+    this.explicitlyClosed = true;
     this.cancelTimers();
     this.transition("hidden");
   }
@@ -161,8 +167,8 @@ export class IslandStateMachine {
 
   private schedulePetitHide() {
     this.clear("petitHide");
-    // A card folded away while it waits for an answer keeps the compact island
-    // on screen, so it can be reopened (isHeldOpen on macOS).
+    // Stay resting as a compact pill unless explicitly closed
+    if (!this.explicitlyClosed) return;
     if (this.pinned) return;
     this.petitHide = window.setTimeout(() => {
       this.petitHide = null;

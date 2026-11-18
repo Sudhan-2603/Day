@@ -10,19 +10,51 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
 
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager, Monitor, PhysicalPosition, PhysicalSize, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, Monitor, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 use crate::platform::{self, cursor_physical, left_button_down};
 
 /// Logical size of the full window — the largest island view, like the macOS panel.
-pub const PANEL_W: f64 = 720.0;
-pub const PANEL_H: f64 = 320.0;
+pub const PANEL_W: f64 = 800.0;
+pub const PANEL_H: f64 = 420.0;
 /// Logical size of the invisible strip that wakes the island when it is hidden
 /// and the closed island is set to show nothing.
 pub const STRIP_W: f64 = 240.0;
 pub const STRIP_H: f64 = 6.0;
 
 pub const WINDOW_LABEL: &str = "island";
+
+fn page_url(app: &AppHandle) -> WebviewUrl {
+    #[cfg(all(dev, debug_assertions))]
+    if let Some(mut base) = app.config().build.dev_url.clone() {
+        base.set_path("/index.html");
+        return WebviewUrl::External(base);
+    }
+    let _ = app;
+    WebviewUrl::App("index.html".into())
+}
+
+/// Create the Island after the settings window. WebView2 can stall when the
+/// Island is its first configured window, before the app's setup hook runs.
+pub fn create_window(app: &AppHandle) -> Result<WebviewWindow, tauri::Error> {
+    WebviewWindowBuilder::new(app, WINDOW_LABEL, page_url(app))
+        .additional_browser_args(crate::BROWSER_ARGS)
+        .title("Day")
+        .inner_size(STRIP_W, STRIP_H)
+        .resizable(false)
+        .decorations(false)
+        .transparent(true)
+        .shadow(false)
+        .always_on_top(true)
+        .skip_taskbar(true)
+        .focused(false)
+        .maximizable(false)
+        .minimizable(false)
+        .closable(false)
+        .disable_drag_drop_handler()
+        .visible(true)
+        .build()
+}
 
 /// Around the window, how far the cursor is still worth telling the page
 /// about (Day's eyes follow it), in logical px. Past it the page hears once

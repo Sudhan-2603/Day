@@ -54,7 +54,7 @@ export async function voicePage(page: HTMLElement, ctx: HubContext) {
     row(t("Parakeet, on your computer"), t("Hears « OK Day » here, without the internet."), modelsControl(ctx, () => ctx.navigate("voice"))),
   );
   if (prefs.voice && !status.hasClaudeKey) {
-    main.append(h("div", { class: "hub-warn", text: t("Day answers with Claude: add your Claude key in Notch → Chat.") }));
+    main.append(h("div", { class: "hub-warn", text: t("Day answers with Claude: add your Claude key in Island → Chat.") }));
   } else if (prefs.voice && !ready) {
     main.append(h("div", { class: "hub-warn", text: t("Download the voice model so Day can hear you.") }));
   }

@@ -299,7 +299,7 @@ pub fn setup(app: &AppHandle) {
 }
 
 fn page_url(app: &AppHandle) -> WebviewUrl {
-    #[cfg(dev)]
+    #[cfg(all(dev, debug_assertions))]
     if let Some(mut base) = app.config().build.dev_url.clone() {
         base.set_path("/Day.html");
         return WebviewUrl::External(base);

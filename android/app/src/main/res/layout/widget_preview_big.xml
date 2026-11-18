@@ -39,7 +39,7 @@
                     android:layout_weight="1"
                     android:importantForAccessibility="no"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/preview_Day_working" />
+                    android:src="@drawable/preview_day_working" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"

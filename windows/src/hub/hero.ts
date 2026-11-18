@@ -466,37 +466,19 @@ export const THEMES: Record<string, Theme> = {
   mailVIP: { color: "#F5A524", cast: [m("#F5A524", 60, 0.3, { outfit: "crown" }), m("#2F8CFF", 46, 0.85)] },
 };
 
-/** The band itself: title, line, actions, and the Days. */
-export function hero(page: string, title: string, subtitle: string | null, actions: HTMLElement[] = [], compact = false): HTMLElement {
-  const theme = THEMES[page] ?? THEMES.general;
+/** Replaced hub-hero: clean section header showing that section name only. */
+export function hero(_page: string, title: string, _subtitle: string | null, actions: HTMLElement[] = [], _compact = false): HTMLElement {
   const el = document.createElement("div");
-  el.className = compact ? "hub-hero compact" : "hub-hero";
-  el.style.setProperty("--hero-line", rgba(theme.color, 0.16));
-  el.style.setProperty("--hero-glow", rgba(theme.color, 0.3));
-  el.style.setProperty("--hero-tint", rgba(theme.color, 0.1));
-  const back = document.createElement("canvas");
-  back.className = "backdrop";
-  const Days = document.createElement("canvas");
-  Days.className = "troupe";
-  const copy = document.createElement("div");
-  copy.className = "copy";
+  el.className = "hub-section-header";
   const h1 = document.createElement("h1");
   h1.textContent = title;
-  copy.append(h1);
-  if (subtitle) {
-    const p = document.createElement("p");
-    p.textContent = subtitle;
-    copy.append(p);
-  }
+  el.append(h1);
   if (actions.length) {
     const row = document.createElement("div");
     row.className = "actions";
     row.append(...actions);
-    copy.append(row);
+    el.append(row);
   }
-  el.append(back, Days, copy);
-  backdrop(back, theme.color, el);
-  troupe(Days, theme.cast, compact ? 280 : 340);
   return el;
 }
 

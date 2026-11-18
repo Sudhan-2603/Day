@@ -171,6 +171,158 @@ fn language_changed(app: &AppHandle) {
     }
 }
 
+/// Read the native operating system clipboard without triggering browser permissions.
+#[tauri::command]
+fn read_clipboard_text() -> Option<String> {
+    arboard::Clipboard::new().ok().and_then(|mut c| c.get_text().ok())
+}
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct RealSystemInfo {
+    pub network_name: String,
+    pub network_type: String,
+    pub online: bool,
+    pub battery_level: Option<i64>,
+    pub computer_name: String,
+}
+
+/// Query actual system network, battery, and workstation info.
+#[tauri::command]
+fn get_system_info() -> RealSystemInfo {
+    let computer_name = std::env::var("COMPUTERNAME").unwrap_or_else(|_| "Windows PC".into());
+    let mut network_name = "Local Network".to_string();
+    let mut network_type = "WiFi".to_string();
+    let mut online = false;
+    let mut battery_level = None;
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let script = r#"[PSCustomObject]@{ name = (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name -First 1); alias = (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Select-Object -ExpandProperty InterfaceAlias -First 1); conn = (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Select-Object -ExpandProperty IPv4Connectivity -First 1); battery = (Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue | Select-Object -ExpandProperty EstimatedChargeRemaining -First 1) } | ConvertTo-Json -Compress"#;
+        if let Ok(output) = std::process::Command::new("powershell")
+            .args(&["-NoProfile", "-Command", script])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+        {
+            if output.status.success() {
+                let text = String::from_utf8_lossy(&output.stdout);
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(text.trim()) {
+                    if let Some(n) = v.get("name").and_then(|x| x.as_str()) {
+                        if !n.is_empty() {
+                            network_name = n.to_string();
+                        }
+                    }
+                    if let Some(a) = v.get("alias").and_then(|x| x.as_str()) {
+                        if !a.is_empty() {
+                            network_type = a.to_string();
+                        }
+                    }
+                    if let Some(c) = v.get("conn").and_then(|x| x.as_i64()) {
+                        online = c == 4;
+                    }
+                    if let Some(b) = v.get("battery").and_then(|x| x.as_i64()) {
+                        battery_level = Some(b);
+                    }
+                }
+            }
+        }
+    }
+
+    RealSystemInfo {
+        network_name,
+        network_type,
+        online,
+        battery_level,
+        computer_name,
+    }
+}
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct SystemMetrics {
+    pub cpu_percent: i64,
+    pub ram_used_gb: f64,
+    pub ram_total_gb: f64,
+    pub ram_percent: i64,
+    pub storage_used_gb: f64,
+    pub storage_total_gb: f64,
+    pub storage_percent: i64,
+    pub gpu_name: String,
+    pub network_rx_mb: f64,
+    pub network_tx_mb: f64,
+}
+
+/// Query real-time system performance telemetry (CPU, RAM, Storage, GPU, Network).
+#[tauri::command]
+fn get_system_metrics() -> SystemMetrics {
+    let mut cpu_percent = 15;
+    let mut ram_used_gb = 8.0;
+    let mut ram_total_gb = 16.0;
+    let mut ram_percent = 50;
+    let mut storage_used_gb = 180.0;
+    let mut storage_total_gb = 256.0;
+    let mut storage_percent = 70;
+    let mut gpu_name = "Integrated GPU".to_string();
+    let mut network_rx_mb = 0.0;
+    let mut network_tx_mb = 0.0;
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let script = r#"$os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue; $totRam = if ($os) { [math]::Round($os.TotalVisibleMemorySize / 1MB, 1) } else { 16.0 }; $freeRam = if ($os) { [math]::Round($os.FreePhysicalMemory / 1MB, 1) } else { 8.0 }; $usedRam = [math]::Round($totRam - $freeRam, 1); $ramPct = [math]::Round(($usedRam / [math]::Max($totRam, 1)) * 100); $cpu = (Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue | Measure-Object -Property LoadPercentage -Average).Average; if ($null -eq $cpu) { $cpu = 15 }; $d = Get-PSDrive C -ErrorAction SilentlyContinue; $dUsed = if ($d) { [math]::Round($d.Used/1GB, 1) } else { 100.0 }; $dFree = if ($d) { [math]::Round($d.Free/1GB, 1) } else { 50.0 }; $dTot = [math]::Round($dUsed + $dFree, 1); $dPct = [math]::Round(($dUsed / [math]::Max($dTot, 1)) * 100); $gpu = (Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name -First 1); if (!$gpu) { $gpu = "Graphics Adapter" }; $stats = Get-NetAdapterStatistics -ErrorAction SilentlyContinue; $rx = if ($stats) { ($stats | Measure-Object -Property ReceivedBytes -Sum).Sum } else { 0 }; $tx = if ($stats) { ($stats | Measure-Object -Property SentBytes -Sum).Sum } else { 0 }; [PSCustomObject]@{ cpu_percent = [int]$cpu; ram_used_gb = [double]$usedRam; ram_total_gb = [double]$totRam; ram_percent = [int]$ramPct; storage_used_gb = [double]$dUsed; storage_total_gb = [double]$dTot; storage_percent = [int]$dPct; gpu_name = [string]$gpu; network_rx_mb = [double][math]::Round($rx / 1MB, 1); network_tx_mb = [double][math]::Round($tx / 1MB, 1) } | ConvertTo-Json -Compress"#;
+        if let Ok(output) = std::process::Command::new("powershell")
+            .args(&["-NoProfile", "-Command", script])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+        {
+            if output.status.success() {
+                let text = String::from_utf8_lossy(&output.stdout);
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(text.trim()) {
+                    if let Some(c) = v.get("cpu_percent").and_then(|x| x.as_i64()) { cpu_percent = c; }
+                    if let Some(r) = v.get("ram_used_gb").and_then(|x| x.as_f64()) { ram_used_gb = r; }
+                    if let Some(r) = v.get("ram_total_gb").and_then(|x| x.as_f64()) { ram_total_gb = r; }
+                    if let Some(r) = v.get("ram_percent").and_then(|x| x.as_i64()) { ram_percent = r; }
+                    if let Some(s) = v.get("storage_used_gb").and_then(|x| x.as_f64()) { storage_used_gb = s; }
+                    if let Some(s) = v.get("storage_total_gb").and_then(|x| x.as_f64()) { storage_total_gb = s; }
+                    if let Some(s) = v.get("storage_percent").and_then(|x| x.as_i64()) { storage_percent = s; }
+                    if let Some(g) = v.get("gpu_name").and_then(|x| x.as_str()) { gpu_name = g.to_string(); }
+                    if let Some(n) = v.get("network_rx_mb").and_then(|x| x.as_f64()) { network_rx_mb = n; }
+                    if let Some(n) = v.get("network_tx_mb").and_then(|x| x.as_f64()) { network_tx_mb = n; }
+                }
+            }
+        }
+    }
+
+    SystemMetrics {
+        cpu_percent,
+        ram_used_gb,
+        ram_total_gb,
+        ram_percent,
+        storage_used_gb,
+        storage_total_gb,
+        storage_percent,
+        gpu_name,
+        network_rx_mb,
+        network_tx_mb,
+    }
+}
+
+/// Open native live Windows command prompt (cmd.exe)
+#[tauri::command]
+fn open_system_cmd() -> bool {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        let _ = Command::new("cmd.exe").args(&["/k"]).spawn();
+        true
+    }
+    #[cfg(not(windows))]
+    {
+        false
+    }
+}
+
 /// Hidden island → shrink the window to the invisible wake strip and park the
 /// cursor poll; anything else → full panel and 60 Hz polling.
 #[tauri::command]
@@ -743,7 +895,7 @@ pub(crate) const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,ms
 /// In a dev build the pages are served by Vite, so the second window needs the
 /// absolute dev URL; a bundled build resolves it inside the app bundle.
 fn settings_page_url(app: &AppHandle) -> WebviewUrl {
-    #[cfg(dev)]
+    #[cfg(all(dev, debug_assertions))]
     if let Some(mut base) = app.config().build.dev_url.clone() {
         base.set_path("/settings.html");
         return WebviewUrl::External(base);
@@ -756,23 +908,35 @@ fn settings_page_url(app: &AppHandle) -> WebviewUrl {
 /// island), labelled "settings" since it grew out of the settings window.
 pub const HUB_LABEL: &str = "settings";
 
+fn startup_trace(message: impl AsRef<str>) {
+    let Some(path) = std::env::var_os("DAY_STARTUP_TRACE") else { return };
+    let mut options = std::fs::OpenOptions::new();
+    options.create(true).append(true);
+    if let Ok(mut file) = options.open(path) {
+        use std::io::Write as _;
+        let _ = writeln!(file, "{}", message.as_ref());
+    }
+}
+
 /// The Day window is created hidden at launch and only ever shown and
 /// hidden afterwards. A WebView2 window created later — on the main thread or
 /// not — silently comes up blank in this app, so the window that works is the
 /// one that exists before the island's webview does.
 fn create_settings_window(app: &AppHandle) {
     let url = settings_page_url(app);
+    startup_trace("settings build begin");
     match WebviewWindowBuilder::new(app, HUB_LABEL, url)
         .additional_browser_args(BROWSER_ARGS)
-        .title("Day")
+        .title("Day - Settings")
         .inner_size(1100.0, 720.0)
         .min_inner_size(820.0, 560.0)
         .resizable(true)
-        .visible(false)
+        .visible(true)
         .center()
         .build()
     {
         Ok(win) => {
+            startup_trace("settings build done");
             let this = win.clone();
             win.on_window_event(move |event| match event {
                 // Closing it must only hide it, or it could never be reopened.
@@ -789,9 +953,14 @@ fn create_settings_window(app: &AppHandle) {
                 }
                 _ => {}
             });
-            webview_memory::set_low(&win, true); // created hidden
+            webview_memory::set_low(&win, false);
+            set_hub_shown(&win, true);
+            startup_trace("settings memory target done");
         }
-        Err(err) => log::line(format!("Day window failed: {err}")),
+        Err(err) => {
+            startup_trace(format!("settings build error: {err}"));
+            log::line(format!("Day window failed: {err}"));
+        }
     }
 }
 
@@ -865,9 +1034,95 @@ fn open_settings_window(app: AppHandle, page: Option<String>) {
     show_hub(&app, Some(page.as_deref().unwrap_or("general")));
 }
 
+fn start_localhost_server() {
+    std::thread::spawn(|| {
+        let listener = match std::net::TcpListener::bind("127.0.0.1:1420") {
+            Ok(l) => l,
+            Err(_) => return, // Port already in use, e.g. Vite dev server is running
+        };
+        for stream in listener.incoming() {
+            if let Ok(mut stream) = stream {
+                std::thread::spawn(move || {
+                    let mut buffer = [0u8; 2048];
+                    use std::io::{Read, Write};
+                    if let Ok(n) = stream.read(&mut buffer) {
+                        let req = String::from_utf8_lossy(&buffer[..n]);
+                        let first_line = req.lines().next().unwrap_or("");
+                        let mut parts = first_line.split_whitespace();
+                        let _method = parts.next().unwrap_or("");
+                        let path = parts.next().unwrap_or("/");
+
+                        let clean_path = path.trim_start_matches('/');
+                        let clean_path = clean_path.split('?').next().unwrap_or(clean_path);
+                        let subpath = if clean_path.is_empty() || clean_path == "settings" || clean_path == "settings.html" {
+                            "settings.html"
+                        } else {
+                            clean_path
+                        };
+
+                        let candidate_dirs = [
+                            std::env::current_exe().ok().and_then(|p| p.parent().map(|d| d.join("dist"))),
+                            std::env::current_exe().ok().and_then(|p| p.parent().map(|d| d.join("../windows/dist"))),
+                            std::env::current_exe().ok().and_then(|p| p.parent().map(|d| d.join("windows/dist"))),
+                            std::env::current_dir().ok().map(|d| d.join("windows/dist")),
+                            std::env::current_dir().ok().map(|d| d.join("dist")),
+                            Some(std::path::PathBuf::from(r"C:\Users\sudhan\Documents\Projects\Day-main\windows\dist")),
+                        ];
+
+                        let mut file_bytes = None;
+                        let mut resolved_path = None;
+                        for cand in candidate_dirs.into_iter().flatten() {
+                            let target = cand.join(subpath);
+                            if target.exists() && target.is_file() {
+                                if let Ok(data) = std::fs::read(&target) {
+                                    file_bytes = Some(data);
+                                    resolved_path = Some(target);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if let (Some(bytes), Some(p)) = (file_bytes, resolved_path) {
+                            let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("");
+                            let mime = match ext {
+                                "html" => "text/html; charset=utf-8",
+                                "js" => "application/javascript; charset=utf-8",
+                                "css" => "text/css; charset=utf-8",
+                                "svg" => "image/svg+xml",
+                                "png" => "image/png",
+                                "wav" => "audio/wav",
+                                "json" => "application/json",
+                                _ => "application/octet-stream",
+                            };
+                            let response = format!(
+                                "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n",
+                                mime,
+                                bytes.len()
+                            );
+                            let _ = stream.write_all(response.as_bytes());
+                            let _ = stream.write_all(&bytes);
+                        } else {
+                            let body = b"<h1>404 Not Found</h1>";
+                            let response = format!(
+                                "HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                                body.len()
+                            );
+                            let _ = stream.write_all(response.as_bytes());
+                            let _ = stream.write_all(body);
+                        }
+                    }
+                });
+            }
+        }
+    });
+}
+
 pub fn run() {
+    startup_trace("run entry");
     platform::prepare_environment();
+    startup_trace("environment prepared");
     let loaded = settings::load();
+    startup_trace("settings loaded");
     i18n::set_picked(&loaded.language);
     let gate = Arc::new(PollGate::new());
 
@@ -886,6 +1141,7 @@ pub fn run() {
     if platform::global_shortcuts_blocked().is_none() {
         builder = builder.plugin(shortcuts::plugin());
     }
+    startup_trace("builder configured");
 
     builder
         .manage(Shared {
@@ -898,6 +1154,10 @@ pub fn run() {
         .manage(recap::load())
         .invoke_handler(tauri::generate_handler![
             boot,
+            read_clipboard_text,
+            get_system_info,
+            get_system_metrics,
+            open_system_cmd,
             mail::mail_refresh,
             mail::mail_more,
             mail::mail_search,
@@ -1083,17 +1343,38 @@ pub fn run() {
             update::update_open_page,
         ])
         .setup(move |app| {
+            startup_trace("setup enter");
             let handle = app.handle().clone();
+            startup_trace("secrets begin");
             secrets::warm_up();
+            startup_trace("secrets done");
             app.manage(phone_link::PhoneLink::new(handle.clone()));
+            startup_trace("tray begin");
             tray::build(&handle)?;
+            startup_trace("tray done");
             // Before the island: see create_settings_window.
+            startup_trace("settings begin");
             create_settings_window(&handle);
+            start_localhost_server();
+            startup_trace("settings done");
             // Same rule for Day's desktop window and the dictation pill.
+            startup_trace("desktop begin");
             desktop::setup(&handle);
+            startup_trace("desktop done");
+            startup_trace("flow begin");
             flow::setup(&handle);
+            startup_trace("flow done");
+            startup_trace("notes begin");
             notes::setup(&handle);
+            startup_trace("notes done");
 
+            startup_trace("island create begin");
+            if let Err(err) = island::create_window(&handle) {
+                startup_trace(format!("island create error: {err}"));
+                log::line(format!("Island window failed: {err}"));
+            } else {
+                startup_trace("island create done");
+            }
             if let Some(win) = island::window(&handle) {
                 // Where Tauri takes the drop itself (Linux), its paths are the
                 // ones ingest_file may copy (files.rs).
@@ -1105,8 +1386,10 @@ pub fn run() {
                 platform::make_non_activating(&win);
                 #[cfg(windows)]
                 webview_drop::install(&handle);
+                startup_trace("island geometry begin");
                 island::apply_geometry(&handle, &loaded.screen, None);
                 let _ = win.show();
+                startup_trace("island show done");
             }
             gate.collapsed.store(false, Ordering::Relaxed);
             // Nothing drawn yet, so nothing takes the mouse until the page
@@ -1136,20 +1419,27 @@ pub fn run() {
             }
             let open_window = flow::get(&handle).map(|f| f.store.lock().unwrap().prefs.open_at_launch).unwrap_or(true);
             if open_window && !launched_at_login() {
-                show_hub(&handle, None);
+                let _ = handle.emit_to(island::WINDOW_LABEL, "tray", "open");
+            }
+            if !launched_at_login() {
+                show_hub(&handle, Some("general"));
             }
             Ok(())
         })
         .build(tauri::generate_context!())
         .expect("error while building Day")
-        .run(|app, event| {
-            // Withdraw the phone link's announcement on the local network before the process ends.
-            if let tauri::RunEvent::Exit = event {
+        .run(|app, event| match event {
+            tauri::RunEvent::ExitRequested { api, .. } => {
+                api.prevent_exit();
+            }
+            tauri::RunEvent::Exit => {
+                // Withdraw the phone link's announcement on the local network before the process ends.
                 phone_link::stop_on_exit(app);
                 notes::shutdown(app);
                 // GOWA started by Day stops with it; the conversations were only in memory.
                 whatsapp::shutdown();
             }
+            _ => {}
         });
 }
 

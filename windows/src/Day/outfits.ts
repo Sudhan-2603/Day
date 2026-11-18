@@ -43,7 +43,7 @@ export interface Head {
 }
 
 export function makeHead(R: number, yaw = 0, pitch = 0, physDx = 0, physDy = 0): Head {
-  return { R, rx: R * 1.14, ry: R * 0.88, yaw, pitch, physDx, physDy };
+  return { R, rx: R, ry: R, yaw, pitch, physDx, physDy };
 }
 
 // ── 3D helpers ────────────────────────────────────────────────────────────────
@@ -1135,7 +1135,7 @@ export function drawWardrobeIcon(ctx: Ctx, size: number, selection: OutfitSelect
   iconDay(ctx, size, selection === "auto" ? seasonal : selection);
   if (selection !== "auto") return;
   const R = 10;
-  const by = size / 2 + R * 0.62 + R * 0.88 * 0.72;
+  const by = size / 2 + R * 0.62 + R * 0.72;
   const bw = 14;
   const bh = 6.5;
   ctx.save();

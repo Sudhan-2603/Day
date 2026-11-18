@@ -21,6 +21,7 @@ import { N_, t, tl } from "../i18n/i18n";
 import { HOST_OS } from "../core/pills";
 import { MailChat, splitPlan } from "../core/mail";
 import { mailPlanCard } from "./mailplan";
+import { handleOfflineQuery } from "../core/offline-assistant";
 
 const STRINGS = {
   placeholderFirst: N_("Ask me anything…"),
@@ -251,12 +252,19 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
   const modelRow = h("div", { class: "model-row" }, modelBtn);
   if (HOST_OS === "windows") modelRow.prepend(mailBtn);
 
+  // ── Offline banner ───────────────────────────────────────────────────────────
+  const offlineBanner = h("div", { class: "offline-banner" },
+    h("span", { class: "offline-dot" }),
+    h("span", { text: "You're offline" }),
+    h("span", { class: "offline-hint", text: "Use a local model (Ollama / LM Studio) to chat without internet" }),
+  );
+
   const body = h("div", { class: "chat-body" });
   const picker = buildPicker(() => {
     body.classList.toggle("picking", picker.isOpen);
     drawModelButton();
   });
-  body.append(chipRow, log, picker.el, modelRow, bar);
+  body.append(offlineBanner, chipRow, log, picker.el, modelRow, bar);
   void loadSubscriptions().then(() => drawModelButton());
 
   const el = h("div", { class: "view" }, h("div", { class: "card wash chat-card" }, body));
@@ -292,6 +300,16 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
     log.scrollTop = log.scrollHeight;
   });
 
+  // Global handler so clicking "Ask Day" automatically types and enters the copied text
+  (window as any).__DAY_ASK_CHAT__ = (text: string) => {
+    if (!text || sending) return;
+    input.value = text;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    window.setTimeout(() => {
+      void submit();
+    }, 80);
+  };
+
   async function submit() {
     const query = input.value.trim();
     if (!query || sending) return;
@@ -310,16 +328,57 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
     const context: ChatContext | null =
       State.chatHistory.length === 1 && file ? { kind: "file", name: file.name, path: file.path } : null;
 
+    // ── Offline: check if using a cloud provider and no connection ──
+    const isCloudProvider = ["anthropic", "openai", "google", "openrouter"].includes(State.settings.chatProvider);
+    const isLocalAvailable = Boolean(State.settings.ollamaUrl || State.settings.lmstudioUrl || State.settings.customUrl);
+
+    if (State.isOffline && isCloudProvider && !isLocalAvailable) {
+      // No internet and no local model — process locally via offline intelligence
+      const offlineRes = handleOfflineQuery(query);
+      State.chatHistory.push({
+        id: nextId++,
+        role: "assistant",
+        content: offlineRes.reply,
+      });
+      State.stateOverride = null;
+      Sound.play(offlineRes.handled ? "finish" : "pop");
+      sending = false;
+      live = null;
+      renderedCount = -1;
+      drawModelButton();
+      State.notify();
+      onHeightChange();
+      return;
+    }
+
     try {
       const reply = await Bridge.chatSend(query, context, MailChat.on && HOST_OS === "windows");
       State.chatHistory.push({ id: nextId++, role: "assistant", content: reply.text });
       State.stateOverride = null;
       Sound.play("finish");
     } catch (err) {
-      State.stateOverride = null;
-      State.noteMessage = String(err).replace(/^Error:\s*/, "");
-      State.view = "note";
-      Sound.play("error");
+      const errMsg = String(err).replace(/^Error:\s*/, "");
+      // If the error is a network failure and we're offline, show a friendly note
+      if (State.isOffline && /network|fetch|connect|timeout|dns/i.test(errMsg)) {
+        const offlineRes = handleOfflineQuery(query);
+        State.chatHistory.push({
+          id: nextId++,
+          role: "assistant",
+          content: offlineRes.handled
+            ? offlineRes.reply
+            : "⚡ **Connection lost** — I couldn't reach the server.\n\n"
+              + (isLocalAvailable
+                ? "Try switching to your **local model** (Ollama / LM Studio) in the model picker above — it works offline."
+                : offlineRes.reply),
+        });
+        State.stateOverride = null;
+        Sound.play("pop");
+      } else {
+        State.stateOverride = null;
+        State.noteMessage = errMsg;
+        State.view = "note";
+        Sound.play("error");
+      }
     } finally {
       sending = false;
       live = null;
@@ -353,6 +412,10 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
   return {
     el,
     sync() {
+      // ── Offline indicator ──
+      const isCloud = ["anthropic", "openai", "google", "openrouter"].includes(State.settings.chatProvider);
+      offlineBanner.style.display = State.isOffline && isCloud ? "flex" : "none";
+
       const file = State.droppedFile;
       const wantChip = file?.name ?? "";
       if (chipRow.dataset.label !== wantChip) {

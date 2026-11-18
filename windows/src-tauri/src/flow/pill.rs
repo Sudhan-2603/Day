@@ -81,7 +81,7 @@ impl Pill {
 }
 
 fn page_url(app: &AppHandle) -> WebviewUrl {
-    #[cfg(dev)]
+    #[cfg(all(dev, debug_assertions))]
     if let Some(mut base) = app.config().build.dev_url.clone() {
         base.set_path("/pill.html");
         return WebviewUrl::External(base);

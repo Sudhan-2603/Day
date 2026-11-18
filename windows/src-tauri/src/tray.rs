@@ -58,10 +58,22 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
         .on_menu_event(|app: &AppHandle, event| match event.id.as_ref() {
             "quit" => app.exit(0),
             "settings" => crate::show_settings_window(app),
-            // The Day window: dictation, notes and every setting.
-            "open" => crate::show_hub(app, None),
+            // "Open Day" opens the Dynamic Island
+            "open" => {
+                let _ = app.emit_to(WINDOW_LABEL, "tray", "open");
+            }
             id => {
                 let _ = app.emit_to(WINDOW_LABEL, "tray", id.to_string());
+            }
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let tauri::tray::TrayIconEvent::Click {
+                button: tauri::tray::MouseButton::Left,
+                button_state: tauri::tray::MouseButtonState::Up,
+                ..
+            } = event
+            {
+                let _ = tray.app_handle().emit_to(WINDOW_LABEL, "tray", "open");
             }
         });
 

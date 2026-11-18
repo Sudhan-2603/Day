@@ -15,10 +15,10 @@ import { Sound } from "../core/sound";
 import { State } from "../core/state";
 import { washRGBA } from "../core/layout";
 import type { ViewActions, ViewHost } from "./views";
-import { t, tl } from "../i18n/i18n";
+import { t } from "../i18n/i18n";
 
 export function buildLaunch(actions: ViewActions): ViewHost {
-  const title = h("div", { class: "launch-title", text: tl("New Claude Code session") });
+  const title = h("div", { class: "launch-title", text: "Add Files & Workspace Structure" });
   const projectLabel = h("span", { class: "launch-project-name" });
   const projectBtn = h(
     "button",
@@ -27,20 +27,66 @@ export function buildLaunch(actions: ViewActions): ViewHost {
     projectLabel,
     svg(ICONS.chevronDown, 8, { stroke: 2.4 }),
   );
+
+  // File structure tree representation
+  const fileItems = [
+    { name: "src/ (Frontend TypeScript & Island UI)", isDir: true },
+    { name: "src-tauri/ (Rust Core & Offline Telemetry)", isDir: true },
+    { name: "release_bin/ (Standalone Day.exe)", isDir: true },
+    { name: "dist/ (Offline embedded web assets)", isDir: true },
+    { name: "package.json", isDir: false },
+    { name: "Cargo.toml", isDir: false },
+    { name: "README.md", isDir: false },
+  ];
+
+  const treeEl = h("div", { class: "add-files-tree" });
+  fileItems.forEach((item) => {
+    const row = h(
+      "div",
+      { class: "add-files-item" },
+      svg(item.isDir ? ICONS.folder : ICONS.doc, 12, { stroke: 1.6 }),
+      h("span", { text: item.name }),
+    );
+    row.addEventListener("click", () => {
+      input.value = `Inspect and process ${item.name}`;
+      input.focus();
+    });
+    treeEl.append(row);
+  });
+
   const input = h("input", {
     type: "text",
     class: "chat-input",
-    placeholder: t("What should Claude do?"),
+    placeholder: "Ask Day about selected files or attach...",
     spellcheck: "false",
   }) as HTMLInputElement;
-  const send = h("button", { class: "send-btn launch-send" }, svg(ICONS.arrowUp, 11)) as HTMLButtonElement;
+
+  const browseBtn = h("button", {
+    class: "link-btn",
+    style: "font-size:11px;color:#a5b4fc;margin-right:6px",
+    text: "Browse Folder 📁",
+    onclick: () => void chooseFolder(),
+  });
+
+  const cmdRunBtn = h("button", {
+    class: "link-btn",
+    style: "font-size:11px;color:#86efac",
+    text: "Open CMD ⚡",
+    onclick: () => void Bridge.openSystemCmd(),
+  });
+
+  const send = h("button", { class: "send-btn launch-send", title: "Submit" }, svg(ICONS.arrowUp, 11)) as HTMLButtonElement;
   const bar = h("div", { class: "chat-bar launch-bar" }, input, send);
   const hint = h("div", { class: "launch-hint" });
   const menu = h("div", { class: "launch-menu picker-list" });
+  const actionsRow = h("div", { style: "display:flex;align-items:center;padding:2px 4px 6px" }, browseBtn, cmdRunBtn);
+
   const body = h(
     "div",
     { class: "stack launch-body" },
     h("div", { class: "launch-head" }, title, projectBtn),
+    actionsRow,
+    treeEl,
     bar,
     hint,
     menu,

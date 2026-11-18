@@ -34,7 +34,7 @@ export function claudeCompactPillVisible(): boolean {
 
 /** The Codex pill is in the header: overview, turned on (nothing to install). */
 export function codexPillVisible(): boolean {
-  return State.view === "overview" && State.settings.showCodexPlanInNotch;
+  return false;
 }
 
 /** A plan card is open and either of its pills (header or compact) is enabled. */

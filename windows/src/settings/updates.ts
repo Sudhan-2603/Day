@@ -65,8 +65,8 @@ export function updateRows(toggle: Toggle, version: string): HTMLElement[] {
   return [
     h("div", { class: "row" },
       h("label", { text: t("Updates") }),
-      sw,
       h("span", { class: "hint", text: t("Tell me when a new version is out") }),
+      sw,
     ),
     h("div", { class: "row" }, h("label", {}), install, check, feedback),
     h("div", { class: "row" }, h("label", {}), footer),
